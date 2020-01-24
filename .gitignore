@@ -1,0 +1,6 @@
+.qmake.stash
+LinVstManager.pro
+LinVstManager.pro.user*
+Makefile
+dialog.ui
+tags
