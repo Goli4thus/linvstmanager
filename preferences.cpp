@@ -131,3 +131,39 @@ bool Preferences::getBridgeDefaultVst3IsX() const
 {
     return bridgeDefaultVst3IsX;
 }
+
+bool Preferences::bridgeEnabled(VstBridge bridgeType) const
+{
+    switch (bridgeType) {
+        case VstBridge::LinVst:
+            return enabledLinVst;
+        break;
+        case VstBridge::LinVstX:
+            return enabledLinVstX;
+        break;
+        case VstBridge::LinVst3:
+            return enabledLinVst3;
+        break;
+        case VstBridge::LinVst3X:
+            return enabledLinVst3X;
+        break;
+    }
+}
+
+QString Preferences::getPathSoTmplBridge(VstBridge bridgeType) const
+{
+    switch (bridgeType) {
+        case VstBridge::LinVst:
+            return pathSoLinVst;
+        break;
+        case VstBridge::LinVstX:
+            return pathSoLinVstX;
+        break;
+        case VstBridge::LinVst3:
+            return pathSoLinVst3;
+        break;
+        case VstBridge::LinVst3X:
+            return pathSoLinVst3X;
+        break;
+    }
+}

@@ -8,7 +8,7 @@ class VstBucket
 {
 public:
     VstBucket(QString t_name,
-              QString t_dllPath,
+              QString t_vstPath,
               QByteArray t_hash,
               VstStatus t_status,
               VstBridge t_bridge,
@@ -16,7 +16,7 @@ public:
               bool t_newlyAdded);
 
     QString name;
-    QString dllPath;
+    QString vstPath;
     QByteArray hash;
     VstStatus status;
     VstBridge bridge;

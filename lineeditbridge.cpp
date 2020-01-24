@@ -122,12 +122,16 @@ void LineEditBridge::slotCheckBoxBridge()
 
 void LineEditBridge::slotPushButtonSelectBridge()
 {
-    static QString lastDir = QDir::homePath();
+    QString lastDir = QDir::homePath();
+
+    if (mLineEditBridge->text() != "") {
+        lastDir = QFileInfo(mLineEditBridge->text()).path();
+    }
+
     QString filepath_bridgeSoFile = QFileDialog::getOpenFileName(this,
                                      "Select the *.so template file for bridge: " + name, lastDir,
                                      "(*.so)");
     if (!filepath_bridgeSoFile.isEmpty()) {
-        lastDir = QFileInfo(filepath_bridgeSoFile).path();
         mLineEditBridge->setText(filepath_bridgeSoFile);
     }
 }

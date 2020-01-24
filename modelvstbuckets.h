@@ -6,6 +6,7 @@
 #include "vstbucket.h"
 class QCryptographicHash;
 class Preferences;
+class LinkHandler;
 
 class ModelVstBuckets : public QAbstractTableModel
 {
@@ -26,10 +27,12 @@ public:
     void blacklistVstBucket(QList<int>indexOfVstBuckets);
     void unblacklistVstBucket(QList<int>indexOfVstBuckets);
     void updateVsts();
+    void refreshStatus();
 
     QList<int> changeBridges(QList<int>indexOfVstBuckets, VstBridge reqBridgeType);
     bool mUpdateView;
     Preferences *prf;
+    LinkHandler *lh;
 
 private:
     QCryptographicHash *mHasher;

@@ -323,6 +323,7 @@ void MainWindow::slotConfigDataChanged()
 {
     this->setWindowTitle("* LinVstManager");
     configNeedsSaving = true;
+    mModelVstBuckets->refreshStatus();
 }
 
 void MainWindow::slotPostSetupInfo()
@@ -465,7 +466,9 @@ void MainWindow::slotUnblacklistVst()
 
 void MainWindow::slotUpdate()
 {
-    QMessageBox::information(this, "Not implemented yet", "Coming soon.");
+    slotTableOperationStart();
+    mModelVstBuckets->updateVsts();
+    slotTableOperationFinished();
 }
 
 void MainWindow::slotSetBridgeLinVst()
@@ -481,13 +484,11 @@ void MainWindow::slotSetBridgeLinVstX()
 void MainWindow::slotSetBridgeLinVst3()
 {
     changeBridge(VstBridge::LinVst3);
-
 }
 
 void MainWindow::slotSetBridgeLinVst3X()
 {
     changeBridge(VstBridge::LinVst3X);
-
 }
 
 void MainWindow::slotVerboseLogOutput()

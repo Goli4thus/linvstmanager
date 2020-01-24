@@ -8,6 +8,7 @@
 #include <QDir>
 #include "preferences.h"
 #include "enums.h"
+#include "linkhandler.h"
 
 ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets, Preferences *pPrf)
 {
@@ -15,12 +16,15 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
     mHasher = new QCryptographicHash(QCryptographicHash::Sha1);
     mUpdateView = true;
     prf = pPrf;
+    lh = new LinkHandler(*prf);
 
     // Fill model with data if available
     if (!pVstBuckets.empty()) {
         mVstBuckets.append(pVstBuckets);
         slotUpdateHashes();
     }
+
+    lh->refreshStatus(mVstBuckets);
 }
 
 int ModelVstBuckets::rowCount(const QModelIndex &parent) const
@@ -135,9 +139,9 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                     case TableColumnPosType::Path: {
 //                        // Show in '~/' notation
 //                        int lenHome = QDir::homePath().length();
-//                        int lenFile = mVstBuckets.at(index.row()).dllPath.length();
-//                        return mVstBuckets.at(index.row()).dllPath.right(lenFile - lenHome);
-                        return mVstBuckets.at(index.row()).dllPath;
+//                        int lenFile = mVstBuckets.at(index.row()).vstPath.length();
+//                        return mVstBuckets.at(index.row()).vstPath.right(lenFile - lenHome);
+                        return mVstBuckets.at(index.row()).vstPath;
                     }
                     break;
                     case TableColumnPosType::Index: {   // original index
@@ -217,31 +221,11 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
 //                }
                 if (index.column() == TableColumnPosType::Bridge) {
                     QColor color;
-                    bool bridgeEnabledInPrf;
 
-                    if ((mVstBuckets.at(index.row()).bridge == VstBridge::LinVst)
-                            && (prf->getEnabledLinVst() == false)) {
-                        bridgeEnabledInPrf = false;
-                    }
-                    else if ((mVstBuckets.at(index.row()).bridge == VstBridge::LinVstX)
-                            && (prf->getEnabledLinVstX() == false)) {
-                        bridgeEnabledInPrf = false;
-                    }
-                    else if ((mVstBuckets.at(index.row()).bridge == VstBridge::LinVst3)
-                            && (prf->getEnabledLinVst3() == false)) {
-                        bridgeEnabledInPrf = false;
-                    }
-                    else if ((mVstBuckets.at(index.row()).bridge == VstBridge::LinVst3X)
-                            && (prf->getEnabledLinVst3X() == false)) {
-                        bridgeEnabledInPrf = false;
-                    } else {
-                        bridgeEnabledInPrf = true;
-                    }
-
-                    if (bridgeEnabledInPrf == true) {
-                        return QVariant();
-                    } else {
+                    if (!prf->bridgeEnabled(mVstBuckets.at(index.row()).bridge)) {
                         color.setRgb(226, 85, 37);  // Red
+                    } else {
+                        return QVariant();
                     }
 
                     return QBrush(color, Qt::Dense1Pattern);
@@ -412,6 +396,8 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
             }
 
             // TODO: Call linkhandler. Only update status if it actually worked.
+            // Actually not sure: Should we even do anything re linkhandler here?
+            // Would it be an option to allow user to trigger update to get to "Disabled" status?
 
             beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount());
             mVstBuckets.append(VstBucket(name,
@@ -442,7 +428,9 @@ void ModelVstBuckets::removeVstBucket(QList<int>indexOfVstBuckets)
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
         beginRemoveRows(QModelIndex(), index, index);
-        // TODO: Call linkhandler. Only update status if it actually worked.
+        // Removing a VstBucket is the same as blacklisting it with
+        // the addition of removing it from the model.
+        lh->blacklistVst(mVstBuckets[index]);
         mVstBuckets.removeAt(index);
         endRemoveRows();
     }
@@ -455,11 +443,14 @@ void ModelVstBuckets::enableVstBucket(QList<int> indexOfVstBuckets)
     int index = 0;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
-        // TODO: Call linkhandler. Only update status if it actually worked.
-        mVstBuckets[index].status = VstStatus::Enabled;
-    }
 
-    emit(signalConfigDataChanged());
+        if (lh->enableVst(mVstBuckets[index]) == RvLinkHandler::LH_OK) {
+            // Enable dosn't really need saving, as it will be detected at next startup anyway
+//            emit(signalConfigDataChanged());
+        } else {
+            qDebug() << "(MVB): enableVstBucket: not LH_OK for index: " << index;
+        }
+    }
 }
 
 void ModelVstBuckets::disableVstBucket(QList<int> indexOfVstBuckets)
@@ -467,11 +458,14 @@ void ModelVstBuckets::disableVstBucket(QList<int> indexOfVstBuckets)
     int index = 0;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
-        // TODO: Call linkhandler. Only update status if it actually worked.
-        mVstBuckets[index].status = VstStatus::Disabled;
-    }
 
-    emit(signalConfigDataChanged());
+        if (lh->disableVst(mVstBuckets[index]) == RvLinkHandler::LH_OK) {
+            // Disable dosn't really need saving, as it will be detected at next startup anyway
+//            emit(signalConfigDataChanged());
+        } else {
+            qDebug() << "(MVB): disableVstBucket: not LH_OK for index: " << index;
+        }
+    }
 }
 
 void ModelVstBuckets::blacklistVstBucket(QList<int> indexOfVstBuckets)
@@ -479,11 +473,13 @@ void ModelVstBuckets::blacklistVstBucket(QList<int> indexOfVstBuckets)
     int index = 0;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
-        // TODO: Call linkhandler. Only update status if it actually worked.
-        mVstBuckets[index].status = VstStatus::Blacklisted;
-    }
 
-    emit(signalConfigDataChanged());
+        if (lh->blacklistVst(mVstBuckets[index]) == RvLinkHandler::LH_OK) {
+            emit(signalConfigDataChanged());
+        } else {
+            qDebug() << "(MVB): blacklistVstBucket: not LH_OK for index: " << index;
+        }
+    }
 }
 
 void ModelVstBuckets::unblacklistVstBucket(QList<int> indexOfVstBuckets)
@@ -491,17 +487,26 @@ void ModelVstBuckets::unblacklistVstBucket(QList<int> indexOfVstBuckets)
     int index;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
-        // TODO: Re-evaluate vst status)
-        // TODO: Call linkhandler. Only update status if it actually worked.
         mVstBuckets[index].status = VstStatus::NA;
-    }
 
-    emit(signalConfigDataChanged());
+        if (lh->refreshStatus(mVstBuckets, true, index) == RvLinkHandler::LH_OK) {
+            emit(signalConfigDataChanged());
+        } else {
+            qDebug() << "(MVB): unblacklistVstBucket: not LH_OK for index: " << index;
+        }
+    }
 }
 
 void ModelVstBuckets::updateVsts()
 {
-    // TODO: Implement
+    if (lh->updateVsts(mVstBuckets) != RvLinkHandler::LH_OK) {
+        qDebug() << "(MVB): updateVsts: not LH_OK";
+    }
+}
+
+void ModelVstBuckets::refreshStatus()
+{
+    lh->refreshStatus(mVstBuckets);
 }
 
 QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridge reqBridgeType)
@@ -513,38 +518,35 @@ QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridg
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
 
-        if (mVstBuckets[index].vstType == VstType::VST2) {
-            if ((reqBridgeType == VstBridge::LinVst)
-                    && (prf->getEnabledLinVst())) {
-                // TODO: Call linkhandler. Only update status if it actually worked.
-                mVstBuckets[index].bridge = VstBridge::LinVst;
-                configDataChanged = true;
-            } else if ((reqBridgeType == VstBridge::LinVstX)
-                    && (prf->getEnabledLinVstX())) {
-                // TODO: Call linkhandler. Only update status if it actually worked.
-                mVstBuckets[index].bridge = VstBridge::LinVstX;
-                configDataChanged = true;
+        if ((mVstBuckets[index].vstType == VstType::VST2)
+                && (   (reqBridgeType == VstBridge::LinVst)
+                    || (reqBridgeType == VstBridge::LinVstX))) {
+            if (prf->bridgeEnabled(reqBridgeType)) {
+                if(lh->changeBridge(mVstBuckets[index], reqBridgeType) == RvLinkHandler::LH_OK) {
+                    // Refresh to make sure it actually worked with preserving the initial status
+                    lh->refreshStatus(mVstBuckets, true, index);
+                    configDataChanged = true;
+                }
             } else {
-                // Request bridge type doesn't fit the selected VST's type
-                // or is not enabled in preferences
+                // Request bridge type is not enabled in preferences
                 skippedIndices.append(index);
             }
-        } else { // VST3
-            if ((reqBridgeType == VstBridge::LinVst3)
-                    && (prf->getEnabledLinVst3())) {
-                // TODO: Call linkhandler. Only update status if it actually worked.
-                mVstBuckets[index].bridge = VstBridge::LinVst3;
-                configDataChanged = true;
-            } else if ((reqBridgeType == VstBridge::LinVst3X)
-                    && (prf->getEnabledLinVst3X())) {
-                // TODO: Call linkhandler. Only update status if it actually worked.
-                mVstBuckets[index].bridge = VstBridge::LinVst3X;
-                configDataChanged = true;
+        } else if ((mVstBuckets[index].vstType == VstType::VST3) // VST3
+                && (   (reqBridgeType == VstBridge::LinVst3)
+                    || (reqBridgeType == VstBridge::LinVst3X))) {
+            if (prf->bridgeEnabled(reqBridgeType)) {
+                if(lh->changeBridge(mVstBuckets[index], reqBridgeType) == RvLinkHandler::LH_OK) {
+                    // Refresh to make sure it actually worked with preserving the initial status
+                    lh->refreshStatus(mVstBuckets, true, index);
+                    configDataChanged = true;
+                }
             } else {
-                // Request bridge type doesn't fit the selected VST's type
-                // or is not enabled in preferences
+                // Request bridge type is not enabled in preferences
                 skippedIndices.append(index);
             }
+        } else {
+            // Request bridge type doesn't fit the selected VST's type.
+            skippedIndices.append(index);
         }
     }
 
@@ -565,7 +567,7 @@ QByteArray ModelVstBuckets::calcFilepathHash(QString filepath)
 void ModelVstBuckets::slotUpdateHashes()
 {
     for (int i = 0; i < mVstBuckets.size(); i++) {
-        mVstBuckets[i].hash = calcFilepathHash(mVstBuckets.at(i).dllPath);
+        mVstBuckets[i].hash = calcFilepathHash(mVstBuckets.at(i).vstPath);
     }
 }
 

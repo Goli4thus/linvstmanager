@@ -202,9 +202,15 @@ void DialogPreferences::fillPreferences()
 
 void DialogPreferences::slotButtonSelectLinkFolder()
 {
+    QString lastDir = QDir::homePath();
+
+    if (mLineEditLinkFolder->text() != "") {
+        lastDir = QFileInfo(mLineEditLinkFolder->text()).path();
+    }
+
     QString path_linkFolder = QFileDialog::getExistingDirectory(this,
                                          "Specify the folder that shall contain all the bridged *.so files.",
-                                         QDir::homePath());
+                                         lastDir);
     if (!path_linkFolder.isEmpty()) {
         mLineEditLinkFolder->setText(path_linkFolder);
     }

@@ -44,7 +44,7 @@ void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
     for (int i = 0; i < vstBuckets.size(); ++i) {
         xmlWriter->writeStartElement("VstBucketEntry");
         xmlWriter->writeTextElement("name", vstBuckets.at(i).name);
-        xmlWriter->writeTextElement("dllPath", vstBuckets.at(i).dllPath);
+        xmlWriter->writeTextElement("vstPath", vstBuckets.at(i).vstPath);
 //        xmlWriter->writeTextElement("hash", QString::fromStdString(vstBuckets.at(i).hash.toStdString()));
 
         QString strStatus;
@@ -175,7 +175,7 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
 quint8 ConfigHandler::readVstBucket(QList<VstBucket> &vstBuckets)
 {
     QString name;
-    QString dllPath;
+    QString vstPath;
     QByteArray hash;
     VstStatus status;
     VstBridge bridge;
@@ -190,8 +190,8 @@ quint8 ConfigHandler::readVstBucket(QList<VstBucket> &vstBuckets)
     }
 
     xmlReader->readNextStartElement();
-    if (xmlReader->name() == "dllPath") {
-        dllPath = xmlReader->readElementText();
+    if (xmlReader->name() == "vstPath") {
+        vstPath = xmlReader->readElementText();
     } else {
         return false;
     }
@@ -257,7 +257,7 @@ quint8 ConfigHandler::readVstBucket(QList<VstBucket> &vstBuckets)
     }
 
     vstBuckets.append(VstBucket(name,
-                                dllPath,
+                                vstPath,
                                 hash, // being re-calculated later
                                 status,
                                 bridge,

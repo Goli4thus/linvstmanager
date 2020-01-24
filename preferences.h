@@ -2,6 +2,7 @@
 #define PREFERENCES_H
 
 #include <QString>
+#include "enums.h"
 
 
 class Preferences
@@ -32,6 +33,8 @@ public:
     QString getPathLinkFolder() const;
     bool getBridgeDefaultVst2IsX() const;
     bool getBridgeDefaultVst3IsX() const;
+    bool bridgeEnabled(VstBridge bridgeType) const;
+    QString getPathSoTmplBridge(VstBridge bridgeType) const;
 
 private:
     bool enabledLinVst;

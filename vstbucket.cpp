@@ -1,7 +1,7 @@
 #include "vstbucket.h"
 
 VstBucket::VstBucket(QString t_name,
-                     QString t_dllPath,
+                     QString t_vstPath,
                      QByteArray t_hash,
                      VstStatus t_status,
                      VstBridge t_bridge,
@@ -9,7 +9,7 @@ VstBucket::VstBucket(QString t_name,
                      bool t_newlyAdded)
 {
     name = t_name;
-    dllPath = t_dllPath;
+    vstPath = t_vstPath;
     hash = t_hash;
     status = t_status;
     bridge = t_bridge;

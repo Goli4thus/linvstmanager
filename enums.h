@@ -48,7 +48,9 @@ enum RvConfFile {
 
 // Return values re link handler
 enum RvLinkHandler {
-    LH_OK
+    LH_OK,
+    LH_NOT_OK,
+    LH_IGNORED
 };
 
 #endif // ENUMS
