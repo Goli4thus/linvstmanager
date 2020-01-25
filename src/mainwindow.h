@@ -84,6 +84,7 @@ private slots:
     void slotDialogPreferences();
     void slotDialogScan();
     void slotDialogAbout();
+    void slotDialogAboutQt();
     void slotSave();
     void slotConfigDataChanged();
     void slotPostSetupInfo();
