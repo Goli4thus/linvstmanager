@@ -328,12 +328,39 @@ void MainWindow::slotConfigDataChanged()
 
 void MainWindow::slotPostSetupInfo()
 {
-    // TODO: Let user hide this one?
     QMessageBox::information(this,
                              "Please be aware",
                              "If your DAW is running while you're are removing or modifying VSTs in here, "
                              "your DAW might actually crash. Therefore make sure to close it beforehand.",
                              QMessageBox::Ok);
+
+//    QTimer::singleShot(100, this, &MainWindow::slotOrphanDetection);
+    slotOrphanDetection();
+}
+
+void MainWindow::slotOrphanDetection()
+{
+    QStringList orphansList = mModelVstBuckets->checkForOrphans();
+    if (!orphansList.isEmpty()) {
+        QString orphansFormatted;
+        for (int i=0; i < orphansList.size(); i++) {
+            orphansFormatted.append("  " + orphansList.at(i) + "\n");
+        }
+
+        QMessageBox msgBox(this);
+        msgBox.setIcon(QMessageBox::Question);
+        msgBox.setWindowTitle("Orphans detected");
+        msgBox.setText("Some orphaned links in the link folder have been detected.\n"
+                                  "Should they be cleaned up?");
+        msgBox.setDetailedText(orphansFormatted);
+        msgBox.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+        msgBox.setDefaultButton(QMessageBox::Yes);
+        int retVal = msgBox.exec();
+
+        if (retVal == QMessageBox::Yes) {
+            mModelVstBuckets->removeOrphans(orphansList);
+        }
+    }
 }
 
 void MainWindow::slotResizeMainUi()

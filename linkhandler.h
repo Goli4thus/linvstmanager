@@ -19,7 +19,7 @@ public:
     RvLinkHandler disableVst(int idx);
     RvLinkHandler blacklistVst(int idx);
     RvLinkHandler changeBridge(int idx, VstBridge newBridgeType);
-    RvLinkHandler checkForOrphans();
+    QStringList checkForOrphans();
     RvLinkHandler removeOrphans(QStringList filePathsOrphans);
 
 private:

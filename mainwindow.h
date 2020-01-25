@@ -83,6 +83,7 @@ private slots:
     void slotSave();
     void slotConfigDataChanged();
     void slotPostSetupInfo();
+    void slotOrphanDetection();
 };
 
 #endif // MAINWINDOW_H

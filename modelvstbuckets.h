@@ -33,6 +33,8 @@ public:
     bool mUpdateView;
     Preferences *prf;
     LinkHandler *lh;
+    QStringList checkForOrphans();
+    bool removeOrphans(QStringList filePathsOrphans);
 
 private:
     QCryptographicHash *mHasher;

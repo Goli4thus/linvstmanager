@@ -553,6 +553,20 @@ QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridg
     return skippedIndices;
 }
 
+QStringList ModelVstBuckets::checkForOrphans()
+{
+    return lh->checkForOrphans();
+}
+
+bool ModelVstBuckets::removeOrphans(QStringList filePathsOrphans)
+{
+    if (lh->removeOrphans(filePathsOrphans) == RvLinkHandler::LH_OK) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 QByteArray ModelVstBuckets::calcFilepathHash(QString filepath)
 {
     // Calculate sha1-hash of filepath_VstDll

@@ -264,13 +264,10 @@ RvLinkHandler LinkHandler::changeBridge(int idx, VstBridge newBridgeType)
  */
 QStringList LinkHandler::checkForOrphans()
 {
-    /* Basically make use of:
-     * - QFileInfo::isSymLink(linkPath): to detect all symlinks in link folder
-     * - QFileInfo::exists(linkPath): returns false if target doesn't exists; meaining the link is an orphan
-     */
     QStringList filePathsOrphans;
     QDir linkFolder(prf.getPathLinkFolder());
     linkFolder.setNameFilters(QStringList() << "*.so");
+    linkFolder.setFilter(QDir::AllEntries | QDir::System);
     QStringList strListSoFiles = linkFolder.entryList();
     QFileInfo fileInfo;
     for (int i=0; i < strListSoFiles.size(); i++) {
@@ -282,9 +279,10 @@ QStringList LinkHandler::checkForOrphans()
             // Cross check if it doesn't relate to any entry in vst list
             bool isOrphan = true;
             QString imaginarySoFile;
-            for (int k=0; k < pVstBuckets.size(); i++) {
-                // TODO: Actually check if symlink points at an imaginary ".so" file alongside any of the tracked vstPaths
-                imaginarySoFile = pVstBuckets.at(k).vstPath.left(pVstBuckets.at(k).vstPath.size() - mMapVstExtLen.value(pVstBuckets.at(k).vstType)) + ".so";
+            for (int k=0; k < mVstBuckets->size(); k++) {
+                // Actually check if symlink points at an imaginary ".so" file alongside any of the tracked vstPaths
+                imaginarySoFile = (*mVstBuckets).at(k).vstPath.left(
+                            (*mVstBuckets).at(k).vstPath.size() - mMapVstExtLen.value((*mVstBuckets).at(k).vstType)) + ".so";
                 if (imaginarySoFile == fileInfo.symLinkTarget()) {
                     isOrphan = false;
                     break;
