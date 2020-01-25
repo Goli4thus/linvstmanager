@@ -19,24 +19,55 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
     xmlReader = new QXmlStreamReader();
     xmlWriter = new QXmlStreamWriter();
     xmlWriter->setAutoFormatting(true);
+
+    prefBoolNames << "f_enabledLinVst"
+                  << "f_enabledLinVstX"
+                  << "f_enabledLinVst3"
+                  << "f_enabledLinVst3X"
+                  << "f_bridgeDefaultVst2IsX"
+                  << "f_bridgeDefaultVst3IsX";
+
+    prefPathNames << "pathSoLinVst"
+                  << "pathSoLinVstX"
+                  << "pathSoLinVst3"
+                  << "pathSoLinVst3X"
+                  << "pathLinkFolder";
+
+    mapBridgeStr.insert(VstBridge::LinVst,   "LinVst");
+    mapBridgeStr.insert(VstBridge::LinVstX,  "LinVstX");
+    mapBridgeStr.insert(VstBridge::LinVst3,  "LinVst3");
+    mapBridgeStr.insert(VstBridge::LinVst3X, "LinVst3X");
+
+    mapStatusStr.insert(VstStatus::Enabled, "Enabled");
+    mapStatusStr.insert(VstStatus::Disabled, "Disabled");
+    mapStatusStr.insert(VstStatus::Mismatch, "Mismatch");
+    mapStatusStr.insert(VstStatus::No_So, "No_So");
+    mapStatusStr.insert(VstStatus::NotFound, "NotFound");
+    mapStatusStr.insert(VstStatus::NoBridge, "NoBridge");
+    mapStatusStr.insert(VstStatus::Orphan, "Orphan");
+    mapStatusStr.insert(VstStatus::NA, "NA");
+    mapStatusStr.insert(VstStatus::Blacklisted, "Blacklisted");
+
+    mapTypeStr.insert(VstType::VST2, "VST2");
+    mapTypeStr.insert(VstType::VST3, "VST3");
 }
 
 void ConfigHandler::writePreferences(const Preferences &prf)
 {
-    xmlWriter->writeTextElement("f_enabledLinVst", prf.getEnabledLinVst() ? ("true") : ("false"));
-    xmlWriter->writeTextElement("f_enabledLinVstX", prf.getEnabledLinVstX() ? ("true") : ("false"));
-    xmlWriter->writeTextElement("f_enabledLinVst3", prf.getEnabledLinVst3() ? ("true") : ("false"));
-    xmlWriter->writeTextElement("f_enabledLinVst3X", prf.getEnabledLinVst3X() ? ("true") : ("false"));
+    xmlWriter->writeTextElement(prefBoolNames.at(0), prf.bridgeEnabled(VstBridge::LinVst) ? ("true") : ("false"));
+    xmlWriter->writeTextElement(prefBoolNames.at(1), prf.bridgeEnabled(VstBridge::LinVstX) ? ("true") : ("false"));
+    xmlWriter->writeTextElement(prefBoolNames.at(2), prf.bridgeEnabled(VstBridge::LinVst3) ? ("true") : ("false"));
+    xmlWriter->writeTextElement(prefBoolNames.at(3), prf.bridgeEnabled(VstBridge::LinVst3X) ? ("true") : ("false"));
 
-    xmlWriter->writeTextElement("f_bridgeDefaultVst2IsX", prf.getBridgeDefaultVst2IsX() ? ("true") : ("false"));
-    xmlWriter->writeTextElement("f_bridgeDefaultVst3IsX", prf.getBridgeDefaultVst3IsX() ? ("true") : ("false"));
+    xmlWriter->writeTextElement(prefBoolNames.at(4), prf.getBridgeDefaultVst2IsX() ? ("true") : ("false"));
+    xmlWriter->writeTextElement(prefBoolNames.at(5), prf.getBridgeDefaultVst3IsX() ? ("true") : ("false"));
 
-    xmlWriter->writeTextElement("pathSoLinVst", prf.getPathSoLinVst());
-    xmlWriter->writeTextElement("pathSoLinVstX", prf.getPathSoLinVstX());
-    xmlWriter->writeTextElement("pathSoLinVst3", prf.getPathSoLinVst3());
-    xmlWriter->writeTextElement("pathSoLinVst3X", prf.getPathSoLinVst3X());
+    xmlWriter->writeTextElement(prefPathNames.at(0), prf.getPathSoTmplBridge(VstBridge::LinVst));
+    xmlWriter->writeTextElement(prefPathNames.at(1), prf.getPathSoTmplBridge(VstBridge::LinVstX));
+    xmlWriter->writeTextElement(prefPathNames.at(2), prf.getPathSoTmplBridge(VstBridge::LinVst3));
+    xmlWriter->writeTextElement(prefPathNames.at(3), prf.getPathSoTmplBridge(VstBridge::LinVst3X));
 
-    xmlWriter->writeTextElement("pathLinkFolder", prf.getPathLinkFolder());
+    xmlWriter->writeTextElement(prefPathNames.at(4), prf.getPathLinkFolder());
 }
 
 void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
@@ -47,65 +78,9 @@ void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
         xmlWriter->writeTextElement("vstPath", vstBuckets.at(i).vstPath);
 //        xmlWriter->writeTextElement("hash", QString::fromStdString(vstBuckets.at(i).hash.toStdString()));
 
-        QString strStatus;
-        switch (vstBuckets.at(i).status) {
-        case VstStatus::Enabled:
-            strStatus = "Enabled";
-            break;
-        case VstStatus::Disabled:
-            strStatus = "Disabled";
-            break;
-        case VstStatus::Mismatch:
-            strStatus = "Mismatch";
-            break;
-        case VstStatus::No_So:
-            strStatus = "No_So";
-            break;
-        case VstStatus::NotFound:
-            strStatus = "NotFound";
-            break;
-        case VstStatus::NoBridge:
-            strStatus = "NoBridge";
-            break;
-        case VstStatus::Orphan:
-            strStatus = "Orphan";
-            break;
-        case VstStatus::NA:
-            strStatus = "NA";
-            break;
-        case VstStatus::Blacklisted:
-            strStatus = "Blacklisted";
-            break;
-        }
-        xmlWriter->writeTextElement("status", strStatus);
-
-        QString strBridge;
-        switch (vstBuckets.at(i).bridge) {
-        case VstBridge::LinVst:
-            strBridge = "LinVst";
-            break;
-        case VstBridge::LinVstX:
-            strBridge = "LinVstX";
-            break;
-        case VstBridge::LinVst3:
-            strBridge = "LinVst3";
-            break;
-        case VstBridge::LinVst3X:
-            strBridge = "LinVst3";
-            break;
-        }
-        xmlWriter->writeTextElement("bridge", strBridge);
-
-        QString strVstType;
-        switch (vstBuckets.at(i).vstType) {
-        case VstType::VST2:
-            strVstType = "VST2";
-            break;
-        case VstType::VST3:
-            strVstType = "VST3";
-            break;
-        }
-        xmlWriter->writeTextElement("vstType", strVstType);
+        xmlWriter->writeTextElement("status", mapStatusStr.value(vstBuckets.at(i).status));
+        xmlWriter->writeTextElement("bridge", mapBridgeStr.value(vstBuckets.at(i).bridge));
+        xmlWriter->writeTextElement("vstType", mapTypeStr.value(vstBuckets.at(i).vstType));
 
         xmlWriter->writeEndElement();
     }
@@ -114,17 +89,11 @@ void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
 quint8 ConfigHandler::readPreferences(Preferences &prf)
 {
     // Read 4 boolean values
-    QStringList boolNames = {"f_enabledLinVst",
-                             "f_enabledLinVstX",
-                             "f_enabledLinVst3",
-                             "f_enabledLinVst3X",
-                             "f_bridgeDefaultVst2IsX",
-                             "f_bridgeDefaultVst3IsX"};
     QList<bool> boolValues;
     QString temp;
-    for (int i = 0; i < boolNames.size(); i++) {
+    for (int i = 0; i < prefBoolNames.size(); i++) {
         xmlReader->readNextStartElement();
-        if (xmlReader->name() == boolNames.at(i)) {
+        if (xmlReader->name() == prefBoolNames.at(i)) {
             temp = xmlReader->readElementText();
             if (temp == "true") {
                 boolValues.append(true);
@@ -139,16 +108,11 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
     }
 
     // Read 6 string values
-    QStringList strNames = {"pathSoLinVst",
-                            "pathSoLinVstX",
-                            "pathSoLinVst3",
-                            "pathSoLinVst3X",
-                            "pathLinkFolder"};
-    QStringList strValues;
-    for (int i = 0; i < strNames.size(); i++) {
+    QStringList pathValues;
+    for (int i = 0; i < prefPathNames.size(); i++) {
         xmlReader->readNextStartElement();
-        if (xmlReader->name() == strNames.at(i)) {
-            strValues.append(xmlReader->readElementText());
+        if (xmlReader->name() == prefPathNames.at(i)) {
+            pathValues.append(xmlReader->readElementText());
         } else {
             return false;
         }
@@ -158,11 +122,11 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
                           boolValues.at(1),
                           boolValues.at(2),
                           boolValues.at(3),
-                          strValues.at(0),
-                          strValues.at(1),
-                          strValues.at(2),
-                          strValues.at(3),
-                          strValues.at(4),
+                          pathValues.at(0),
+                          pathValues.at(1),
+                          pathValues.at(2),
+                          pathValues.at(3),
+                          pathValues.at(4),
                           boolValues.at(4),
                           boolValues.at(5));
 
@@ -198,60 +162,24 @@ quint8 ConfigHandler::readVstBucket(QList<VstBucket> &vstBuckets)
 
     xmlReader->readNextStartElement();
     if (xmlReader->name() == "status") {
-        QString strStatus = xmlReader->readElementText();
-        if (strStatus == "Enabled") {
-            status = VstStatus::Enabled;
-        } else  if (strStatus == "Disabled") {
-            status = VstStatus::Disabled;
-        } else  if (strStatus == "Mismatch") {
-            status = VstStatus::Mismatch;
-        } else if (strStatus == "No_So") {
-            status = VstStatus::No_So;
-        } else  if (strStatus == "NotFound") {
-            status = VstStatus::NotFound;
-        } else  if (strStatus == "NoBridge") {
-            status = VstStatus::NoBridge;
-        } else  if (strStatus == "Orphan") {
-            status = VstStatus::Orphan;
-        } else  if (strStatus == "NA") {
-            status = VstStatus::NA;
-        } else  if (strStatus == "Blacklisted") {
-            status = VstStatus::Blacklisted;
-        } else {
-            return false;
-        }
+        temp = xmlReader->readElementText();
+        status = mapStatusStr.key(temp);
     } else {
         return false;
     }
 
     xmlReader->readNextStartElement();
     if (xmlReader->name() == "bridge") {
-        QString strBridge = xmlReader->readElementText();
-        if (strBridge == "LinVst") {
-            bridge = VstBridge::LinVst;
-        } else if (strBridge == "LinVstX") {
-            bridge = VstBridge::LinVstX;
-        } else if (strBridge == "LinVst3") {
-            bridge = VstBridge::LinVst3;
-        } else if (strBridge == "LinVst3") {
-            bridge = VstBridge::LinVst3X;
-        } else {
-            return false;
-        }
+        temp = xmlReader->readElementText();
+        bridge = mapBridgeStr.key(temp);
     } else {
         return false;
     }
 
     xmlReader->readNextStartElement();
     if (xmlReader->name() == "vstType") {
-        QString strVstType = xmlReader->readElementText();
-        if (strVstType == "VST2") {
-            vstType = VstType::VST2;
-        } else if (strVstType == "VST3") {
-            vstType = VstType::VST3;
-        } else {
-            return false;
-        }
+        temp = xmlReader->readElementText();
+        vstType = mapTypeStr.key(temp);
     } else {
         return false;
     }

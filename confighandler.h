@@ -2,6 +2,7 @@
 #define CONFIGHANDLER_H
 
 #include <QObject>
+#include <QMap>
 class QXmlStreamReader;
 class QXmlStreamWriter;
 
@@ -21,6 +22,11 @@ private:
     void writeVstBuckets(const QList<VstBucket> &vstBuckets);
     quint8 readPreferences(Preferences &prf);
     quint8 readVstBucket(QList<VstBucket> &vstBuckets);
+    QStringList prefBoolNames;
+    QStringList prefPathNames;
+    QMap<VstBridge, QString> mapBridgeStr;
+    QMap<VstStatus, QString> mapStatusStr;
+    QMap<VstType, QString> mapTypeStr;
 
 signals:
     void configSaveDone(bool f_ErrorOnOpeningFile);
