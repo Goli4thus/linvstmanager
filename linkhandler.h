@@ -11,13 +11,13 @@ class LinkHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit LinkHandler(const Preferences &t_prf, QObject *parent = nullptr);
-    RvLinkHandler refreshStatus(QList<VstBucket>&pVstBuckets, bool refreshSingle = false, int singleIndex = 0);
-    RvLinkHandler updateVsts(QList<VstBucket>&pVstBuckets);
-    RvLinkHandler enableVst(VstBucket &pVstBucket);
-    RvLinkHandler disableVst(VstBucket &pVstBucket);
-    RvLinkHandler blacklistVst(VstBucket &pVstBucket);
-    RvLinkHandler changeBridge(VstBucket &pVstBucket, VstBridge newBridgeType);
+    explicit LinkHandler(const Preferences &t_prf, QList<VstBucket>*pVstBuckets, QObject *parent = nullptr);
+    RvLinkHandler refreshStatus(bool refreshSingle = false, int singleIndex = 0);
+    RvLinkHandler updateVsts();
+    RvLinkHandler enableVst(int idx);
+    RvLinkHandler disableVst(int idx);
+    RvLinkHandler blacklistVst(int idx);
+    RvLinkHandler changeBridge(int idx, VstBridge newBridgeType);
     RvLinkHandler checkForOrphans(QList<VstBucket>&pVstBuckets);
     RvLinkHandler removeOrphans();
 
@@ -25,6 +25,7 @@ private:
     const Preferences &prf;
     bool checkSoFileMatch(QString filePathA, QString filePathB);
     QMap<VstType, int> mMapVstExtLen;
+    QList<VstBucket>*mVstBuckets;
 
 signals:
 

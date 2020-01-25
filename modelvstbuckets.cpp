@@ -16,7 +16,6 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
     mHasher = new QCryptographicHash(QCryptographicHash::Sha1);
     mUpdateView = true;
     prf = pPrf;
-    lh = new LinkHandler(*prf);
 
     // Fill model with data if available
     if (!pVstBuckets.empty()) {
@@ -24,7 +23,8 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
         slotUpdateHashes();
     }
 
-    lh->refreshStatus(mVstBuckets);
+    lh = new LinkHandler(*prf, &mVstBuckets);
+    lh->refreshStatus();
 }
 
 int ModelVstBuckets::rowCount(const QModelIndex &parent) const
@@ -430,7 +430,7 @@ void ModelVstBuckets::removeVstBucket(QList<int>indexOfVstBuckets)
         beginRemoveRows(QModelIndex(), index, index);
         // Removing a VstBucket is the same as blacklisting it with
         // the addition of removing it from the model.
-        lh->blacklistVst(mVstBuckets[index]);
+        lh->blacklistVst(index);
         mVstBuckets.removeAt(index);
         endRemoveRows();
     }
@@ -444,7 +444,7 @@ void ModelVstBuckets::enableVstBucket(QList<int> indexOfVstBuckets)
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
 
-        if (lh->enableVst(mVstBuckets[index]) == RvLinkHandler::LH_OK) {
+        if (lh->enableVst(index) == RvLinkHandler::LH_OK) {
             // Enable dosn't really need saving, as it will be detected at next startup anyway
 //            emit(signalConfigDataChanged());
         } else {
@@ -459,7 +459,7 @@ void ModelVstBuckets::disableVstBucket(QList<int> indexOfVstBuckets)
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
 
-        if (lh->disableVst(mVstBuckets[index]) == RvLinkHandler::LH_OK) {
+        if (lh->disableVst(index) == RvLinkHandler::LH_OK) {
             // Disable dosn't really need saving, as it will be detected at next startup anyway
 //            emit(signalConfigDataChanged());
         } else {
@@ -474,7 +474,7 @@ void ModelVstBuckets::blacklistVstBucket(QList<int> indexOfVstBuckets)
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
 
-        if (lh->blacklistVst(mVstBuckets[index]) == RvLinkHandler::LH_OK) {
+        if (lh->blacklistVst(index) == RvLinkHandler::LH_OK) {
             emit(signalConfigDataChanged());
         } else {
             qDebug() << "(MVB): blacklistVstBucket: not LH_OK for index: " << index;
@@ -489,7 +489,7 @@ void ModelVstBuckets::unblacklistVstBucket(QList<int> indexOfVstBuckets)
         index = indexOfVstBuckets.at(i);
         mVstBuckets[index].status = VstStatus::NA;
 
-        if (lh->refreshStatus(mVstBuckets, true, index) == RvLinkHandler::LH_OK) {
+        if (lh->refreshStatus(true, index) == RvLinkHandler::LH_OK) {
             emit(signalConfigDataChanged());
         } else {
             qDebug() << "(MVB): unblacklistVstBucket: not LH_OK for index: " << index;
@@ -499,14 +499,14 @@ void ModelVstBuckets::unblacklistVstBucket(QList<int> indexOfVstBuckets)
 
 void ModelVstBuckets::updateVsts()
 {
-    if (lh->updateVsts(mVstBuckets) != RvLinkHandler::LH_OK) {
+    if (lh->updateVsts() != RvLinkHandler::LH_OK) {
         qDebug() << "(MVB): updateVsts: not LH_OK";
     }
 }
 
 void ModelVstBuckets::refreshStatus()
 {
-    lh->refreshStatus(mVstBuckets);
+    lh->refreshStatus();
 }
 
 QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridge reqBridgeType)
@@ -522,9 +522,9 @@ QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridg
                 && (   (reqBridgeType == VstBridge::LinVst)
                     || (reqBridgeType == VstBridge::LinVstX))) {
             if (prf->bridgeEnabled(reqBridgeType)) {
-                if(lh->changeBridge(mVstBuckets[index], reqBridgeType) == RvLinkHandler::LH_OK) {
+                if(lh->changeBridge(index, reqBridgeType) == RvLinkHandler::LH_OK) {
                     // Refresh to make sure it actually worked with preserving the initial status
-                    lh->refreshStatus(mVstBuckets, true, index);
+                    lh->refreshStatus(true, index);
                     configDataChanged = true;
                 }
             } else {
@@ -535,9 +535,9 @@ QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridg
                 && (   (reqBridgeType == VstBridge::LinVst3)
                     || (reqBridgeType == VstBridge::LinVst3X))) {
             if (prf->bridgeEnabled(reqBridgeType)) {
-                if(lh->changeBridge(mVstBuckets[index], reqBridgeType) == RvLinkHandler::LH_OK) {
+                if(lh->changeBridge(index, reqBridgeType) == RvLinkHandler::LH_OK) {
                     // Refresh to make sure it actually worked with preserving the initial status
-                    lh->refreshStatus(mVstBuckets, true, index);
+                    lh->refreshStatus(true, index);
                     configDataChanged = true;
                 }
             } else {
