@@ -4,6 +4,7 @@
 #include <QObject>
 #include "enums.h"
 #include "vstbucket.h"
+#include <QStringList>
 #include <QMap>
 class Preferences;
 
@@ -18,8 +19,8 @@ public:
     RvLinkHandler disableVst(int idx);
     RvLinkHandler blacklistVst(int idx);
     RvLinkHandler changeBridge(int idx, VstBridge newBridgeType);
-    RvLinkHandler checkForOrphans(QList<VstBucket>&pVstBuckets);
-    RvLinkHandler removeOrphans();
+    RvLinkHandler checkForOrphans();
+    RvLinkHandler removeOrphans(QStringList filePathsOrphans);
 
 private:
     const Preferences &prf;

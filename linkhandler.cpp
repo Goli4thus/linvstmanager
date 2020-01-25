@@ -257,27 +257,60 @@ RvLinkHandler LinkHandler::changeBridge(int idx, VstBridge newBridgeType)
     return retVal;
 }
 
-RvLinkHandler LinkHandler::checkForOrphans(QList<VstBucket> &pVstBuckets)
-{
-    /* When to call:
-     * - once at startup
-     *    -->> possibly inform user about possibility of cleanup
-     */
 
+/* TODO: When to call:
+ * - once at startup
+ *    -->> possibly inform user about possibility of cleanup right after it (if there are orphans; which shouldn't be that often)
+ */
+QStringList LinkHandler::checkForOrphans()
+{
     /* Basically make use of:
      * - QFileInfo::isSymLink(linkPath): to detect all symlinks in link folder
      * - QFileInfo::exists(linkPath): returns false if target doesn't exists; meaining the link is an orphan
      */
-//    QFileInfo fileInfoLink;
+    QStringList filePathsOrphans;
+    QDir linkFolder(prf.getPathLinkFolder());
+    linkFolder.setNameFilters(QStringList() << "*.so");
+    QStringList strListSoFiles = linkFolder.entryList();
+    QFileInfo fileInfo;
+    for (int i=0; i < strListSoFiles.size(); i++) {
+        fileInfo.setFile(linkFolder.path() + "/" + strListSoFiles.at(i));
+        // Qt docs: "Note: If the file is a symlink that points to a non-existing file, false is returned."
+        // -->> Exactly what we want.
+        if (!fileInfo.exists()) {
+            // symlink seems to be pointing nowhere
+            // Cross check if it doesn't relate to any entry in vst list
+            bool isOrphan = true;
+            QString imaginarySoFile;
+            for (int k=0; k < pVstBuckets.size(); i++) {
+                // TODO: Actually check if symlink points at an imaginary ".so" file alongside any of the tracked vstPaths
+                imaginarySoFile = pVstBuckets.at(k).vstPath.left(pVstBuckets.at(k).vstPath.size() - mMapVstExtLen.value(pVstBuckets.at(k).vstType)) + ".so";
+                if (imaginarySoFile == fileInfo.symLinkTarget()) {
+                    isOrphan = false;
+                    break;
+                }
+            }
 
-//    for (int i=0; i < mVstBuckets->size(); i++) {
-//        fileInfoLink.setFile((*mVstBuckets).at(i).vstPath);
-    //    }
+            if (isOrphan) {
+                filePathsOrphans.append(fileInfo.filePath());
+            }
+        }
+    }
+    return filePathsOrphans;
 }
 
-RvLinkHandler LinkHandler::removeOrphans()
+RvLinkHandler LinkHandler::removeOrphans(QStringList filePathsOrphans)
 {
+    RvLinkHandler retVal = RvLinkHandler::LH_OK;
 
+    for (int i=0; i < filePathsOrphans.size(); i++) {
+        if (!QFile::remove(filePathsOrphans.at(i))) {
+            qDebug() << "(LH): removeOrphans(): link delete failed for: '" << filePathsOrphans.at(i) << "'";
+            retVal = RvLinkHandler::LH_NOT_OK;
+        }
+    }
+
+    return retVal;
 }
 
 bool LinkHandler::checkSoFileMatch(QString filePathA, QString filePathB)
