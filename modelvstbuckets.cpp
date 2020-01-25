@@ -214,7 +214,6 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
 //                        color.setRgb(22, 22, 22);  // Black
 //                        break;
 //                    default:
-////                        qDebug() << "ModelDBCSignals-DecorationRole: stateOfMapping default";
 //                        break;
 //                    }
 //                    return QBrush(color, Qt::Dense1Pattern);
@@ -445,8 +444,7 @@ void ModelVstBuckets::enableVstBucket(QList<int> indexOfVstBuckets)
         index = indexOfVstBuckets.at(i);
 
         if (lh->enableVst(index) == RvLinkHandler::LH_OK) {
-            // Enable dosn't really need saving, as it will be detected at next startup anyway
-//            emit(signalConfigDataChanged());
+            emit(signalConfigDataChanged());
         } else {
             qDebug() << "(MVB): enableVstBucket: not LH_OK for index: " << index;
         }
@@ -460,8 +458,7 @@ void ModelVstBuckets::disableVstBucket(QList<int> indexOfVstBuckets)
         index = indexOfVstBuckets.at(i);
 
         if (lh->disableVst(index) == RvLinkHandler::LH_OK) {
-            // Disable dosn't really need saving, as it will be detected at next startup anyway
-//            emit(signalConfigDataChanged());
+            emit(signalConfigDataChanged());
         } else {
             qDebug() << "(MVB): disableVstBucket: not LH_OK for index: " << index;
         }

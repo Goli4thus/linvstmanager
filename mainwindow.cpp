@@ -114,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
     // perform UI resize within event loop started with a.exec()
     QTimer::singleShot(0, this, SLOT(slotResizeMainUi()));
     QTimer::singleShot(0, this, SLOT(slotResizeTableToContent()));
-    QTimer::singleShot(0, this, SLOT(slotPostSetupInfo()));
+    QTimer::singleShot(100, this, SLOT(slotPostSetupInfo()));
 }
 
 MainWindow::~MainWindow()
