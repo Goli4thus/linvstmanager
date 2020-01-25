@@ -17,7 +17,6 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
-    QList<VstBucket>mVstBuckets;
 
     // TODO: Consider adding return values to these methods in conjunctionw with LinkHandler implementation
     void addVstBucket(QStringList filepaths_VstDll);
@@ -31,14 +30,16 @@ public:
 
     QList<int> changeBridges(QList<int>indexOfVstBuckets, VstBridge reqBridgeType);
     bool mUpdateView;
-    Preferences *prf;
-    LinkHandler *lh;
     QStringList checkForOrphans();
     bool removeOrphans(QStringList filePathsOrphans);
+    QList<VstBucket> *getBufferVstBuckets();
 
 private:
     QCryptographicHash *mHasher;
     QByteArray calcFilepathHash(QString filepath);
+    Preferences *prf;
+    LinkHandler *lh;
+    QList<VstBucket>mVstBuckets;
 
 signals:
     void signalTableOperationFinished();

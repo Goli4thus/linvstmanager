@@ -105,9 +105,11 @@ MainWindow::MainWindow(QWidget *parent)
     mTableview->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
 
     setupMenuBar();
+    mDialogScan = new DialogScan(mModelVstBuckets->getBufferVstBuckets());
 
     connect(mModelVstBuckets, &ModelVstBuckets::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mDialogPreferences, &DialogPreferences::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
+    connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
 
     mLogOutput->appendLog("Setup done.");
 
@@ -231,6 +233,7 @@ void MainWindow::setupMenuBar()
     connect(actionBlacklist, &QAction::triggered, this, &MainWindow::slotBlacklistVst);
     connect(actionUnblacklist, &QAction::triggered, this, &MainWindow::slotUnblacklistVst);
     connect(actionUpdate, &QAction::triggered, this, &MainWindow::slotUpdate);
+    connect(actionScan, &QAction::triggered, this, &MainWindow::slotDialogScan);
 
     connect(actionSetBridgeLinVst, &QAction::triggered, this, &MainWindow::slotSetBridgeLinVst);
     connect(actionSetBridgeLinVstX, &QAction::triggered, this, &MainWindow::slotSetBridgeLinVstX);
@@ -292,6 +295,11 @@ void MainWindow::slotDialogPreferences()
     mDialogPreferences->exec();
 }
 
+void MainWindow::slotDialogScan()
+{
+    mDialogScan->exec();
+}
+
 void MainWindow::slotDialogAbout()
 {
     // TODO: Implement 'About' dialog (or just MessageBox?)
@@ -299,7 +307,7 @@ void MainWindow::slotDialogAbout()
 
 void MainWindow::slotSave()
 {
-    RvConfFile retVal = cfg->saveConfig(*prf, mModelVstBuckets->mVstBuckets);
+    RvConfFile retVal = cfg->saveConfig(*prf, *(mModelVstBuckets->getBufferVstBuckets()));
     if(retVal == RvConfFile::ErrorWriteDir) {
         QMessageBox::information(this,
                                  "Saving config not possible",
@@ -525,6 +533,11 @@ void MainWindow::slotVerboseLogOutput()
     } else {
         mLogOutput->enableVerboseLog(false);
     }
+}
+
+void MainWindow::slotAddScannedVst(QStringList scanSelection)
+{
+
 }
 
 void MainWindow::repaintTableview()

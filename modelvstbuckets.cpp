@@ -567,6 +567,11 @@ bool ModelVstBuckets::removeOrphans(QStringList filePathsOrphans)
     }
 }
 
+QList<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
+{
+    return &mVstBuckets;
+}
+
 QByteArray ModelVstBuckets::calcFilepathHash(QString filepath)
 {
     // Calculate sha1-hash of filepath_VstDll
