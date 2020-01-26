@@ -202,7 +202,7 @@ void DialogPreferences::fillPreferences()
     if (prf->getBridgeDefaultVst3IsX()) {
         mRadioButtonLinVst3X->setChecked(true);
     } else {
-        mRadioButtonLinVstX->setChecked(true);
+        mRadioButtonLinVst3->setChecked(true);
     }
 
     // General

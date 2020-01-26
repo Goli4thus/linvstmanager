@@ -9,6 +9,7 @@
 #include "preferences.h"
 #include "enums.h"
 #include "linkhandler.h"
+#include "scanresult.h"
 
 ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets, Preferences *pPrf)
 {
@@ -507,6 +508,45 @@ void ModelVstBuckets::updateVsts()
 void ModelVstBuckets::refreshStatus()
 {
     lh->refreshStatus();
+}
+
+void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
+{
+    QString filepath;
+    VstBridge bridgeType;
+
+    // Clear 'newlyAdded' flags
+    for (int i = 0; i < mVstBuckets.size(); i++) {
+        mVstBuckets[i].newlyAdded = false;
+    }
+
+    beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + scanSelection->size() - 1);
+    for (int i = 0; i < scanSelection->size(); i++) {
+        if (scanSelection->at(i).vstType == VstType::VST2) {
+            if (prf->getBridgeDefaultVst2IsX()) {
+                bridgeType = VstBridge::LinVstX;
+            } else {
+                bridgeType = VstBridge::LinVst;
+            }
+        } else {
+            if (prf->getBridgeDefaultVst3IsX()) {
+                bridgeType = VstBridge::LinVst3X;
+            } else {
+                bridgeType = VstBridge::LinVst3;
+            }
+        }
+
+        mVstBuckets.append(VstBucket(scanSelection->at(i).name,
+                                     scanSelection->at(i).vstPath,
+                                     scanSelection->at(i).hash,
+                                     VstStatus::NA,
+                                     bridgeType,
+                                     scanSelection->at(i).vstType,
+                                     true));
+    }
+    endInsertRows();
+
+    emit(signalConfigDataChanged());
 }
 
 QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridge reqBridgeType)

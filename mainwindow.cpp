@@ -406,9 +406,9 @@ void MainWindow::slotAddVst()
                                      "VST (*.dll *.vst3)");
     if (!filepaths_VstDll.isEmpty()) {
         lastAddVstDir = QFileInfo(filepaths_VstDll.at(0)).path();
-            slotTableOperationStart();
+            enableViewUpdate(false);
             mModelVstBuckets->addVstBucket(filepaths_VstDll);
-            slotTableOperationFinished();
+            enableViewUpdate(true);
             slotResizeTableToContent();
     }
 }
@@ -426,26 +426,15 @@ void MainWindow::slotRemoveVst()
                                        QMessageBox::Yes);
 
         if (retVal == QMessageBox::Yes) {
-            slotTableOperationStart();
+            enableViewUpdate(false);
             QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
             qDebug() << "indexList" << indexList;
             QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
             mModelVstBuckets->removeVstBucket(indexOfVstBuckets);
-            slotTableOperationFinished();
+            enableViewUpdate(true);
             slotResizeTableToContent();
         }
     }
-}
-
-void MainWindow::slotTableOperationStart()
-{
-    enableViewUpdate(false);
-}
-
-void MainWindow::slotTableOperationFinished()
-{
-    enableViewUpdate(true);
-    repaintTableview();
 }
 
 void MainWindow::slotEnableVst()
@@ -456,9 +445,9 @@ void MainWindow::slotEnableVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->enableVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -470,9 +459,9 @@ void MainWindow::slotDisableVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->disableVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -484,9 +473,9 @@ void MainWindow::slotBlacklistVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->blacklistVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -498,17 +487,17 @@ void MainWindow::slotUnblacklistVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->unblacklistVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
 void MainWindow::slotUpdate()
 {
-    slotTableOperationStart();
+    enableViewUpdate(false);
     mModelVstBuckets->updateVsts();
-    slotTableOperationFinished();
+    enableViewUpdate(true);
 }
 
 void MainWindow::slotSetBridgeLinVst()
@@ -540,9 +529,12 @@ void MainWindow::slotVerboseLogOutput()
     }
 }
 
-void MainWindow::slotAddScannedVst(QStringList scanSelection)
+void MainWindow::slotAddScannedVst(QList<ScanResult> scanSelection)
 {
-
+    enableViewUpdate(false);
+    mModelVstBuckets->addScanSelection(&scanSelection);
+    enableViewUpdate(true);
+    slotResizeTableToContent();
 }
 
 void MainWindow::repaintTableview()
@@ -557,6 +549,7 @@ void MainWindow::enableViewUpdate(bool f_enable)
 {
     if (f_enable) {
         mModelVstBuckets->mUpdateView = true;
+        repaintTableview();
     } else {
         mModelVstBuckets->mUpdateView = false;
     }
@@ -570,9 +563,9 @@ void MainWindow::changeBridge(VstBridge bridgeType)
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         QList<int> skippedIndices =  mModelVstBuckets->changeBridges(indexOfVstBuckets, bridgeType);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
 
         if (!skippedIndices.isEmpty()) {
             mLogOutput->appendLog("For some of the selected VSTs, the requested bridge type doesn't fit "

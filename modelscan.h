@@ -20,19 +20,20 @@ public:
     bool mUpdateView;
     void triggerScan(QString scanFolder);
     bool isModelEmpty();
+    QList<ScanResult> getScanSelection();
+    void emptyModel();
 
 private:
     ScanHandler *mScanHandler;
     const QList<VstBucket> *mVstBuckets;
     QList<ScanResult> mScanResults;
     QList<ScanResult> mScanResultsTmp;
-    void emptyModel();
     void fillModel();
 
 signals:
     void signalTableOperationFinished();
     void signalPerformScan(QString scanFolder, QList<ScanResult> *scanResults);
-    void signalScanDone();
+    void signalScanDone(bool findings);
 
 public slots:
     void slotScanDone();

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QAbstractTableModel>
 #include "vstbucket.h"
+#include "scanresult.h"
 class QCryptographicHash;
 class Preferences;
 class LinkHandler;
@@ -28,6 +29,7 @@ public:
     void unblacklistVstBucket(QList<int>indexOfVstBuckets);
     void updateVsts();
     void refreshStatus();
+    void addScanSelection(QList<ScanResult> *scanSelection);
 
     QList<int> changeBridges(QList<int>indexOfVstBuckets, VstBridge reqBridgeType);
     bool mUpdateView;

@@ -292,24 +292,40 @@ void DialogScan::slotScan()
     mModelScan->triggerScan(mLineEditScanFolder->text());
 }
 
-void DialogScan::slotScanDone()
+void DialogScan::slotScanDone(bool findings)
 {
     slotResizeTableToContent();
+
+    if (!findings) {
+        QMessageBox::information(this, "No findings",
+                                       "Nothing new could be found during the scan.");
+    }
 }
 
 void DialogScan::slotCancel()
 {
+    // Empty the model, so it's a fresh the next time the scan dialog is opened.
+    mModelScan->emptyModel();
+
     this->close();
 }
 
 void DialogScan::slotAdd()
 {
-    /* TODO: slotAdd: Basically:
-     * - get user selection of listview
-     * - emit the signal
-     * - close the dialog
-     */
-//    emit(signalScanSelection())
+    QList<ScanResult> scanSelection = mModelScan->getScanSelection();
+
+    if (scanSelection.isEmpty()) {
+        // No selection has been made. Therefore ignore it.
+        QMessageBox::information(this, "No selection",
+                                       "No selection, therefore nothing can be added.\n\n"
+                                       "Hint: Try mouse right click menu in table.");
+    } else {
+        // Empty the model, so it's a fresh the next time the scan dialog is opened.
+        mModelScan->emptyModel();
+
+        emit(signalScanSelection(scanSelection));
+        this->close();
+    }
 }
 
 void DialogScan::enableViewUpdate(bool enable)

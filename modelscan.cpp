@@ -193,12 +193,24 @@ void ModelScan::fillModel()
 void ModelScan::slotScanDone()
 {
     fillModel();
-    emit(signalScanDone());
+    emit(signalScanDone(!mScanResults.isEmpty()));
 }
 
 bool ModelScan::isModelEmpty()
 {
     return mScanResults.isEmpty();
+}
+
+QList<ScanResult> ModelScan::getScanSelection()
+{
+    QList<ScanResult> scanSelection;
+    for (int i=0; i < mScanResults.size(); i++) {
+        if (mScanResults.at(i).selected) {
+            scanSelection.append(mScanResults.at(i));
+        }
+    }
+
+    return scanSelection;
 }
 
 void ModelScan::slotSelectEntry(QList<int> selectionIndices)

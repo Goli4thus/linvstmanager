@@ -5,6 +5,7 @@
 #include <QDialog>
 #include <enums.h>
 #include <QModelIndexList>
+#include "scanresult.h"
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -66,7 +67,7 @@ private:
 private slots:
     void slotSelectScanFolder();
     void slotScan();
-    void slotScanDone();
+    void slotScanDone(bool findings);
     void slotCancel();
     void slotAdd();
 
@@ -78,7 +79,7 @@ private slots:
     void slotFilterBarOpen();
     void slotResizeTableToContent();
 signals:
-    void signalScanSelection(QStringList scanSelection);
+    void signalScanSelection(QList<ScanResult> scanSelection);
 };
 
 #endif // DIALOGSCAN_H
