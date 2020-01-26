@@ -52,6 +52,12 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
     mapTypeStr.insert(VstType::VST3, "VST3");
 }
 
+ConfigHandler::~ConfigHandler()
+{
+    delete xmlReader;
+    delete xmlWriter;
+}
+
 void ConfigHandler::writePreferences(const Preferences &prf)
 {
     xmlWriter->writeTextElement(prefBoolNames.at(0), prf.bridgeEnabled(VstBridge::LinVst) ? ("true") : ("false"));

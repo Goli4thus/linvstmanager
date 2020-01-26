@@ -24,6 +24,7 @@ class DialogPreferences : public QDialog
     Q_OBJECT
 public:
     DialogPreferences(Preferences *t_prf);
+    ~DialogPreferences();
 private:
     QVBoxLayout *mLayoutVMain;
     QVBoxLayout *mLayoutVGeneral;

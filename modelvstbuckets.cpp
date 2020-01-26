@@ -9,10 +9,11 @@
 #include "preferences.h"
 #include "enums.h"
 #include "linkhandler.h"
+#include "scanresult.h"
 
 ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets, Preferences *pPrf)
 {
-    Q_UNUSED(parent);
+    this->setParent(parent);
     mHasher = new QCryptographicHash(QCryptographicHash::Sha1);
     mUpdateView = true;
     prf = pPrf;
@@ -25,6 +26,12 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
 
     lh = new LinkHandler(*prf, &mVstBuckets);
     lh->refreshStatus();
+}
+
+ModelVstBuckets::~ModelVstBuckets()
+{
+    delete mHasher;
+    delete lh;
 }
 
 int ModelVstBuckets::rowCount(const QModelIndex &parent) const
@@ -268,10 +275,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
             break;
             case Qt::ToolTipRole: {
                 if (index.column() == TableColumnPosType::NewlyAdded) {
-                    return QString("O\t: Mappable\n"
-                                   "M\t: Mapped\n"
-                                   "X\t: Unmappable\n"
-                                   "B\t: Bypassed");
+                    return QString("*\t: Newly added");
                 }
             }
             break;
@@ -506,6 +510,45 @@ void ModelVstBuckets::refreshStatus()
     lh->refreshStatus();
 }
 
+void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
+{
+    QString filepath;
+    VstBridge bridgeType;
+
+    // Clear 'newlyAdded' flags
+    for (int i = 0; i < mVstBuckets.size(); i++) {
+        mVstBuckets[i].newlyAdded = false;
+    }
+
+    beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + scanSelection->size() - 1);
+    for (int i = 0; i < scanSelection->size(); i++) {
+        if (scanSelection->at(i).vstType == VstType::VST2) {
+            if (prf->getBridgeDefaultVst2IsX()) {
+                bridgeType = VstBridge::LinVstX;
+            } else {
+                bridgeType = VstBridge::LinVst;
+            }
+        } else {
+            if (prf->getBridgeDefaultVst3IsX()) {
+                bridgeType = VstBridge::LinVst3X;
+            } else {
+                bridgeType = VstBridge::LinVst3;
+            }
+        }
+
+        mVstBuckets.append(VstBucket(scanSelection->at(i).name,
+                                     scanSelection->at(i).vstPath,
+                                     scanSelection->at(i).hash,
+                                     VstStatus::NA,
+                                     bridgeType,
+                                     scanSelection->at(i).vstType,
+                                     true));
+    }
+    endInsertRows();
+
+    emit(signalConfigDataChanged());
+}
+
 QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridge reqBridgeType)
 {
     int index;
@@ -565,6 +608,11 @@ bool ModelVstBuckets::removeOrphans(QStringList filePathsOrphans)
     } else {
         return false;
     }
+}
+
+QList<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
+{
+    return &mVstBuckets;
 }
 
 QByteArray ModelVstBuckets::calcFilepathHash(QString filepath)

@@ -20,6 +20,9 @@
 #include "dialogpreferences.h"
 #include "preferences.h"
 #include "confighandler.h"
+#include "dialogscan.h"
+#include "scanresult.h"
+
 
 class MainWindow : public QMainWindow
 {
@@ -50,6 +53,7 @@ private:
     QList<int> getSelectionOrigIdx(QModelIndexList indexList);
     QMenu *mouseMenu;
     DialogPreferences *mDialogPreferences;
+    DialogScan *mDialogScan;
     Preferences *prf;
     ConfigHandler *cfg;
     void closeEvent(QCloseEvent *event);
@@ -62,8 +66,6 @@ private slots:
     void slotResizeTableToContent();
     void slotAddVst();
     void slotRemoveVst();
-    void slotTableOperationStart();
-    void slotTableOperationFinished();
     void slotEnableVst();
     void slotDisableVst();
     void slotBlacklistVst();
@@ -74,11 +76,13 @@ private slots:
     void slotSetBridgeLinVst3();
     void slotSetBridgeLinVst3X();
     void slotVerboseLogOutput();
+    void slotAddScannedVst(QList<ScanResult> scanSelection);
 
     void slotMouseRightClickOnVst(QPoint point);
     void slotFilterBar();
     void slotFilterBarClose();
     void slotDialogPreferences();
+    void slotDialogScan();
     void slotDialogAbout();
     void slotSave();
     void slotConfigDataChanged();

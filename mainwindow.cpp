@@ -47,35 +47,37 @@ MainWindow::MainWindow(QWidget *parent)
 
     mDialogPreferences = new DialogPreferences(prf);
 
+    // Allocate starting from parent to children
+    mSplitter = new QSplitter(Qt::Vertical, this);
+    mWidgetTop = new QWidget();
+    mLayoutTop = new QVBoxLayout();
     mTableview = new QTableView(this);
     mSortFilter = new QSortFilterProxyModel(mTableview);
     mLogOutput = new LogOutput;
-    mSplitter = new QSplitter(Qt::Vertical, this);
 
-    QString tooltipFilterBar("Filter works on all columns. Close filter bar by pressing 'Ctrl-F' once again.");
+    mFilterBar = new QWidget();
+    mFilterBarLayout = new QHBoxLayout();
+    mFilterBarLabel = new QLabel("Filter:");
     mFilterBarLineEdit = new QLineEdit(this);
+    QString tooltipFilterBar("Filter works on all columns. Close filter bar by pressing 'Ctrl-F' once again.");
     mFilterBarLineEdit->setToolTip(tooltipFilterBar);
-    mFilterBarCloseButton = new QPushButton("X");
+    mFilterBarCloseButton = new QPushButton("X", this);
+
     mFilterBarCloseButton->setFixedWidth(28);
     connect(mFilterBarCloseButton, &QPushButton::pressed, this, &MainWindow::slotFilterBarClose);
 
-    mFilterBarLayout = new QHBoxLayout();
-    mFilterBarLabel = new QLabel("Filter:");
     mFilterBarLabel->setToolTip(tooltipFilterBar);
     mFilterBarLayout->addWidget(mFilterBarLabel);
     mFilterBarLayout->addWidget(mFilterBarLineEdit);
     mFilterBarLayout->addWidget(mFilterBarCloseButton);
 
-    mFilterBar = new QWidget();
     mFilterBar->setLayout(mFilterBarLayout);
     mFilterBar->hide();
 
 
-    mLayoutTop = new QVBoxLayout();
     mLayoutTop->addWidget(mTableview);
     mLayoutTop->addWidget(mFilterBar);
 
-    mWidgetTop = new QWidget();
     mWidgetTop->setLayout(mLayoutTop);
 
     mSplitter->addWidget(mWidgetTop);
@@ -105,9 +107,11 @@ MainWindow::MainWindow(QWidget *parent)
     mTableview->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
 
     setupMenuBar();
+    mDialogScan = new DialogScan(mModelVstBuckets->getBufferVstBuckets());
 
     connect(mModelVstBuckets, &ModelVstBuckets::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mDialogPreferences, &DialogPreferences::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
+    connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
 
     mLogOutput->appendLog("Setup done.");
 
@@ -119,7 +123,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-
+    delete prf;
+    delete cfg;
+    delete mLogOutput;
+    delete mModelVstBuckets;
 }
 
 void MainWindow::setupMenuBar()
@@ -158,8 +165,8 @@ void MainWindow::setupMenuBar()
     // menu: View
     QAction *actionResizeTableToContent = new QAction(tr("&Resize table to content"), this);
     QAction *actionFilter = new QAction(tr("&Filter"), this);
-    QMenu *subMenuDebug = new QMenu(tr("&Debug"));
-    actionVerboseLogOutput = new QAction(tr("&Verbose log output"));
+    QMenu *subMenuDebug = new QMenu(tr("&Debug"), this);
+    actionVerboseLogOutput = new QAction(tr("&Verbose log output"), this);
     actionVerboseLogOutput->setCheckable(true);
     actionVerboseLogOutput->setChecked(false);
     subMenuDebug->addAction(actionVerboseLogOutput);
@@ -231,6 +238,7 @@ void MainWindow::setupMenuBar()
     connect(actionBlacklist, &QAction::triggered, this, &MainWindow::slotBlacklistVst);
     connect(actionUnblacklist, &QAction::triggered, this, &MainWindow::slotUnblacklistVst);
     connect(actionUpdate, &QAction::triggered, this, &MainWindow::slotUpdate);
+    connect(actionScan, &QAction::triggered, this, &MainWindow::slotDialogScan);
 
     connect(actionSetBridgeLinVst, &QAction::triggered, this, &MainWindow::slotSetBridgeLinVst);
     connect(actionSetBridgeLinVstX, &QAction::triggered, this, &MainWindow::slotSetBridgeLinVstX);
@@ -292,6 +300,11 @@ void MainWindow::slotDialogPreferences()
     mDialogPreferences->exec();
 }
 
+void MainWindow::slotDialogScan()
+{
+    mDialogScan->exec();
+}
+
 void MainWindow::slotDialogAbout()
 {
     // TODO: Implement 'About' dialog (or just MessageBox?)
@@ -299,7 +312,7 @@ void MainWindow::slotDialogAbout()
 
 void MainWindow::slotSave()
 {
-    RvConfFile retVal = cfg->saveConfig(*prf, mModelVstBuckets->mVstBuckets);
+    RvConfFile retVal = cfg->saveConfig(*prf, *(mModelVstBuckets->getBufferVstBuckets()));
     if(retVal == RvConfFile::ErrorWriteDir) {
         QMessageBox::information(this,
                                  "Saving config not possible",
@@ -393,9 +406,9 @@ void MainWindow::slotAddVst()
                                      "VST (*.dll *.vst3)");
     if (!filepaths_VstDll.isEmpty()) {
         lastAddVstDir = QFileInfo(filepaths_VstDll.at(0)).path();
-            slotTableOperationStart();
+            enableViewUpdate(false);
             mModelVstBuckets->addVstBucket(filepaths_VstDll);
-            slotTableOperationFinished();
+            enableViewUpdate(true);
             slotResizeTableToContent();
     }
 }
@@ -413,26 +426,15 @@ void MainWindow::slotRemoveVst()
                                        QMessageBox::Yes);
 
         if (retVal == QMessageBox::Yes) {
-            slotTableOperationStart();
+            enableViewUpdate(false);
             QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
             qDebug() << "indexList" << indexList;
             QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
             mModelVstBuckets->removeVstBucket(indexOfVstBuckets);
-            slotTableOperationFinished();
+            enableViewUpdate(true);
             slotResizeTableToContent();
         }
     }
-}
-
-void MainWindow::slotTableOperationStart()
-{
-    enableViewUpdate(false);
-}
-
-void MainWindow::slotTableOperationFinished()
-{
-    enableViewUpdate(true);
-    repaintTableview();
 }
 
 void MainWindow::slotEnableVst()
@@ -443,9 +445,9 @@ void MainWindow::slotEnableVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->enableVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -457,9 +459,9 @@ void MainWindow::slotDisableVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->disableVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -471,9 +473,9 @@ void MainWindow::slotBlacklistVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->blacklistVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -485,17 +487,17 @@ void MainWindow::slotUnblacklistVst()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelVstBuckets->unblacklistVstBucket(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
 void MainWindow::slotUpdate()
 {
-    slotTableOperationStart();
+    enableViewUpdate(false);
     mModelVstBuckets->updateVsts();
-    slotTableOperationFinished();
+    enableViewUpdate(true);
 }
 
 void MainWindow::slotSetBridgeLinVst()
@@ -527,6 +529,14 @@ void MainWindow::slotVerboseLogOutput()
     }
 }
 
+void MainWindow::slotAddScannedVst(QList<ScanResult> scanSelection)
+{
+    enableViewUpdate(false);
+    mModelVstBuckets->addScanSelection(&scanSelection);
+    enableViewUpdate(true);
+    slotResizeTableToContent();
+}
+
 void MainWindow::repaintTableview()
 {
     QModelIndex indexTop = mModelVstBuckets->index(0,0);
@@ -539,6 +549,7 @@ void MainWindow::enableViewUpdate(bool f_enable)
 {
     if (f_enable) {
         mModelVstBuckets->mUpdateView = true;
+        repaintTableview();
     } else {
         mModelVstBuckets->mUpdateView = false;
     }
@@ -552,9 +563,9 @@ void MainWindow::changeBridge(VstBridge bridgeType)
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         QList<int> skippedIndices =  mModelVstBuckets->changeBridges(indexOfVstBuckets, bridgeType);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
 
         if (!skippedIndices.isEmpty()) {
             mLogOutput->appendLog("For some of the selected VSTs, the requested bridge type doesn't fit "

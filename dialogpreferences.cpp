@@ -45,18 +45,53 @@ DialogPreferences::DialogPreferences(Preferences *t_prf)
     fillPreferences();
 }
 
+DialogPreferences::~DialogPreferences()
+{
+    delete mMapBridgeStr;
+    delete mMapBridgeIdx;
+}
+
 void DialogPreferences::setupUI()
 {
-    // ===========
-    // = Bridges =
-    // ===========
+    // Allocate starting from parent to children
+    mLayoutVMain = new QVBoxLayout();
+    mGroupBoxBridges = new QGroupBox("Bridges:");
+    mGroupBoxDefaults = new QGroupBox("Defaults:");
+    mGroupBoxGeneral = new QGroupBox("General:");
+
+    mLayoutVBridges = new QVBoxLayout();
+    mLayoutHDefaults = new QHBoxLayout();
+    mLayoutVDefaultsVst2 = new QVBoxLayout();
+    mLayoutVDefaultsVst3 = new QVBoxLayout();
+    mLayoutVGeneral = new QVBoxLayout();
+    mLayoutHLinkFolder = new QHBoxLayout();
+
     mLineEditLinVst = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVst), this);
     mLineEditLinVstX = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVstX), this);
     mLineEditLinVst3 = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVst3), this);
     mLineEditLinVst3X = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVst3X), this);
-//    mLineEditLinVst->setStyleSheet("background-color:blue;");
 
-    mLayoutVBridges = new QVBoxLayout();
+    mRadioButtonLinVst = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVst));
+    mRadioButtonLinVstX = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVstX));
+    mRadioButtonLinVst3 = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVst3));
+    mRadioButtonLinVst3X = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVst3X));
+    mButtonGroupDefaultVst2 = new QButtonGroup();
+    mButtonGroupDefaultVst3 = new QButtonGroup();
+
+    VerticalLine *vLine1 = new VerticalLine();
+    labelLinkFolder = new QLabel("Link folder:");
+    mLineEditLinkFolder = new QLineEdit();
+    mPushButtonLinkFolder = new QPushButton("Select");
+    mButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
+                                      QDialogButtonBox::Cancel);
+    HorizontalLine *line1 = new HorizontalLine();
+    HorizontalLine *line2 = new HorizontalLine();
+
+
+    // ===========
+    // = Bridges =
+    // ===========
+//    mLineEditLinVst->setStyleSheet("background-color:blue;");
     mLayoutVBridges->addWidget(mLineEditLinVst);
     mLayoutVBridges->addWidget(mLineEditLinVstX);
     mLayoutVBridges->addWidget(mLineEditLinVst3);
@@ -64,38 +99,25 @@ void DialogPreferences::setupUI()
     mLayoutVBridges->setSpacing(-5);
     mLayoutVBridges->update();
     this->adjustSize();
-
-    mGroupBoxBridges = new QGroupBox("Bridges:");
     mGroupBoxBridges->setLayout(mLayoutVBridges);
 
     // ============
     // = Defaults =
     // ============
-
-    mRadioButtonLinVst = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVst));
-    mRadioButtonLinVstX = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVstX));
-    mRadioButtonLinVst3 = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVst3));
-    mRadioButtonLinVst3X = new QRadioButton(mMapBridgeStr->value(VstBridge::LinVst3X));
-    mLayoutVDefaultsVst2 = new QVBoxLayout();
     mLayoutVDefaultsVst2->addWidget(mRadioButtonLinVst);
     mLayoutVDefaultsVst2->addWidget(mRadioButtonLinVstX);
-    mLayoutVDefaultsVst3 = new QVBoxLayout();
     mLayoutVDefaultsVst3->addWidget(mRadioButtonLinVst3);
     mLayoutVDefaultsVst3->addWidget(mRadioButtonLinVst3X);
 
-    mButtonGroupDefaultVst2 = new QButtonGroup();
     mButtonGroupDefaultVst2->addButton(mRadioButtonLinVst);
     mButtonGroupDefaultVst2->addButton(mRadioButtonLinVstX);
-    mButtonGroupDefaultVst3 = new QButtonGroup();
     mButtonGroupDefaultVst3->addButton(mRadioButtonLinVst3);
     mButtonGroupDefaultVst3->addButton(mRadioButtonLinVst3X);
 
-    mLayoutHDefaults = new QHBoxLayout();
     mLayoutHDefaults->addWidget(new QLabel("VST2:"));
     mLayoutHDefaults->addSpacing(5);
     mLayoutHDefaults->addLayout(mLayoutVDefaultsVst2, 0);
     mLayoutHDefaults->addSpacing(40);
-    VerticalLine *vLine1 = new VerticalLine();
     mLayoutHDefaults->addWidget(vLine1);
     mLayoutHDefaults->addSpacing(30);
     mLayoutHDefaults->addWidget(new QLabel("VST3:"));
@@ -103,40 +125,27 @@ void DialogPreferences::setupUI()
     mLayoutHDefaults->addLayout(mLayoutVDefaultsVst3, 0);
     mLayoutHDefaults->addStretch();
 
-    mGroupBoxDefaults = new QGroupBox("Defaults:");
     mGroupBoxDefaults->setLayout(mLayoutHDefaults);
 
     // ===========
     // = General =
     // ===========
     // link folder
-    mLineEditLinkFolder = new QLineEdit();
     mLineEditLinkFolder->setReadOnly(true);
     mLineEditLinkFolder->setToolTip("Specify the folder that shall contain all the bridged *.so files.");
-    mPushButtonLinkFolder = new QPushButton("Select");
-    mLayoutHLinkFolder = new QHBoxLayout();
-    labelLinkFolder = new QLabel("Link folder:");
     labelLinkFolder->setMinimumWidth(80);
     mLayoutHLinkFolder->addWidget(labelLinkFolder);
     mLayoutHLinkFolder->addWidget(mLineEditLinkFolder);
     mLayoutHLinkFolder->addWidget(mPushButtonLinkFolder);
 
-    mLayoutVGeneral = new QVBoxLayout();
     mLayoutVGeneral->addLayout(mLayoutHLinkFolder);
 
-    mGroupBoxGeneral = new QGroupBox("General:");
     mGroupBoxGeneral->setLayout(mLayoutVGeneral);
 
-    mButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
-                                      QDialogButtonBox::Cancel);
-
-    mLayoutVMain = new QVBoxLayout();
     mLayoutVMain->addWidget(mGroupBoxBridges);
     mLayoutVMain->addWidget(mGroupBoxDefaults);
     mLayoutVMain->addWidget(mGroupBoxGeneral);
 
-    HorizontalLine *line1 = new HorizontalLine();
-    HorizontalLine *line2 = new HorizontalLine();
 
     mLayoutVMain->addWidget(line1);
     mLayoutVMain->addSpacing(10);
@@ -193,7 +202,7 @@ void DialogPreferences::fillPreferences()
     if (prf->getBridgeDefaultVst3IsX()) {
         mRadioButtonLinVst3X->setChecked(true);
     } else {
-        mRadioButtonLinVstX->setChecked(true);
+        mRadioButtonLinVst3->setChecked(true);
     }
 
     // General
