@@ -15,6 +15,7 @@ class ConfigHandler : public QObject
     Q_OBJECT
 public:
     explicit ConfigHandler(QObject *parent = nullptr);
+    ~ConfigHandler();
 private:
     QXmlStreamWriter *xmlWriter;
     QXmlStreamReader *xmlReader;

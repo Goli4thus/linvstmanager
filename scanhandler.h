@@ -11,6 +11,7 @@ class ScanHandler : public QObject
     Q_OBJECT
 public:
     explicit ScanHandler(const QList<VstBucket> *pVstBuckets, const QList<ScanResult> *pScanResults, QObject *parent = nullptr);
+    ~ScanHandler();
 
 private:
     QCryptographicHash *mHasher;

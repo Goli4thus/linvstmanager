@@ -18,28 +18,31 @@ LineEditBridge::LineEditBridge(QString t_name, QWidget *parent) : QWidget(parent
 {
     this->name = t_name;
 
-    mCheckBoxBridge = new QCheckBox();
+    // Allocate starting from parent to children
+    mLayoutHBridge = new QHBoxLayout();
 
+    mLabelBridge = new QLabel(name + ":");
+    mCheckBoxBridge = new QCheckBox();
     mLineEditBridge = new QLineEdit();
+    palette = new QPalette();
+    paletteDefault = new QPalette(mLineEditBridge->palette());
+    mPushButtonBridge = new QPushButton("Select");
+
+
     mLineEditBridge->setReadOnly(true);
     mLineEditBridge->setEnabled(false);
     mLineEditBridge->setToolTip("Specify the *.so template file for bridge: " + name);
 
-    palette = new QPalette();
-    paletteDefault = new QPalette(mLineEditBridge->palette());
 
     QSizePolicy sp = mLineEditBridge->sizePolicy();
     sp.setHorizontalStretch(1);
     mLineEditBridge->setSizePolicy(sp);
 
-    mPushButtonBridge = new QPushButton("Select");
     mPushButtonBridge->setEnabled(false);
 
-    mLabelBridge = new QLabel(name + ":");
     mLabelBridge->setEnabled(false);
     mLabelBridge->setMinimumWidth(65);
 
-    mLayoutHBridge = new QHBoxLayout();
     mLayoutHBridge->addWidget(mCheckBoxBridge);
     mLayoutHBridge->addWidget(mLabelBridge);
     mLayoutHBridge->addWidget(mLineEditBridge);

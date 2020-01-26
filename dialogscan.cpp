@@ -35,17 +35,47 @@ void DialogScan::setupUI()
 {
     this->setWindowTitle("Scan for VSTs");
 
+    // Allocate starting from parent to children
+    mLayoutVMain = new QVBoxLayout();
+    mLayoutHScanFolder = new QHBoxLayout();
+    mLayoutHVstType = new QHBoxLayout();
+    mLayoutHListView = new QHBoxLayout();
+    mLayoutVListViewLeft = new QVBoxLayout();
+    mLayoutVListViewRight = new QVBoxLayout();
+    mFilterBarLayout = new QHBoxLayout();
+    mLayoutHBottom = new QHBoxLayout();
+
+    mLabelScanFolder = new QLabel("Scan folder:");
+    mLineEditScanFolder = new QLineEdit();
+    mPushButtonSelectFolder = new QPushButton("Select");
+    mLabelVstType = new QLabel("VST type:");
+    mComboBoxVstType = new QComboBox();
+    mTableview = new QTableView(this);
+    mSortFilter = new QSortFilterProxyModel(mTableview);
+    mModelScan = new ModelScan(mVstBuckets);
+
+    mFilterBar = new QWidget();
+    mFilterBarLineEdit = new QLineEdit(this);
+    mFilterBarCloseButton = new QPushButton("X");
+    mFilterBarLabel = new QLabel("Filter:");
+
+    mPushButtonScan = new QPushButton("Scan");
+    mPushButtonFilter = new QPushButton("Filter");
+    HorizontalLine *hLine0 = new HorizontalLine();
+    mPushButtonCancel = new QPushButton("Cancel");
+    mPushButtonAdd = new QPushButton("Add");
+    HorizontalLine *hLine1 = new HorizontalLine();
+    HorizontalLine *hLine2 = new HorizontalLine();
+
+
+
     // ===================================
     // === First row: folder selection ===
     // ===================================
-    mLabelScanFolder = new QLabel("Scan folder:");
     mLabelScanFolder->setMinimumWidth(80);
-    mLineEditScanFolder = new QLineEdit();
     mLineEditScanFolder->setReadOnly(true);
     mLineEditScanFolder->setToolTip("The folder that shall be recursively scanned.");
-    mPushButtonSelectFolder = new QPushButton("Select");
 
-    mLayoutHScanFolder = new QHBoxLayout();
     mLayoutHScanFolder->addWidget(mLabelScanFolder);
     mLayoutHScanFolder->addWidget(mLineEditScanFolder);
     mLayoutHScanFolder->addWidget(mPushButtonSelectFolder);
@@ -53,14 +83,11 @@ void DialogScan::setupUI()
     // ======================================
     // === Second row: VST type selection ===
     // ======================================
-    mLabelVstType = new QLabel("VST type:");
     mLabelVstType->setMinimumWidth(80);
-    mComboBoxVstType = new QComboBox();
     mComboBoxVstType->setMinimumWidth(65);
     mComboBoxVstType->addItem("VST2");
     mComboBoxVstType->addItem("VST3");
 
-    mLayoutHVstType = new QHBoxLayout();
     mLayoutHVstType->addWidget(mLabelVstType);
     mLayoutHVstType->addWidget(mComboBoxVstType);
     mLayoutHVstType->addStretch();
@@ -69,11 +96,7 @@ void DialogScan::setupUI()
     // === Third row: listview ===
     // ===========================
     // === Listview - left side ===
-    mTableview = new QTableView(this);
     mTableview->setSelectionMode(QAbstractItemView::MultiSelection);
-    mSortFilter = new QSortFilterProxyModel(mTableview);
-
-    mModelScan = new ModelScan(mVstBuckets);
     mSortFilter->setSourceModel(mModelScan);
     mTableview->setModel(mSortFilter);
 
@@ -97,42 +120,31 @@ void DialogScan::setupUI()
     // === filter bar ===
     QString tooltipFilterBar("Filter works on all columns. Close filter bar by using \n"
                              "that 'X' button or by pressing 'Ctrl-F' once again.");
-    mFilterBarLineEdit = new QLineEdit(this);
     mFilterBarLineEdit->setToolTip(tooltipFilterBar);
-    mFilterBarCloseButton = new QPushButton("X");
     mFilterBarCloseButton->setFixedWidth(28);
     connect(mFilterBarCloseButton, &QPushButton::pressed, this, &DialogScan::slotFilterBarClose);
 
-    mFilterBarLayout = new QHBoxLayout();
-    mFilterBarLabel = new QLabel("Filter:");
     mFilterBarLabel->setToolTip(tooltipFilterBar);
     mFilterBarLayout->addWidget(mFilterBarLabel);
     mFilterBarLayout->addWidget(mFilterBarLineEdit);
     mFilterBarLayout->addWidget(mFilterBarCloseButton);
 
-    mFilterBar = new QWidget();
     mFilterBar->setLayout(mFilterBarLayout);
     mFilterBar->hide();
     connect(mFilterBarLineEdit, &QLineEdit::textChanged, mSortFilter, &QSortFilterProxyModel::setFilterFixedString);
 
-    mLayoutVListViewLeft = new QVBoxLayout();
     mLayoutVListViewLeft->addWidget(mTableview);
     mLayoutVListViewLeft->addWidget(mFilterBar);
 
     // =============================
     // === Listview - right side ===
-    mPushButtonScan = new QPushButton("Scan");
-    mPushButtonFilter = new QPushButton("Filter");
     mPushButtonFilter->setToolTip("Ctrl-F");
-    mLayoutVListViewRight = new QVBoxLayout();
     mLayoutVListViewRight->addWidget(mPushButtonScan);
-    HorizontalLine *hLine0 = new HorizontalLine();
 //    mLayoutVListViewRight->addSpacing(10);
     mLayoutVListViewRight->addWidget(hLine0);
     mLayoutVListViewRight->addWidget(mPushButtonFilter);
     mLayoutVListViewRight->addStretch();
 
-    mLayoutHListView = new QHBoxLayout();
 //    mLayoutHListView->setAlignment(Qt::AlignTop);
     mLayoutHListView->addLayout(mLayoutVListViewLeft);
     mLayoutHListView->addLayout(mLayoutVListViewRight);
@@ -140,10 +152,6 @@ void DialogScan::setupUI()
     // ================================
     // === Last row: dialog buttons ===
     // ================================
-    mPushButtonCancel = new QPushButton("Cancel");
-    mPushButtonAdd = new QPushButton("Add");
-
-    mLayoutHBottom = new QHBoxLayout();
     mLayoutHBottom->setAlignment(Qt::AlignRight);
     mLayoutHBottom->addWidget(mPushButtonCancel);
     mLayoutHBottom->addWidget(mPushButtonAdd);
@@ -151,9 +159,6 @@ void DialogScan::setupUI()
     // ========================
     // === Add all together ===
     // ========================
-    HorizontalLine *hLine1 = new HorizontalLine();
-    HorizontalLine *hLine2 = new HorizontalLine();
-    mLayoutVMain = new QVBoxLayout();
     mLayoutVMain->addLayout(mLayoutHScanFolder);
     mLayoutVMain->addLayout(mLayoutHVstType);
     mLayoutVMain->addSpacing(5);

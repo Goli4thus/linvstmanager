@@ -31,6 +31,11 @@ ModelScan::ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent) : mVs
                                    false));
 }
 
+ModelScan::~ModelScan()
+{
+    delete scanHandler;
+}
+
 int ModelScan::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);

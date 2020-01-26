@@ -12,6 +12,11 @@ ScanHandler::ScanHandler(const QList<VstBucket> *pVstBuckets, const QList<ScanRe
 
 }
 
+ScanHandler::~ScanHandler()
+{
+    delete mHasher;
+}
+
 QByteArray ScanHandler::calcFilepathHash(QString filepath)
 {
     // Calculate sha1-hash of filepath_VstDll

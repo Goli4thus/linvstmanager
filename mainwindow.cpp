@@ -47,35 +47,37 @@ MainWindow::MainWindow(QWidget *parent)
 
     mDialogPreferences = new DialogPreferences(prf);
 
+    // Allocate starting from parent to children
+    mSplitter = new QSplitter(Qt::Vertical, this);
+    mWidgetTop = new QWidget();
+    mLayoutTop = new QVBoxLayout();
     mTableview = new QTableView(this);
     mSortFilter = new QSortFilterProxyModel(mTableview);
     mLogOutput = new LogOutput;
-    mSplitter = new QSplitter(Qt::Vertical, this);
 
-    QString tooltipFilterBar("Filter works on all columns. Close filter bar by pressing 'Ctrl-F' once again.");
+    mFilterBar = new QWidget();
+    mFilterBarLayout = new QHBoxLayout();
+    mFilterBarLabel = new QLabel("Filter:");
     mFilterBarLineEdit = new QLineEdit(this);
+    QString tooltipFilterBar("Filter works on all columns. Close filter bar by pressing 'Ctrl-F' once again.");
     mFilterBarLineEdit->setToolTip(tooltipFilterBar);
-    mFilterBarCloseButton = new QPushButton("X");
+    mFilterBarCloseButton = new QPushButton("X", this);
+
     mFilterBarCloseButton->setFixedWidth(28);
     connect(mFilterBarCloseButton, &QPushButton::pressed, this, &MainWindow::slotFilterBarClose);
 
-    mFilterBarLayout = new QHBoxLayout();
-    mFilterBarLabel = new QLabel("Filter:");
     mFilterBarLabel->setToolTip(tooltipFilterBar);
     mFilterBarLayout->addWidget(mFilterBarLabel);
     mFilterBarLayout->addWidget(mFilterBarLineEdit);
     mFilterBarLayout->addWidget(mFilterBarCloseButton);
 
-    mFilterBar = new QWidget();
     mFilterBar->setLayout(mFilterBarLayout);
     mFilterBar->hide();
 
 
-    mLayoutTop = new QVBoxLayout();
     mLayoutTop->addWidget(mTableview);
     mLayoutTop->addWidget(mFilterBar);
 
-    mWidgetTop = new QWidget();
     mWidgetTop->setLayout(mLayoutTop);
 
     mSplitter->addWidget(mWidgetTop);
@@ -121,7 +123,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-
+    delete prf;
+    delete cfg;
+    delete mLogOutput;
+    delete mModelVstBuckets;
 }
 
 void MainWindow::setupMenuBar()
@@ -160,8 +165,8 @@ void MainWindow::setupMenuBar()
     // menu: View
     QAction *actionResizeTableToContent = new QAction(tr("&Resize table to content"), this);
     QAction *actionFilter = new QAction(tr("&Filter"), this);
-    QMenu *subMenuDebug = new QMenu(tr("&Debug"));
-    actionVerboseLogOutput = new QAction(tr("&Verbose log output"));
+    QMenu *subMenuDebug = new QMenu(tr("&Debug"), this);
+    actionVerboseLogOutput = new QAction(tr("&Verbose log output"), this);
     actionVerboseLogOutput->setCheckable(true);
     actionVerboseLogOutput->setChecked(false);
     subMenuDebug->addAction(actionVerboseLogOutput);

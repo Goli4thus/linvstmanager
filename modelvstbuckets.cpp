@@ -27,6 +27,12 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
     lh->refreshStatus();
 }
 
+ModelVstBuckets::~ModelVstBuckets()
+{
+    delete mHasher;
+    delete lh;
+}
+
 int ModelVstBuckets::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
