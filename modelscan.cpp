@@ -12,30 +12,33 @@ ModelScan::ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent) : mVs
     this->setParent(parent);
 
     mUpdateView = true;
-    scanHandler = new ScanHandler(mVstBuckets, &mScanResults);
+    mScanHandler = new ScanHandler(mVstBuckets);
 
-    // TODO: Remove dummy data later on
-    mScanResults.append(ScanResult("dummy-1",
-                                   "/some/path/to/somewhere/dummy-1",
-                                   QByteArray(),
-                                   false));
-    mScanResults.append(ScanResult("dummy-2",
-                                   "/some/path/to/somewhere/dummy-2",
-                                   QByteArray(),
-                                   false));
-    mScanResults.append(ScanResult("dummy-3",
-                                   "/some/path/to/somewhere/dummy-3",
-                                   QByteArray(),
-                                   false));
-    mScanResults.append(ScanResult("dummy-4",
-                                   "/some/path/to/somewhere/dummy-4",
-                                   QByteArray(),
-                                   false));
+//    // TODO: Remove dummy data later on
+//    mScanResults.append(ScanResult("dummy-1",
+//                                   "/some/path/to/somewhere/dummy-1",
+//                                   QByteArray(),
+//                                   false));
+//    mScanResults.append(ScanResult("dummy-2",
+//                                   "/some/path/to/somewhere/dummy-2",
+//                                   QByteArray(),
+//                                   false));
+//    mScanResults.append(ScanResult("dummy-3",
+//                                   "/some/path/to/somewhere/dummy-3",
+//                                   QByteArray(),
+//                                   false));
+//    mScanResults.append(ScanResult("dummy-4",
+//                                   "/some/path/to/somewhere/dummy-4",
+//                                   QByteArray(),
+//                                   false));
+
+    connect(this, &ModelScan::signalPerformScan, mScanHandler, &ScanHandler::slotPerformScan);
+    connect(mScanHandler, &ScanHandler::signalScanDone, this, &ModelScan::slotScanDone);
 }
 
 ModelScan::~ModelScan()
 {
-    delete scanHandler;
+    delete mScanHandler;
 }
 
 int ModelScan::rowCount(const QModelIndex &parent) const
@@ -48,8 +51,8 @@ int ModelScan::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
     // Columns:
-    // | Selected | Name | Path | Index |
-    return 4;
+    // | Selected | Name | Type | Path | Index |
+    return 5;
 }
 
 QVariant ModelScan::data(const QModelIndex &index, int role) const
@@ -71,10 +74,23 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                     }
                     break;
                     case 2: {
+                        switch (mScanResults.at(index.row()).vstType) {
+                            case VstType::VST2: {
+                                return QString("VST2");
+                            }
+                            break;
+                            case VstType::VST3: {
+                                return QString("VST3");
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                    case 3: {
                         return mScanResults.at(index.row()).vstPath;
                     }
                     break;
-                    case 3: {   // original index
+                    case 4: {   // original index
                         return index.row();
                     }
                     break;
@@ -85,7 +101,8 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                 if (index.column() == 0) {
                     QColor color;
                     if (mScanResults.at(index.row()).selected) {
-                        color.setRgb(91, 160, 255);  // Blue
+//                        color.setRgb(91, 160, 255);  // Blue
+                        color.setRgb(255, 216, 59);  // Blue
                     } else {
                         color.setRgb(220, 220, 220);  // light grey
                     }
@@ -101,7 +118,8 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
             }
         }
     }
-    return QVariant();}
+    return QVariant();
+}
 
 QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int role) const
 {
@@ -115,8 +133,10 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
                 case 1:
                     return QString("Name");
                 case 2:
-                    return QString("Path");
+                    return QString("Type");
                 case 3:
+                    return QString("Path");
+                case 4:
                     return QString("Index");
                 }
             }
@@ -143,26 +163,42 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void ModelScan::triggerScan()
+void ModelScan::triggerScan(QString scanFolder, VstType vstType)
 {
-    /*
+    /* TODO: triggerScan
      * Q: The actual scan should probably be done in a separate thread, shouldn't it?
      */
+
+    emptyModel();
+
+    // Pass temporary buffer. Buffer associated with model will be filled after scan is finished.
+    mScanResultsTmp.clear();
+    emit(signalPerformScan(scanFolder, vstType, &mScanResultsTmp));
 }
 
 void ModelScan::emptyModel()
 {
+    beginRemoveRows(QModelIndex(), 0, mScanResults.size() - 1);
+    mScanResults.clear();
+    endRemoveRows();
+}
 
+void ModelScan::fillModel()
+{
+    beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + mScanResultsTmp.size() - 1);
+    mScanResults.append(mScanResultsTmp);
+    endInsertRows();
+}
+
+void ModelScan::slotScanDone()
+{
+    fillModel();
+    emit(signalScanDone());
 }
 
 bool ModelScan::isModelEmpty()
 {
     return mScanResults.isEmpty();
-}
-
-void ModelScan::slotFillModel()
-{
-
 }
 
 void ModelScan::slotSelectEntry(QList<int> selectionIndices)

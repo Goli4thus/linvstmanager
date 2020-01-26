@@ -30,6 +30,8 @@
 DialogScan::DialogScan(const QList<VstBucket> *pVstBuckets) : mVstBuckets(pVstBuckets)
 {
     setupUI();
+
+    connect(mModelScan, &ModelScan::signalScanDone, this, &DialogScan::slotScanDone);
 }
 
 void DialogScan::setupUI()
@@ -80,6 +82,7 @@ void DialogScan::setupUI()
     mLayoutHScanFolder->addWidget(mLabelScanFolder);
     mLayoutHScanFolder->addWidget(mLineEditScanFolder);
     mLayoutHScanFolder->addWidget(mPushButtonSelectFolder);
+    mPushButtonScan->setEnabled(false);
 
     // ======================================
     // === Second row: VST type selection ===
@@ -171,7 +174,7 @@ void DialogScan::setupUI()
     mLayoutVMain->addLayout(mLayoutHBottom);
 
     this->setLayout(mLayoutVMain);
-    setMinimumWidth(650);
+    setMinimumWidth(800);
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -251,9 +254,9 @@ void DialogScan::slotSelectEntry()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelScan->slotSelectEntry(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -265,9 +268,9 @@ void DialogScan::slotUnselectEntry()
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
-        slotTableOperationStart();
+        enableViewUpdate(false);
         mModelScan->slotUnselectEntry(indexOfVstBuckets);
-        slotTableOperationFinished();
+        enableViewUpdate(true);
     }
 }
 
@@ -284,17 +287,37 @@ void DialogScan::slotSelectScanFolder()
                                          lastDir);
     if (!pathScanFolder.isEmpty()) {
         mLineEditScanFolder->setText(pathScanFolder);
+    } else {
+    }
+
+    if (mLineEditScanFolder->text() != "") {
+        mPushButtonScan->setEnabled(true);
+    } else {
+        mPushButtonScan->setEnabled(false);
     }
 }
 
 void DialogScan::slotScan()
 {
-    /* Basically:
-     * - trigger the class that shall perform the scan (or rather the model, which itself then triggers theh scan)
+    /* TODO: slotScan: Basically:
+     * X trigger the class that shall perform the scan (or rather the model, which itself then triggers theh scan)
      * - Q: Have some kind of "ongoing scan" visual feedback for user?
+     * - allow user to cancel scan? (see "lock" usage)
      */
 
-//    mComboBoxVstType->
+    VstType vstType;
+    if (mComboBoxVstType->currentText() == "VST2") {
+        vstType = VstType::VST2;
+    } else {
+        vstType = VstType::VST3;
+    }
+
+    mModelScan->triggerScan(mLineEditScanFolder->text(), vstType);
+}
+
+void DialogScan::slotScanDone()
+{
+    slotResizeTableToContent();
 }
 
 void DialogScan::slotCancel()
@@ -304,7 +327,7 @@ void DialogScan::slotCancel()
 
 void DialogScan::slotAdd()
 {
-    /* Basically:
+    /* TODO: slotAdd: Basically:
      * - get user selection of listview
      * - emit the signal
      * - close the dialog
@@ -312,21 +335,11 @@ void DialogScan::slotAdd()
 //    emit(signalScanSelection())
 }
 
-void DialogScan::slotTableOperationStart()
+void DialogScan::enableViewUpdate(bool enable)
 {
-    enableViewUpdate(false);
-}
-
-void DialogScan::slotTableOperationFinished()
-{
-    enableViewUpdate(true);
-    repaintTableview();
-}
-
-void DialogScan::enableViewUpdate(bool f_enable)
-{
-    if (f_enable) {
+    if (enable) {
         mModelScan->mUpdateView = true;
+        repaintTableview();
     } else {
         mModelScan->mUpdateView = false;
     }
@@ -354,18 +367,20 @@ void DialogScan::slotResizeTableToContent()
 {
     if (mModelScan->isModelEmpty()) {
         // No entires yet; resize to fixed width
-        mTableview->setColumnWidth(0, 55);
-        mTableview->setColumnWidth(1, 60);
-        mTableview->setColumnWidth(2, 100);
-        mTableview->setColumnWidth(3, 20);
+        mTableview->setColumnWidth(0, 55);  // Selection
+        mTableview->setColumnWidth(1, 60);  // Name
+        mTableview->setColumnWidth(2, 45);  // Type
+        mTableview->setColumnWidth(3, 100); // Path
+        mTableview->setColumnWidth(4, 20);  // Index
     } else {
         mTableview->resizeColumnsToContents();
         mTableview->resizeRowsToContents();
 
         // Set rows to sensible with; some fixed width, some based on content
-        mTableview->setColumnWidth(0, 55);
-        mTableview->setColumnWidth(1, mTableview->columnWidth(1) + 10);
-        mTableview->setColumnWidth(2, mTableview->columnWidth(2) + 10);
-        mTableview->setColumnWidth(3, 20);
+        mTableview->setColumnWidth(0, 55);  // Selection
+        mTableview->setColumnWidth(1, mTableview->columnWidth(1) + 10); // Name
+        mTableview->setColumnWidth(2, 45);  // Type
+        mTableview->setColumnWidth(3, mTableview->columnWidth(3) + 10); // Path
+        mTableview->setColumnWidth(4, 20);  // Index
     }
 }

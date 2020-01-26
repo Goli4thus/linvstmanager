@@ -63,12 +63,13 @@ private:
     QShortcut *shortcutUnselect;
     QShortcut *shortcutFilter;
     void setupMouseMenu();
-    void enableViewUpdate(bool f_enable);
+    void enableViewUpdate(bool enable);
     void repaintTableview();
     QList<int> getSelectionOrigIdx(QModelIndexList indexList);
 private slots:
     void slotSelectScanFolder();
     void slotScan();
+    void slotScanDone();
     void slotCancel();
     void slotAdd();
 
@@ -78,8 +79,6 @@ private slots:
     void slotSelectEntry();
     void slotUnselectEntry();
     void slotFilterBarOpen();
-    void slotTableOperationStart();
-    void slotTableOperationFinished();
     void slotResizeTableToContent();
 signals:
     void signalScanSelection(QStringList scanSelection);

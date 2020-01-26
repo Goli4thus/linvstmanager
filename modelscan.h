@@ -18,20 +18,24 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
     bool mUpdateView;
-    void triggerScan();
-    void emptyModel();
+    void triggerScan(QString scanFolder, VstType vstType);
     bool isModelEmpty();
 
 private:
-    ScanHandler *scanHandler;
+    ScanHandler *mScanHandler;
     const QList<VstBucket> *mVstBuckets;
     QList<ScanResult> mScanResults;
+    QList<ScanResult> mScanResultsTmp;
+    void emptyModel();
+    void fillModel();
 
 signals:
     void signalTableOperationFinished();
+    void signalPerformScan(QString scanFolder, VstType vstType, QList<ScanResult> *scanResults);
+    void signalScanDone();
 
 public slots:
-    void slotFillModel();
+    void slotScanDone();
     void slotSelectEntry(QList<int> selectionIndices);
     void slotUnselectEntry(QList<int> selectionIndices);
 };
