@@ -41,7 +41,6 @@ void DialogScan::setupUI()
     // Allocate starting from parent to children
     mLayoutVMain = new QVBoxLayout();
     mLayoutHScanFolder = new QHBoxLayout();
-    mLayoutHVstType = new QHBoxLayout();
     mLayoutHListView = new QHBoxLayout();
     mLayoutVListViewLeft = new QVBoxLayout();
     mLayoutVListViewRight = new QVBoxLayout();
@@ -51,8 +50,6 @@ void DialogScan::setupUI()
     mLabelScanFolder = new QLabel("Scan folder:");
     mLineEditScanFolder = new QLineEdit();
     mPushButtonSelectFolder = new QPushButton("Select");
-    mLabelVstType = new QLabel("VST type:");
-    mComboBoxVstType = new QComboBox();
     mTableview = new QTableView(this);
     mSortFilter = new QSortFilterProxyModel(mTableview);
     mModelScan = new ModelScan(mVstBuckets);
@@ -84,21 +81,9 @@ void DialogScan::setupUI()
     mLayoutHScanFolder->addWidget(mPushButtonSelectFolder);
     mPushButtonScan->setEnabled(false);
 
-    // ======================================
-    // === Second row: VST type selection ===
-    // ======================================
-    mLabelVstType->setMinimumWidth(80);
-    mComboBoxVstType->setMinimumWidth(65);
-    mComboBoxVstType->addItem("VST2");
-    mComboBoxVstType->addItem("VST3");
-
-    mLayoutHVstType->addWidget(mLabelVstType);
-    mLayoutHVstType->addWidget(mComboBoxVstType);
-    mLayoutHVstType->addStretch();
-
-    // ===========================
-    // === Third row: listview ===
-    // ===========================
+    // ============================
+    // === Second row: listview ===
+    // ============================
     // === Listview - left side ===
     mSortFilter->setSourceModel(mModelScan);
     mTableview->setModel(mSortFilter);
@@ -163,7 +148,6 @@ void DialogScan::setupUI()
     // === Add all together ===
     // ========================
     mLayoutVMain->addLayout(mLayoutHScanFolder);
-    mLayoutVMain->addLayout(mLayoutHVstType);
     mLayoutVMain->addSpacing(5);
     mLayoutVMain->addWidget(hLine1);
     mLayoutVMain->addSpacing(5);
@@ -174,7 +158,7 @@ void DialogScan::setupUI()
     mLayoutVMain->addLayout(mLayoutHBottom);
 
     this->setLayout(mLayoutVMain);
-    setMinimumWidth(800);
+    setMinimumWidth(650);
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -305,14 +289,7 @@ void DialogScan::slotScan()
      * - allow user to cancel scan? (see "lock" usage)
      */
 
-    VstType vstType;
-    if (mComboBoxVstType->currentText() == "VST2") {
-        vstType = VstType::VST2;
-    } else {
-        vstType = VstType::VST3;
-    }
-
-    mModelScan->triggerScan(mLineEditScanFolder->text(), vstType);
+    mModelScan->triggerScan(mLineEditScanFolder->text());
 }
 
 void DialogScan::slotScanDone()
@@ -370,7 +347,7 @@ void DialogScan::slotResizeTableToContent()
         mTableview->setColumnWidth(0, 55);  // Selection
         mTableview->setColumnWidth(1, 60);  // Name
         mTableview->setColumnWidth(2, 45);  // Type
-        mTableview->setColumnWidth(3, 100); // Path
+        mTableview->setColumnWidth(3, 300); // Path
         mTableview->setColumnWidth(4, 20);  // Index
     } else {
         mTableview->resizeColumnsToContents();

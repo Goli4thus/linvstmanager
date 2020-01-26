@@ -25,7 +25,7 @@ signals:
     void signalScanDone();
 
 public slots:
-    void slotPerformScan(QString scanFolder, VstType vstType, QList<ScanResult> *scanResults);
+    void slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults);
 
 };
 

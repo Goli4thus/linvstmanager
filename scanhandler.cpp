@@ -28,7 +28,7 @@ QByteArray ScanHandler::calcFilepathHash(QString filepath)
     return mHasher->result();
 }
 
-void ScanHandler::slotPerformScan(QString scanFolder, VstType vstType, QList<ScanResult> *scanResults)
+void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults)
 {
     /* TODO: slotPerformScan(): Basically:
      * 1) Perform the iterative scan
@@ -41,12 +41,12 @@ void ScanHandler::slotPerformScan(QString scanFolder, VstType vstType, QList<Sca
 
     QByteArrayList existingPathHashes;
     QByteArray hash;
+    VstType vstType;
     for (int i=0; i < mVstBuckets->size(); i++) {
         existingPathHashes.append(mVstBuckets->at(i).hash);
     }
 
     QDirIterator it(scanFolder,
-//                    QStringList() << mapVstExtension.value(vstType),
                     QStringList() << "*.dll" << "*.vst3",
                     QDir::Files,
                     QDirIterator::Subdirectories);
@@ -57,15 +57,10 @@ void ScanHandler::slotPerformScan(QString scanFolder, VstType vstType, QList<Sca
     QString finding;
     while (it.hasNext()) {
         finding = it.next();
-//        qDebug() << "Found: " << finding;
 
         // Skip findings that are already part of tracked VstBuckets
         hash = calcFilepathHash(finding);
         if (!existingPathHashes.contains(hash)) {
-//            qDebug() << "Already exists: YES";
-//        } else {
-//            qDebug() << "Already exists: NO (-->> new)";
-
             // TODO: Check if "*.dll" and actually a VST (needs wine?!?)
             qDebug() << "New finding: " << finding;
 

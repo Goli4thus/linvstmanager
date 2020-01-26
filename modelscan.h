@@ -18,7 +18,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
     bool mUpdateView;
-    void triggerScan(QString scanFolder, VstType vstType);
+    void triggerScan(QString scanFolder);
     bool isModelEmpty();
 
 private:
@@ -31,7 +31,7 @@ private:
 
 signals:
     void signalTableOperationFinished();
-    void signalPerformScan(QString scanFolder, VstType vstType, QList<ScanResult> *scanResults);
+    void signalPerformScan(QString scanFolder, QList<ScanResult> *scanResults);
     void signalScanDone();
 
 public slots:

@@ -163,7 +163,7 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void ModelScan::triggerScan(QString scanFolder, VstType vstType)
+void ModelScan::triggerScan(QString scanFolder)
 {
     /* TODO: triggerScan
      * Q: The actual scan should probably be done in a separate thread, shouldn't it?
@@ -173,7 +173,7 @@ void ModelScan::triggerScan(QString scanFolder, VstType vstType)
 
     // Pass temporary buffer. Buffer associated with model will be filled after scan is finished.
     mScanResultsTmp.clear();
-    emit(signalPerformScan(scanFolder, vstType, &mScanResultsTmp));
+    emit(signalPerformScan(scanFolder, &mScanResultsTmp));
 }
 
 void ModelScan::emptyModel()

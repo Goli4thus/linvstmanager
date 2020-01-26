@@ -30,13 +30,11 @@ private:
     const QList<VstBucket> *mVstBuckets;
     QVBoxLayout *mLayoutVMain;
     QHBoxLayout *mLayoutHScanFolder;
-    QHBoxLayout *mLayoutHVstType;
     QHBoxLayout *mLayoutHListView;
     QVBoxLayout *mLayoutVListViewLeft;
     QVBoxLayout *mLayoutVListViewRight;
     QHBoxLayout *mLayoutHBottom;
     QLabel *mLabelScanFolder;
-    QLabel *mLabelVstType;
     QLineEdit *mLineEditScanFolder;
     QPushButton *mPushButtonSelectFolder;
     QPushButton *mPushButtonScan;
@@ -50,7 +48,6 @@ private:
     QLineEdit *mFilterBarLineEdit;
     QPushButton *mFilterBarCloseButton;
     ModelScan *mModelScan;
-    QComboBox *mComboBoxVstType;
     void setupUI();
     QStringList scanFindings;
     QSortFilterProxyModel *mSortFilter;
