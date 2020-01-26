@@ -274,10 +274,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
             break;
             case Qt::ToolTipRole: {
                 if (index.column() == TableColumnPosType::NewlyAdded) {
-                    return QString("O\t: Mappable\n"
-                                   "M\t: Mapped\n"
-                                   "X\t: Unmappable\n"
-                                   "B\t: Bypassed");
+                    return QString("*\t: Newly added");
                 }
             }
             break;

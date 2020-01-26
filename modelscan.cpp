@@ -58,7 +58,7 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                 switch(index.column()) {
                     case 0: {
                         if (mScanResults.at(index.row()).selected) {
-                            return "SEL";
+                            return "-S-";
                         } else {
                             return "---";
                         }
@@ -91,6 +91,12 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                 }
             }
             break;
+            case Qt::ToolTipRole: {
+                if (index.column() == 0) {
+                    return QString("-S-\t: Selected\n"
+                                   "---\t: Unselected\n");
+                }
+            }
         }
     }
     return QVariant();}
@@ -126,6 +132,13 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
             return Qt::AlignLeft + Qt::AlignVCenter;
         }
         break;
+        case Qt::ToolTipRole: {
+            if (section == 0) {
+                return QString("-S-\t: Selected\n"
+                               "---\t: Unselected\n");
+            }
+        }
+        break;
     }
     return QVariant();
 }
@@ -140,6 +153,11 @@ void ModelScan::triggerScan()
 void ModelScan::emptyModel()
 {
 
+}
+
+bool ModelScan::isModelEmpty()
+{
+    return mScanResults.isEmpty();
 }
 
 void ModelScan::slotFillModel()

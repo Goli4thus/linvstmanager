@@ -58,6 +58,7 @@ private:
     QAction *actionSelect;
     QAction *actionUnselect;
     QAction *actionFilter;
+    QAction *actionResize;
     QShortcut *shortcutSelect;
     QShortcut *shortcutUnselect;
     QShortcut *shortcutFilter;
@@ -79,6 +80,7 @@ private slots:
     void slotFilterBarOpen();
     void slotTableOperationStart();
     void slotTableOperationFinished();
+    void slotResizeTableToContent();
 signals:
     void signalScanSelection(QStringList scanSelection);
 };

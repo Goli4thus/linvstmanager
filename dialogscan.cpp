@@ -22,6 +22,7 @@
 #include <QMenu>
 #include <QModelIndexList>
 #include <QShortcut>
+#include <QTimer>
 
 #include "horizontalline.h"
 #include "verticalline.h"
@@ -96,7 +97,6 @@ void DialogScan::setupUI()
     // === Third row: listview ===
     // ===========================
     // === Listview - left side ===
-    mTableview->setSelectionMode(QAbstractItemView::MultiSelection);
     mSortFilter->setSourceModel(mModelScan);
     mTableview->setModel(mSortFilter);
 
@@ -171,7 +171,7 @@ void DialogScan::setupUI()
     mLayoutVMain->addLayout(mLayoutHBottom);
 
     this->setLayout(mLayoutVMain);
-    setMinimumWidth(500);
+    setMinimumWidth(650);
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -187,6 +187,9 @@ void DialogScan::setupUI()
     connect(shortcutFilter, &QShortcut::activated, this, &DialogScan::slotFilterBar);
 
     setupMouseMenu();
+
+
+    QTimer::singleShot(0, this, SLOT(slotResizeTableToContent()));
 }
 
 void DialogScan::setupMouseMenu()
@@ -196,18 +199,19 @@ void DialogScan::setupMouseMenu()
     mouseMenu = new QMenu(mTableview);
     actionSelect = new QAction("Select", this);
     actionUnselect = new QAction("Unselect", this);
-    actionFilter = new QAction("Filter", this);
+    actionResize = new QAction("Resize", this);
 
     actionSelect->setShortcut(QKeySequence("S"));
     actionUnselect->setShortcut(QKeySequence("D"));
     mouseMenu->addAction(actionSelect);
     mouseMenu->addAction(actionUnselect);
     mouseMenu->addSeparator();
-    mouseMenu->addAction(actionFilter);
+    mouseMenu->addAction(actionResize);
 
     connect(mTableview, &QTableView::customContextMenuRequested, this, &DialogScan::slotMouseRightClickOnEntry);
     connect(actionSelect, &QAction::triggered, this, &DialogScan::slotSelectEntry);
     connect(actionUnselect, &QAction::triggered, this, &DialogScan::slotUnselectEntry);
+    connect(actionResize, &QAction::triggered, this, &DialogScan::slotResizeTableToContent);
 }
 
 void DialogScan::slotMouseRightClickOnEntry(QPoint point)
@@ -272,7 +276,7 @@ void DialogScan::slotSelectScanFolder()
     QString lastDir = QDir::homePath();
 
     if (mLineEditScanFolder->text() != "") {
-        lastDir = QFileInfo(mLineEditScanFolder->text()).path();
+        lastDir = QFileInfo(mLineEditScanFolder->text() + "/").path();
     }
 
     QString pathScanFolder = QFileDialog::getExistingDirectory(this,
@@ -344,4 +348,24 @@ QList<int> DialogScan::getSelectionOrigIdx(QModelIndexList indexList)
         indexOfScanResults.append(originalIndex.row());
     }
     return indexOfScanResults;
+}
+
+void DialogScan::slotResizeTableToContent()
+{
+    if (mModelScan->isModelEmpty()) {
+        // No entires yet; resize to fixed width
+        mTableview->setColumnWidth(0, 55);
+        mTableview->setColumnWidth(1, 60);
+        mTableview->setColumnWidth(2, 100);
+        mTableview->setColumnWidth(3, 20);
+    } else {
+        mTableview->resizeColumnsToContents();
+        mTableview->resizeRowsToContents();
+
+        // Set rows to sensible with; some fixed width, some based on content
+        mTableview->setColumnWidth(0, 55);
+        mTableview->setColumnWidth(1, mTableview->columnWidth(1) + 10);
+        mTableview->setColumnWidth(2, mTableview->columnWidth(2) + 10);
+        mTableview->setColumnWidth(3, 20);
+    }
 }
