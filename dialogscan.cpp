@@ -22,6 +22,7 @@
 #include <QMenu>
 #include <QModelIndexList>
 #include <QShortcut>
+#include <customprogressdialog.h>
 #include <QTimer>
 
 #include "horizontalline.h"
@@ -32,6 +33,9 @@ DialogScan::DialogScan(const QList<VstBucket> *pVstBuckets) : mVstBuckets(pVstBu
     setupUI();
 
     connect(mModelScan, &ModelScan::signalScanDone, this, &DialogScan::slotScanDone);
+    connect(mModelScan, &ModelScan::signalScanCanceled, this, &DialogScan::slotScanCanceled);
+    // TODO: Connect to user "Cancel scan" button
+    connect(mProgressDialog, &CustomProgressDialog::signalCancelPressed, this, &DialogScan::slotScanCancel);
 }
 
 void DialogScan::setupUI()
@@ -47,6 +51,13 @@ void DialogScan::setupUI()
     mFilterBarLayout = new QHBoxLayout();
     mLayoutHBottom = new QHBoxLayout();
 
+    mLabelInfo = new QLabel("Hint: \n"
+                            "Scanning will be recursive based on the selected folder. Folders\n"
+                            "starting with a dot '.' (usually hidden in file browser by default)\n"
+                            "will be ignored though. Therefore try to make an appropriate\n"
+                            "selection.\n"
+                            "(i.e. navigate into the desired wine-prefix where the VSTs are)");
+    HorizontalLine *hLineTop = new HorizontalLine();
     mLabelScanFolder = new QLabel("Scan folder:");
     mLineEditScanFolder = new QLineEdit();
     mPushButtonSelectFolder = new QPushButton("Select");
@@ -147,6 +158,8 @@ void DialogScan::setupUI()
     // ========================
     // === Add all together ===
     // ========================
+    mLayoutVMain->addWidget(mLabelInfo);
+    mLayoutVMain->addWidget(hLineTop);
     mLayoutVMain->addLayout(mLayoutHScanFolder);
     mLayoutVMain->addSpacing(5);
     mLayoutVMain->addWidget(hLine1);
@@ -158,7 +171,8 @@ void DialogScan::setupUI()
     mLayoutVMain->addLayout(mLayoutHBottom);
 
     this->setLayout(mLayoutVMain);
-    setMinimumWidth(650);
+    setMinimumWidth(590);
+    resize(650, 400);
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -175,6 +189,7 @@ void DialogScan::setupUI()
 
     setupMouseMenu();
 
+    mProgressDialog = new CustomProgressDialog();
 
     QTimer::singleShot(0, this, SLOT(slotResizeTableToContent()));
 }
@@ -283,13 +298,15 @@ void DialogScan::slotSelectScanFolder()
 
 void DialogScan::slotScan()
 {
-    /* TODO: slotScan: Basically:
-     * X trigger the class that shall perform the scan (or rather the model, which itself then triggers theh scan)
-     * - Q: Have some kind of "ongoing scan" visual feedback for user?
-     * - allow user to cancel scan? (see "lock" usage)
-     */
-
     mModelScan->triggerScan(mLineEditScanFolder->text());
+
+    /* Start progressbar dialog based on fixed increments by timer
+     * Though: We don't know how long the scan actually takes, therefore
+     * just increment cyclically until reaching like 90%.
+     * Most likely the scanning process is finished beforehand.
+     * If not, the progressbar will stop incrementing until scan is finished.
+     */
+    mProgressDialog->exec();
 }
 
 void DialogScan::slotScanDone(bool findings)
@@ -300,13 +317,13 @@ void DialogScan::slotScanDone(bool findings)
         QMessageBox::information(this, "No findings",
                                        "Nothing new could be found during the scan.");
     }
+
+    // Close progress dialog
+    mProgressDialog->close();
 }
 
 void DialogScan::slotCancel()
 {
-    // Empty the model, so it's a fresh the next time the scan dialog is opened.
-    mModelScan->emptyModel();
-
     this->close();
 }
 
@@ -320,12 +337,21 @@ void DialogScan::slotAdd()
                                        "No selection, therefore nothing can be added.\n\n"
                                        "Hint: Try mouse right click menu in table.");
     } else {
-        // Empty the model, so it's a fresh the next time the scan dialog is opened.
-        mModelScan->emptyModel();
-
         emit(signalScanSelection(scanSelection));
         this->close();
     }
+}
+
+void DialogScan::slotScanCancel()
+{
+    mModelScan->slotScanCancel();
+    mProgressDialog->close();
+}
+
+void DialogScan::slotScanCanceled()
+{
+    QMessageBox::information(this, "Scan canceled",
+                             "The scan has been canceled.");
 }
 
 void DialogScan::enableViewUpdate(bool enable)
@@ -354,6 +380,14 @@ QList<int> DialogScan::getSelectionOrigIdx(QModelIndexList indexList)
         indexOfScanResults.append(originalIndex.row());
     }
     return indexOfScanResults;
+}
+
+void DialogScan::reject()
+{
+    // Empty the model, so it's a fresh the next time the scan dialog is opened.
+    mModelScan->emptyModel();
+
+    QDialog::reject();
 }
 
 void DialogScan::slotResizeTableToContent()

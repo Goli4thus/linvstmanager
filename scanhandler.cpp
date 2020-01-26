@@ -6,6 +6,7 @@
 #include "vstbucket.h"
 #include "scanresult.h"
 #include <QDebug>
+#include <QThread>
 
 ScanHandler::ScanHandler(const QList<VstBucket> *pVstBuckets, QObject *parent)
     : QObject(parent), mVstBuckets(pVstBuckets)
@@ -33,15 +34,20 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
     /* TODO: slotPerformScan(): Basically:
      * 1) Perform the iterative scan
      *    X filter based on VST type (.dll or .vst3)
-     *    - calculate path hash on the fly and check via QList::contains, if part of mVstBuckets
+     *    X calculate path hash on the fly and check via QList::contains, if part of mVstBuckets
      *        X if so: skip
      *        X if not: add to mScanResults
-     *        - (later: if ".dll", consider checking if really VST (see TestVst app))
+     *    O (later: if ".dll", consider checking if really VST (see TestVst app))
      */
 
+
+//#define D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
+#ifndef D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
     QByteArrayList existingPathHashes;
     QByteArray hash;
     VstType vstType;
+    bool scanCanceledByUser = false;
+
     for (int i=0; i < mVstBuckets->size(); i++) {
         existingPathHashes.append(mVstBuckets->at(i).hash);
     }
@@ -55,8 +61,15 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
     qDebug() << "========== NEW SCAN ========================";
     qDebug() << "============================================";
     QString finding;
+
     while (it.hasNext()) {
         finding = it.next();
+
+        // Check if scan operation has been canceled by user
+        if (QThread::currentThread()->isInterruptionRequested()) {
+            scanCanceledByUser = true;
+            break;
+        }
 
         // Skip findings that are already part of tracked VstBuckets
         hash = calcFilepathHash(finding);
@@ -80,7 +93,22 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
                                            false));
         }
     }
+#else
+    // Test progressbar mechanism by simulating a long scan (fixed time using timer)
+    for (int i=0; i < 55; i++) {
+        // Check if scan operation has been canceled by user
+        if (QThread::currentThread()->isInterruptionRequested()) {
+            scanCanceledByUser = true;
+            break;
+        }
+        QThread::sleep(1);
+    }
+#endif
     qDebug() << "--------------------------------------------";
 
-    emit(signalScanDone());
+    if (scanCanceledByUser) {
+        emit(signalScanCanceled());
+    } else {
+        emit(signalScanDone());
+    }
 }

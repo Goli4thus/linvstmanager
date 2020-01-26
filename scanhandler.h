@@ -23,6 +23,7 @@ private:
 
 signals:
     void signalScanDone();
+    void signalScanCanceled();
 
 public slots:
     void slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults);

@@ -20,6 +20,7 @@ class ModelScan;
 class VstBucket;
 class QMenu;
 class QShortcut;
+class CustomProgressDialog;
 
 class DialogScan : public QDialog
 {
@@ -35,6 +36,7 @@ private:
     QVBoxLayout *mLayoutVListViewLeft;
     QVBoxLayout *mLayoutVListViewRight;
     QHBoxLayout *mLayoutHBottom;
+    QLabel *mLabelInfo;
     QLabel *mLabelScanFolder;
     QLineEdit *mLineEditScanFolder;
     QPushButton *mPushButtonSelectFolder;
@@ -60,16 +62,20 @@ private:
     QShortcut *shortcutSelect;
     QShortcut *shortcutUnselect;
     QShortcut *shortcutFilter;
+    CustomProgressDialog *mProgressDialog;
     void setupMouseMenu();
     void enableViewUpdate(bool enable);
     void repaintTableview();
     QList<int> getSelectionOrigIdx(QModelIndexList indexList);
+    void reject();
 private slots:
     void slotSelectScanFolder();
     void slotScan();
     void slotScanDone(bool findings);
     void slotCancel();
     void slotAdd();
+    void slotScanCancel();
+    void slotScanCanceled();
 
     void slotMouseRightClickOnEntry(QPoint point);
     void slotFilterBarClose();

@@ -5,6 +5,8 @@
 #include <QAbstractTableModel>
 #include "vstbucket.h"
 #include "scanresult.h"
+//#include <QReadWriteLock>
+#include <QThread>
 class ScanHandler;
 
 class ModelScan : public QAbstractTableModel
@@ -29,14 +31,18 @@ private:
     QList<ScanResult> mScanResults;
     QList<ScanResult> mScanResultsTmp;
     void fillModel();
+    QThread mScanThread;
 
 signals:
     void signalTableOperationFinished();
     void signalPerformScan(QString scanFolder, QList<ScanResult> *scanResults);
     void signalScanDone(bool findings);
+    void signalScanCanceled();
 
 public slots:
     void slotScanDone();
+    void slotScanCancel();
+    void slotScanCanceled();
     void slotSelectEntry(QList<int> selectionIndices);
     void slotUnselectEntry(QList<int> selectionIndices);
 };

@@ -14,31 +14,21 @@ ModelScan::ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent) : mVs
     mUpdateView = true;
     mScanHandler = new ScanHandler(mVstBuckets);
 
-//    // TODO: Remove dummy data later on
-//    mScanResults.append(ScanResult("dummy-1",
-//                                   "/some/path/to/somewhere/dummy-1",
-//                                   QByteArray(),
-//                                   false));
-//    mScanResults.append(ScanResult("dummy-2",
-//                                   "/some/path/to/somewhere/dummy-2",
-//                                   QByteArray(),
-//                                   false));
-//    mScanResults.append(ScanResult("dummy-3",
-//                                   "/some/path/to/somewhere/dummy-3",
-//                                   QByteArray(),
-//                                   false));
-//    mScanResults.append(ScanResult("dummy-4",
-//                                   "/some/path/to/somewhere/dummy-4",
-//                                   QByteArray(),
-//                                   false));
+    /* Move ScanHandler to dedicated thread to circumvent
+     * obvious UI lock-up during long scans. */
+    mScanHandler->moveToThread(&mScanThread);
+    mScanThread.start();
 
     connect(this, &ModelScan::signalPerformScan, mScanHandler, &ScanHandler::slotPerformScan);
     connect(mScanHandler, &ScanHandler::signalScanDone, this, &ModelScan::slotScanDone);
+    connect(mScanHandler, &ScanHandler::signalScanCanceled, this, &ModelScan::slotScanCanceled);
 }
 
 ModelScan::~ModelScan()
 {
     delete mScanHandler;
+    mScanThread.quit();
+    mScanThread.wait();
 }
 
 int ModelScan::rowCount(const QModelIndex &parent) const
@@ -194,6 +184,16 @@ void ModelScan::slotScanDone()
 {
     fillModel();
     emit(signalScanDone(!mScanResults.isEmpty()));
+}
+
+void ModelScan::slotScanCancel()
+{
+    mScanThread.requestInterruption();
+}
+
+void ModelScan::slotScanCanceled()
+{
+    emit(signalScanCanceled());
 }
 
 bool ModelScan::isModelEmpty()
