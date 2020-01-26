@@ -12,7 +12,7 @@
 
 ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets, Preferences *pPrf)
 {
-    Q_UNUSED(parent);
+    this->setParent(parent);
     mHasher = new QCryptographicHash(QCryptographicHash::Sha1);
     mUpdateView = true;
     prf = pPrf;

@@ -9,6 +9,8 @@
 
 ModelScan::ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent) : mVstBuckets(pVstBuckets)
 {
+    this->setParent(parent);
+
     mUpdateView = true;
     scanHandler = new ScanHandler(mVstBuckets, &mScanResults);
 
@@ -103,8 +105,6 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
 
 QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    Q_UNUSED(section)
-    Q_UNUSED(orientation)
     switch(role) {
         case Qt::DisplayRole: {
             if (orientation == Qt::Horizontal) {
