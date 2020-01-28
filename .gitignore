@@ -5,3 +5,4 @@ Makefile
 dialog.ui
 tags
 *.autosave
+build/
