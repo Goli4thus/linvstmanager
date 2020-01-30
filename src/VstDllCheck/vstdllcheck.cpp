@@ -114,7 +114,10 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdline, int cmds
         return D_CHECK_FAILED_NO_PROCESSREPLACING;
     }
 
-    if(!(m_plugin->flags & effFlagsHasEditor)) {
+    if(m_plugin->flags & effFlagsHasEditor) {
+        if(libHandle) {
+            FreeLibrary(libHandle);	    
+        }
         return D_CHECK_PASSED;
     } else { 
         if(libHandle) {
