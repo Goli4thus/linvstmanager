@@ -1,8 +1,14 @@
 .qmake.stash
-LinVstManager.pro
+#LinVstManager.pro
 LinVstManager.pro.user*
+
 Makefile
+!src/VstDllCheck/Makefile
+
 dialog.ui
 tags
 *.autosave
 build/
+*.exe
+*.exe.so
+*.wine.o
