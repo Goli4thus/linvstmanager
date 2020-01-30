@@ -11,6 +11,7 @@ Preferences::Preferences()
     pathSoLinVst3 = "";
     pathSoLinVst3X = "";
     pathLinkFolder = "";
+    pathCheckTool = "";
     bridgeDefaultVst2IsX = false;
     bridgeDefaultVst3IsX = false;
 }
@@ -24,6 +25,7 @@ bool Preferences::updatePreferences(bool t_enabledLinVst,
                                     QString t_pathSoLinVst3,
                                     QString t_pathSoLinVst3X,
                                     QString t_pathLinkFolder,
+                                    QString t_pathCheckTool,
                                     bool t_bridgeDefaultVst2IsX,
                                     bool t_bridgeDefaultVst3IsX)
 {
@@ -65,6 +67,10 @@ bool Preferences::updatePreferences(bool t_enabledLinVst,
         pathLinkFolder = t_pathLinkFolder;
         prefsChanged = true;
     }
+    if (pathCheckTool != t_pathCheckTool) {
+        pathCheckTool = t_pathCheckTool;
+        prefsChanged = true;
+    }
     if (bridgeDefaultVst2IsX != t_bridgeDefaultVst2IsX) {
         bridgeDefaultVst2IsX = t_bridgeDefaultVst2IsX;
         prefsChanged = true;
@@ -77,49 +83,19 @@ bool Preferences::updatePreferences(bool t_enabledLinVst,
     return prefsChanged;
 }
 
-bool Preferences::getEnabledLinVst() const
-{
-    return enabledLinVst;
-}
-
-bool Preferences::getEnabledLinVstX() const
-{
-    return enabledLinVstX;
-}
-
-bool Preferences::getEnabledLinVst3() const
-{
-    return enabledLinVst3;
-}
-
-bool Preferences::getEnabledLinVst3X() const
-{
-    return enabledLinVst3X;
-}
-
-QString Preferences::getPathSoLinVst() const
-{
-    return pathSoLinVst;
-}
-
-QString Preferences::getPathSoLinVstX() const
-{
-    return pathSoLinVstX;
-}
-
-QString Preferences::getPathSoLinVst3() const
-{
-    return pathSoLinVst3;
-}
-
-QString Preferences::getPathSoLinVst3X() const
-{
-    return pathSoLinVst3X;
-}
-
 QString Preferences::getPathLinkFolder() const
 {
     return pathLinkFolder;
+}
+
+QString Preferences::getPathCheckTool() const
+{
+    return pathCheckTool;
+}
+
+bool Preferences::checkToolEnabled() const
+{
+    return !(pathCheckTool.isEmpty());
 }
 
 bool Preferences::getBridgeDefaultVst2IsX() const
@@ -148,6 +124,7 @@ bool Preferences::bridgeEnabled(VstBridge bridgeType) const
             return enabledLinVst3X;
         break;
     }
+    return false;
 }
 
 QString Preferences::getPathSoTmplBridge(VstBridge bridgeType) const
@@ -166,4 +143,5 @@ QString Preferences::getPathSoTmplBridge(VstBridge bridgeType) const
             return pathSoLinVst3X;
         break;
     }
+    return "";
 }

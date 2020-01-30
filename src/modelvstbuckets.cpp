@@ -371,6 +371,7 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
                newVstFound = false;
                break;
             }
+            // TODO: Q: Or would skipping based on filename alone be more robust (if so, adapt scan as well)?
         }
 
         if (newVstFound == true) {

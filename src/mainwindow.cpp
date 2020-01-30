@@ -107,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent)
     mTableview->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
 
     setupMenuBar();
-    mDialogScan = new DialogScan(mModelVstBuckets->getBufferVstBuckets());
+    mDialogScan = new DialogScan(prf, mModelVstBuckets->getBufferVstBuckets());
 
     connect(mModelVstBuckets, &ModelVstBuckets::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mDialogPreferences, &DialogPreferences::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);

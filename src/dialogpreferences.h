@@ -32,6 +32,7 @@ private:
     QGroupBox *mGroupBoxBridges;
     QGroupBox *mGroupBoxGeneral;
     QHBoxLayout *mLayoutHLinkFolder;
+    QHBoxLayout *mLayoutHCheckTool;
     LineEditBridge *mLineEditLinVst;
     LineEditBridge *mLineEditLinVstX;
     LineEditBridge *mLineEditLinVst3;
@@ -40,6 +41,9 @@ private:
     QLineEdit *mLineEditLinkFolder;
     QPushButton *mPushButtonLinkFolder;
     QLabel *labelLinkFolder;
+    QLineEdit *mLineEditCheckTool;
+    QPushButton *mPushButtonCheckTool;
+    QLabel *labelCheckTool;
     Preferences *prf;
     QRadioButton *mRadioButtonLinVst;
     QRadioButton *mRadioButtonLinVstX;
@@ -57,6 +61,7 @@ private:
     void fillPreferences();
 private slots:
     void slotButtonSelectLinkFolder();
+    void slotButtonSelectCheckTool();
     void slotButtonCancel();
     void slotButtonOk();
     void slotCheckBoxLinVst(bool isChecked);

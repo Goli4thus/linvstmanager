@@ -65,6 +65,7 @@ void DialogPreferences::setupUI()
     mLayoutVDefaultsVst3 = new QVBoxLayout();
     mLayoutVGeneral = new QVBoxLayout();
     mLayoutHLinkFolder = new QHBoxLayout();
+    mLayoutHCheckTool = new QHBoxLayout();
 
     mLineEditLinVst = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVst), this);
     mLineEditLinVstX = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVstX), this);
@@ -82,6 +83,9 @@ void DialogPreferences::setupUI()
     labelLinkFolder = new QLabel("Link folder:");
     mLineEditLinkFolder = new QLineEdit();
     mPushButtonLinkFolder = new QPushButton("Select");
+    labelCheckTool = new QLabel("'VstDllCheck.exe':");
+    mLineEditCheckTool = new QLineEdit();
+    mPushButtonCheckTool = new QPushButton("Select");
     mButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                       QDialogButtonBox::Cancel);
     HorizontalLine *line1 = new HorizontalLine();
@@ -133,12 +137,23 @@ void DialogPreferences::setupUI()
     // link folder
     mLineEditLinkFolder->setReadOnly(true);
     mLineEditLinkFolder->setToolTip("Specify the folder that shall contain all the bridged *.so files.");
-    labelLinkFolder->setMinimumWidth(80);
+    labelLinkFolder->setMinimumWidth(100);
+    labelLinkFolder->setToolTip("Specify the folder that shall contain all the bridged *.so files.");
     mLayoutHLinkFolder->addWidget(labelLinkFolder);
     mLayoutHLinkFolder->addWidget(mLineEditLinkFolder);
     mLayoutHLinkFolder->addWidget(mPushButtonLinkFolder);
 
+    // CheckTool
+    mLineEditCheckTool->setReadOnly(true);
+    mLineEditCheckTool->setToolTip("Locate the \'VstDllCheck.exe\" utility.");
+    labelCheckTool->setMinimumWidth(100);
+    labelCheckTool->setToolTip("Locate the \'VstDllCheck.exe\" utility.");
+    mLayoutHCheckTool->addWidget(labelCheckTool);
+    mLayoutHCheckTool->addWidget(mLineEditCheckTool);
+    mLayoutHCheckTool->addWidget(mPushButtonCheckTool);
+
     mLayoutVGeneral->addLayout(mLayoutHLinkFolder);
+    mLayoutVGeneral->addLayout(mLayoutHCheckTool);
 
     mGroupBoxGeneral->setLayout(mLayoutVGeneral);
 
@@ -149,9 +164,10 @@ void DialogPreferences::setupUI()
 
     mLayoutVMain->addWidget(line1);
     mLayoutVMain->addSpacing(10);
-    mLayoutVMain->addWidget(new QLabel("Hint: At least the following things need to be set for this to work:\n"
-                                       "                - one or more bridges\n"
-                                       "                - the link folder\n"));
+    mLayoutVMain->addWidget(new QLabel("Hint: The following things need to be set for full functionality:\n"
+                                       "                - one or more bridges (mandatory)\n"
+                                       "                - the link folder (mandatory)\n"
+                                       "                - the 'VstDllCheck' utility (optional: used during VST scanning)"));
     mLayoutVMain->addSpacing(10);
     mLayoutVMain->addWidget(line2);
     mLayoutVMain->addSpacing(10);
@@ -165,6 +181,7 @@ void DialogPreferences::setupUI()
 //    resize(500, 400);
 
     connect(mPushButtonLinkFolder, &QPushButton::pressed, this, &DialogPreferences::slotButtonSelectLinkFolder);
+    connect(mPushButtonCheckTool, &QPushButton::pressed, this, &DialogPreferences::slotButtonSelectCheckTool);
     connect(mButtonBox->button(QDialogButtonBox::Cancel), &QPushButton::pressed, this, &DialogPreferences::slotButtonCancel);
     connect(mButtonBox->button(QDialogButtonBox::Ok), &QPushButton::pressed, this, &DialogPreferences::slotButtonOk);
 
@@ -177,21 +194,21 @@ void DialogPreferences::setupUI()
 void DialogPreferences::fillPreferences()
 {
     // Bridges
-    mLineEditLinVst->setBridgeEnabled(prf->getEnabledLinVst());
-    mLineEditLinVstX->setBridgeEnabled(prf->getEnabledLinVstX());
-    mLineEditLinVst3->setBridgeEnabled(prf->getEnabledLinVst3());
-    mLineEditLinVst3X->setBridgeEnabled(prf->getEnabledLinVst3X());
+    mLineEditLinVst->setBridgeEnabled(prf->bridgeEnabled(VstBridge::LinVst));
+    mLineEditLinVstX->setBridgeEnabled(prf->bridgeEnabled(VstBridge::LinVstX));
+    mLineEditLinVst3->setBridgeEnabled(prf->bridgeEnabled(VstBridge::LinVst3));
+    mLineEditLinVst3X->setBridgeEnabled(prf->bridgeEnabled(VstBridge::LinVst3X));
 
-    mLineEditLinVst->setPath(prf->getPathSoLinVst());
-    mLineEditLinVstX->setPath(prf->getPathSoLinVstX());
-    mLineEditLinVst3->setPath(prf->getPathSoLinVst3());
-    mLineEditLinVst3X->setPath(prf->getPathSoLinVst3X());
+    mLineEditLinVst->setPath(prf->getPathSoTmplBridge(VstBridge::LinVst));
+    mLineEditLinVstX->setPath(prf->getPathSoTmplBridge(VstBridge::LinVstX));
+    mLineEditLinVst3->setPath(prf->getPathSoTmplBridge(VstBridge::LinVst3));
+    mLineEditLinVst3X->setPath(prf->getPathSoTmplBridge(VstBridge::LinVst3X));
 
     // Defaults
-    mRadioButtonLinVst->setEnabled(prf->getEnabledLinVst());
-    mRadioButtonLinVstX->setEnabled(prf->getEnabledLinVstX());
-    mRadioButtonLinVst3->setEnabled(prf->getEnabledLinVst3());
-    mRadioButtonLinVst3X->setEnabled(prf->getEnabledLinVst3X());
+    mRadioButtonLinVst->setEnabled(prf->bridgeEnabled(VstBridge::LinVst));
+    mRadioButtonLinVstX->setEnabled(prf->bridgeEnabled(VstBridge::LinVstX));
+    mRadioButtonLinVst3->setEnabled(prf->bridgeEnabled(VstBridge::LinVst3));
+    mRadioButtonLinVst3X->setEnabled(prf->bridgeEnabled(VstBridge::LinVst3X));
 
     if (prf->getBridgeDefaultVst2IsX()) {
         mRadioButtonLinVstX->setChecked(true);
@@ -207,6 +224,7 @@ void DialogPreferences::fillPreferences()
 
     // General
     mLineEditLinkFolder->setText(prf->getPathLinkFolder());
+    mLineEditCheckTool->setText(prf->getPathCheckTool());
 }
 
 void DialogPreferences::slotButtonSelectLinkFolder()
@@ -222,6 +240,22 @@ void DialogPreferences::slotButtonSelectLinkFolder()
                                          lastDir);
     if (!path_linkFolder.isEmpty()) {
         mLineEditLinkFolder->setText(path_linkFolder);
+    }
+}
+
+void DialogPreferences::slotButtonSelectCheckTool()
+{
+    QString lastDir = QDir::homePath();
+
+    if (mLineEditCheckTool->text() != "") {
+        lastDir = QFileInfo(mLineEditCheckTool->text()).path();
+    }
+
+    QString path_checkTool = QFileDialog::getOpenFileName(this,
+                                         "Locate the \'VstDllCheck.exe\" utility.",
+                                         lastDir, "(VstDllCheck.exe)");
+    if (!path_checkTool.isEmpty()) {
+        mLineEditCheckTool->setText(path_checkTool);
     }
 }
 
@@ -251,6 +285,7 @@ void DialogPreferences::slotButtonOk()
                                               mLineEditLinVst3->getPath(),
                                               mLineEditLinVst3X->getPath(),
                                               mLineEditLinkFolder->text(),
+                                              mLineEditCheckTool->text(),
                                               mRadioButtonLinVstX->isChecked(),
                                               mRadioButtonLinVst3X->isChecked());
         if (prefsChanged) {

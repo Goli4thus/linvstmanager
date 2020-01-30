@@ -9,6 +9,17 @@ set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
+# Debug message enabling
+if(ENABLE_DEBUG_MSG)
+    set(DEBUG_MSG_ENABLED "1")
+else()
+    set(DEBUG_MSG_ENABLED "0")
+endif()
+
+# Unset this variable, so that in case the user doesn't specify it,
+# we default back to "debug msg not enabled".
+unset(ENABLE_DEBUG_MSG CACHE)
+
 # Set installation path
 set(INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "")
 
@@ -20,7 +31,8 @@ find_package(Qt5Widgets REQUIRED)
 # Generate config header
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
-	${CMAKE_CURRENT_BINARY_DIR}/src/config.h
+	#${CMAKE_CURRENT_BINARY_DIR}/src/config.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/config.h
 )
 
 include_directories(
@@ -30,7 +42,8 @@ include_directories(
 
 # Set compiler flags
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -D__WIDL_objidl_generated_name_0000000C=")
+    #set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -D__WIDL_objidl_generated_name_0000000C=")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra")
 	set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
@@ -83,6 +96,8 @@ set(LIBRARIES
 
 #qt5_add_resources(RCC_SOURCES ${RESOURCES})
 
+
+
 # Set target
 #add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS} ${RCC_SOURCES})
 add_executable(${TARGET_NAME} ${SOURCES})
@@ -102,3 +117,14 @@ target_link_libraries(${TARGET_NAME} ${LIBRARIES})
 
 #install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
 		#DESTINATION share/applications)
+        
+
+
+################################################################
+###### Triggering make based build of VstDllCheck utility ######
+################################################################
+add_custom_target(TargetVstDllCheck ALL make
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/VstDllCheck
+    COMMENT "Building VstDllCheck utility..."
+)
+

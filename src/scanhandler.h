@@ -20,13 +20,17 @@ private:
     QByteArray calcFilepathHash(QString filepath);
     const QList<VstBucket> *mVstBuckets;
     QMap<VstType, QString> mapVstExtension;
+    bool checkDll(QString &pathCheckTool, QString findingAbsPath);
 
 signals:
     void signalScanDone();
     void signalScanCanceled();
+    void signalFoundVst3();
+    void signalFoundVst2();
+    void signalFoundDll();
 
 public slots:
-    void slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults);
+    void slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults, QString pathCheckTool, bool useCheckTool);
 
 };
 

@@ -6,7 +6,10 @@
 #include "vstbucket.h"
 #include "scanresult.h"
 #include <QDebug>
+#include <QProcess>
 #include <QThread>
+#include "VstDllCheck/vstdllcheck.h"
+
 
 ScanHandler::ScanHandler(const QList<VstBucket> *pVstBuckets, QObject *parent)
     : QObject(parent), mVstBuckets(pVstBuckets)
@@ -29,7 +32,55 @@ QByteArray ScanHandler::calcFilepathHash(QString filepath)
     return mHasher->result();
 }
 
-void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults)
+bool ScanHandler::checkDll(QString &pathCheckTool, QString findingAbsPath)
+{
+    /*
+     * Call the external utility "vstdllcheck" and evaluate its exit code
+     * to determine if the specified dll (via absPath) is a VST or not.
+     */
+    bool retVal;
+    int exitCode;
+
+    exitCode = QProcess::execute(pathCheckTool + " " + findingAbsPath);
+    switch (exitCode) {
+        case D_CHECK_PASSED:
+            qDebug() << "checkDll(): " << "D_CHECK_PASSED" << "( " << findingAbsPath << " )";
+            retVal = true;
+        break;
+        case D_CHECK_FAILED_LIBRARYLOADERROR:
+            qDebug() << "checkDll(): " << "D_CHECK_FAILED_LIBRARYLOADERROR" << "( " << findingAbsPath << " )";
+            retVal = false;
+        break;
+        case D_CHECK_FAILED_ENTRYPOINT_NOT_FOUND:
+            qDebug() << "checkDll(): " << "D_CHECK_FAILED_ENTRYPOINT_NOT_FOUND" << "( " << findingAbsPath << " )";
+            retVal = false;
+        break;
+        case D_CHECK_FAILED_AEFFECTERROR:
+            qDebug() << "checkDll(): " << "D_CHECK_FAILED_AEFFECTERROR" << "( " << findingAbsPath << " )";
+            retVal = false;
+        break;
+        case D_CHECK_FAILED_NO_KEFFECTMAGIC_NO_VST:
+            qDebug() << "checkDll(): " << "D_CHECK_FAILED_NO_KEFFECTMAGIC_NO_VST" << "( " << findingAbsPath << " )";
+            retVal = false;
+        break;
+        case D_CHECK_FAILED_NO_PROCESSREPLACING:
+            qDebug() << "checkDll(): " << "D_CHECK_FAILED_NO_PROCESSREPLACING" << "( " << findingAbsPath << " )";
+            retVal = false;
+        break;
+        case D_CHECK_FAILED_NO_EDITOR:
+            qDebug() << "checkDll(): " << "D_CHECK_FAILED_NO_EDITOR" << "( " << findingAbsPath << " )";
+            retVal = false;
+        break;
+        default:
+            qDebug() << "checkDll(): " << "default case (shouldn't happen at all";
+            retVal = false;
+        break;
+    }
+
+    return retVal;
+}
+
+void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults, QString pathCheckTool, bool useCheckTool)
 {
     /* TODO: slotPerformScan(): Basically:
      * 1) Perform the iterative scan
@@ -74,17 +125,26 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
         // Skip findings that are already part of tracked VstBuckets
         hash = calcFilepathHash(finding);
         if (!existingPathHashes.contains(hash)) {
-            // TODO: Check if "*.dll" and actually a VST (needs wine?!?)
             qDebug() << "New finding: " << finding;
-
 
             QFileInfo fileType(finding);
             if ((fileType.suffix() == "dll")
                     || (fileType.suffix() == "Dll")
                     || (fileType.suffix() == "DLL")) {
                 vstType = VstType::VST2;
+
+                if (useCheckTool) {
+                    if (!checkDll(pathCheckTool, finding)) {
+                        // Not a VST; therefore skip.
+                        emit (signalFoundDll());
+                        continue;
+                    }
+                } else {
+                    emit (signalFoundVst2());
+                }
             } else {  // ".vst3"
                 vstType = VstType::VST3;
+                emit (signalFoundVst3());
             }
             scanResults->append(ScanResult(QFileInfo(finding).baseName(),
                                            finding,

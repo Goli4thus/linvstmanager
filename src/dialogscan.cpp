@@ -24,18 +24,24 @@
 #include <QShortcut>
 #include <customprogressdialog.h>
 #include <QTimer>
+#include <QCheckBox>
 
 #include "horizontalline.h"
 #include "verticalline.h"
+#include "preferences.h"
 
-DialogScan::DialogScan(const QList<VstBucket> *pVstBuckets) : mVstBuckets(pVstBuckets)
+DialogScan::DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets) : mVstBuckets(pVstBuckets)
 {
+    prf = t_prf;
     setupUI();
 
     connect(mModelScan, &ModelScan::signalScanDone, this, &DialogScan::slotScanDone);
     connect(mModelScan, &ModelScan::signalScanCanceled, this, &DialogScan::slotScanCanceled);
     // TODO: Connect to user "Cancel scan" button
     connect(mProgressDialog, &CustomProgressDialog::signalCancelPressed, this, &DialogScan::slotScanCancel);
+    connect(mModelScan, &ModelScan::signalFoundVst2, mProgressDialog, &CustomProgressDialog::slotFoundVst2);
+    connect(mModelScan, &ModelScan::signalFoundVst3, mProgressDialog, &CustomProgressDialog::slotFoundVst3);
+    connect(mModelScan, &ModelScan::signalFoundDll, mProgressDialog, &CustomProgressDialog::slotFoundDll);
 }
 
 void DialogScan::setupUI()
@@ -91,6 +97,9 @@ void DialogScan::setupUI()
     mLayoutHScanFolder->addWidget(mLineEditScanFolder);
     mLayoutHScanFolder->addWidget(mPushButtonSelectFolder);
     mPushButtonScan->setEnabled(false);
+
+    mCheckBoxCheckTool = new QCheckBox("Verify dll-files for being actual VST files.");
+    mCheckBoxCheckTool->setToolTip("Requires 'VstDllCheck.exe' being setup in preferences.");
 
     // ============================
     // === Second row: listview ===
@@ -162,6 +171,8 @@ void DialogScan::setupUI()
     mLayoutVMain->addWidget(hLineTop);
     mLayoutVMain->addLayout(mLayoutHScanFolder);
     mLayoutVMain->addSpacing(5);
+    mLayoutVMain->addWidget(mCheckBoxCheckTool);
+    mLayoutVMain->addSpacing(5);
     mLayoutVMain->addWidget(hLine1);
     mLayoutVMain->addSpacing(5);
     mLayoutVMain->addLayout(mLayoutHListView);
@@ -172,7 +183,16 @@ void DialogScan::setupUI()
 
     this->setLayout(mLayoutVMain);
     setMinimumWidth(590);
-    resize(650, 400);
+    resize(650, 450);
+
+    // Setup checkbox re CheckTool
+    if (prf->checkToolEnabled()) {
+        mCheckBoxCheckTool->setEnabled(true);
+        mCheckBoxCheckTool->setChecked(true);
+    } else {
+        mCheckBoxCheckTool->setEnabled(false);
+        mCheckBoxCheckTool->setChecked(false);
+    }
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -298,7 +318,7 @@ void DialogScan::slotSelectScanFolder()
 
 void DialogScan::slotScan()
 {
-    mModelScan->triggerScan(mLineEditScanFolder->text());
+    mModelScan->triggerScan(mLineEditScanFolder->text(), prf->getPathCheckTool(), mCheckBoxCheckTool->isChecked());
 
     /* Start progressbar dialog based on fixed increments by timer
      * Though: We don't know how long the scan actually takes, therefore
