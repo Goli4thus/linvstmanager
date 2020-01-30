@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <stdlib.h>
+#include "config.h"
 
 void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -9,9 +10,9 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context, con
     const char *function = context.function ? context.function : "";
     switch (type) {
         case QtDebugMsg:
-            if (false) {
+#if (D_OUTPUT_DEBUG_MSG == 1)
                 fprintf(stderr, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
-            }
+#endif
         break;
         case QtInfoMsg:
             fprintf(stderr, "Info: %s (%s:%u, %s)\n", localMsg.constData(), file, context.line, function);
