@@ -19,18 +19,13 @@ public:
                            QString t_pathSoLinVst3,
                            QString t_pathSoLinVst3X,
                            QString t_pathLinkFolder,
+                           QString t_pathCheckTool,
                            bool t_bridgeDefaultVst2IsX,
                            bool t_bridgeDefaultVst3IsX);
 
-    bool getEnabledLinVst() const;
-    bool getEnabledLinVstX() const;
-    bool getEnabledLinVst3() const;
-    bool getEnabledLinVst3X() const;
-    QString getPathSoLinVst() const;
-    QString getPathSoLinVstX() const;
-    QString getPathSoLinVst3() const;
-    QString getPathSoLinVst3X() const;
     QString getPathLinkFolder() const;
+    QString getPathCheckTool() const;
+    bool checkToolEnabled() const;
     bool getBridgeDefaultVst2IsX() const;
     bool getBridgeDefaultVst3IsX() const;
     bool bridgeEnabled(VstBridge bridgeType) const;
@@ -46,6 +41,7 @@ private:
     QString pathSoLinVst3;
     QString pathSoLinVst3X;
     QString pathLinkFolder;
+    QString pathCheckTool;
     bool bridgeDefaultVst2IsX;
     bool bridgeDefaultVst3IsX;
 };

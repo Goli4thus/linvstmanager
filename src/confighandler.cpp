@@ -31,7 +31,8 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
                   << "pathSoLinVstX"
                   << "pathSoLinVst3"
                   << "pathSoLinVst3X"
-                  << "pathLinkFolder";
+                  << "pathLinkFolder"
+                  << "pathCheckTool";
 
     mapBridgeStr.insert(VstBridge::LinVst,   "LinVst");
     mapBridgeStr.insert(VstBridge::LinVstX,  "LinVstX");
@@ -74,6 +75,7 @@ void ConfigHandler::writePreferences(const Preferences &prf)
     xmlWriter->writeTextElement(prefPathNames.at(3), prf.getPathSoTmplBridge(VstBridge::LinVst3X));
 
     xmlWriter->writeTextElement(prefPathNames.at(4), prf.getPathLinkFolder());
+    xmlWriter->writeTextElement(prefPathNames.at(5), prf.getPathCheckTool());
 }
 
 void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
@@ -133,6 +135,7 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
                           pathValues.at(2),
                           pathValues.at(3),
                           pathValues.at(4),
+                          pathValues.at(5),
                           boolValues.at(4),
                           boolValues.at(5));
 

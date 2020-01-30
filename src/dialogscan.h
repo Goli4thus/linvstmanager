@@ -21,12 +21,14 @@ class VstBucket;
 class QMenu;
 class QShortcut;
 class CustomProgressDialog;
+class QCheckBox;
+class Preferences;
 
 class DialogScan : public QDialog
 {
     Q_OBJECT
 public:
-    DialogScan(const QList<VstBucket> *pVstBuckets);
+    DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets);
 
 private:
     const QList<VstBucket> *mVstBuckets;
@@ -44,6 +46,7 @@ private:
     QPushButton *mPushButtonFilter;
     QPushButton *mPushButtonCancel;
     QPushButton *mPushButtonAdd;
+    QCheckBox *mCheckBoxCheckTool;
     QTableView *mTableview;
     QWidget *mFilterBar;
     QHBoxLayout *mFilterBarLayout;
@@ -63,6 +66,7 @@ private:
     QShortcut *shortcutUnselect;
     QShortcut *shortcutFilter;
     CustomProgressDialog *mProgressDialog;
+    Preferences *prf;
     void setupMouseMenu();
     void enableViewUpdate(bool enable);
     void repaintTableview();

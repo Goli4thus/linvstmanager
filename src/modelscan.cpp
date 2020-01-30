@@ -22,6 +22,9 @@ ModelScan::ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent) : mVs
     connect(this, &ModelScan::signalPerformScan, mScanHandler, &ScanHandler::slotPerformScan);
     connect(mScanHandler, &ScanHandler::signalScanDone, this, &ModelScan::slotScanDone);
     connect(mScanHandler, &ScanHandler::signalScanCanceled, this, &ModelScan::slotScanCanceled);
+    connect(mScanHandler, &ScanHandler::signalFoundVst2, this, &ModelScan::signalFoundVst2);
+    connect(mScanHandler, &ScanHandler::signalFoundVst3, this, &ModelScan::signalFoundVst3);
+    connect(mScanHandler, &ScanHandler::signalFoundDll, this, &ModelScan::signalFoundDll);
 }
 
 ModelScan::~ModelScan()
@@ -153,7 +156,7 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void ModelScan::triggerScan(QString scanFolder)
+void ModelScan::triggerScan(QString scanFolder, QString pathCheckTool, bool useCheckTool)
 {
     /* TODO: triggerScan
      * Q: The actual scan should probably be done in a separate thread, shouldn't it?
@@ -163,7 +166,7 @@ void ModelScan::triggerScan(QString scanFolder)
 
     // Pass temporary buffer. Buffer associated with model will be filled after scan is finished.
     mScanResultsTmp.clear();
-    emit(signalPerformScan(scanFolder, &mScanResultsTmp));
+    emit(signalPerformScan(scanFolder, &mScanResultsTmp, pathCheckTool, useCheckTool));
 }
 
 void ModelScan::emptyModel()

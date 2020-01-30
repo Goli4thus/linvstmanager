@@ -12,13 +12,13 @@ LINK_FLAGS   = $(LDFLAGS)
 
 LINK_WINE   = -L/usr/lib/x86_64-linux-gnu/wine-development -lpthread -lrt -lshell32 $(LINK_FLAGS)
 
-TARGETS     = vstdllcheck.exe
+TARGETS     = VstDllCheck.exe
 
 # --------------------------------------------------------------
 
 all: $(TARGETS)
 
-vstdllcheck.exe: vstdllcheck.wine.o
+VstDllCheck.exe: vstdllcheck.wine.o
 	$(WINECXX) -m64 $^ $(LINK_WINE) -o $@
 
 # --------------------------------------------------------------
