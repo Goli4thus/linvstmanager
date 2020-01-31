@@ -13,9 +13,9 @@ CustomProgressDialog::CustomProgressDialog()
 {
     this->setWindowTitle("Scan");
 
-    mLayoutVMain = new QVBoxLayout(this);
-    mLayoutGridCounter = new QGridLayout(this);
-    mLayoutHBottom = new QHBoxLayout(this);
+    mLayoutVMain = new QVBoxLayout();
+    mLayoutGridCounter = new QGridLayout();
+    mLayoutHBottom = new QHBoxLayout();
     mLabelMain = new QLabel("Scanning for VSTs...", this);
     mProgressBar = new QProgressBar(this);
     HorizontalLine *hline = new HorizontalLine();

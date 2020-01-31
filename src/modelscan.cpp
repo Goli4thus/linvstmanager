@@ -38,16 +38,16 @@ ModelScan::~ModelScan()
 
 int ModelScan::rowCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     return mScanResults.size();
 }
 
 int ModelScan::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     // Columns:
-    // | Selected | Name | Type | Path | Index |
-    return 5;
+    // | Selected | Name | Type | Path | (Index) |
+    return 4;
 }
 
 QVariant ModelScan::data(const QModelIndex &index, int role) const
@@ -63,32 +63,26 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                             return "---";
                         }
                     }
-                    break;
                     case 1: {
                         return mScanResults.at(index.row()).name;
                     }
-                    break;
                     case 2: {
                         switch (mScanResults.at(index.row()).vstType) {
                             case VstType::VST2: {
                                 return QString("VST2");
                             }
-                            break;
                             case VstType::VST3: {
                                 return QString("VST3");
                             }
-                            break;
                         }
                     }
                     break;
                     case 3: {
                         return mScanResults.at(index.row()).vstPath;
                     }
-                    break;
                     case 4: {   // original index
                         return index.row();
                     }
-                    break;
                 }
             }
             break;
@@ -142,11 +136,9 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
             boldFont.setBold(false);
             return boldFont;
         }
-        break;
         case Qt::TextAlignmentRole: {
             return Qt::AlignLeft + Qt::AlignVCenter;
         }
-        break;
         case Qt::ToolTipRole: {
             if (section == 0) {
                 return QString("-S-\t: Selected\n"

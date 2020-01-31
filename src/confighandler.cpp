@@ -27,7 +27,8 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
                   << "f_enabledLinVst3"
                   << "f_enabledLinVst3X"
                   << "f_bridgeDefaultVst2IsX"
-                  << "f_bridgeDefaultVst3IsX";
+                  << "f_bridgeDefaultVst3IsX"
+                  << "t_hideBlacklisted";
 
     prefPathNames << "pathSoLinVst"
                   << "pathSoLinVstX"
@@ -41,14 +42,14 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
     mapBridgeStr.insert(VstBridge::LinVst3,  "LinVst3");
     mapBridgeStr.insert(VstBridge::LinVst3X, "LinVst3X");
 
-    mapStatusStr.insert(VstStatus::Enabled, "Enabled");
-    mapStatusStr.insert(VstStatus::Disabled, "Disabled");
-    mapStatusStr.insert(VstStatus::Mismatch, "Mismatch");
-    mapStatusStr.insert(VstStatus::No_So, "No_So");
-    mapStatusStr.insert(VstStatus::NotFound, "NotFound");
-    mapStatusStr.insert(VstStatus::NoBridge, "NoBridge");
-    mapStatusStr.insert(VstStatus::Orphan, "Orphan");
-    mapStatusStr.insert(VstStatus::NA, "NA");
+    mapStatusStr.insert(VstStatus::Enabled,     "Enabled");
+    mapStatusStr.insert(VstStatus::Disabled,    "Disabled");
+    mapStatusStr.insert(VstStatus::Mismatch,    "Mismatch");
+    mapStatusStr.insert(VstStatus::No_So,       "No_So");
+    mapStatusStr.insert(VstStatus::NotFound,    "NotFound");
+    mapStatusStr.insert(VstStatus::NoBridge,    "NoBridge");
+    mapStatusStr.insert(VstStatus::Orphan,      "Orphan");
+    mapStatusStr.insert(VstStatus::NA,          "NA");
     mapStatusStr.insert(VstStatus::Blacklisted, "Blacklisted");
 
     mapTypeStr.insert(VstType::VST2, "VST2");
@@ -70,6 +71,7 @@ void ConfigHandler::writePreferences(const Preferences &prf)
 
     xmlWriter->writeTextElement(prefBoolNames.at(4), prf.getBridgeDefaultVst2IsX() ? ("true") : ("false"));
     xmlWriter->writeTextElement(prefBoolNames.at(5), prf.getBridgeDefaultVst3IsX() ? ("true") : ("false"));
+    xmlWriter->writeTextElement(prefBoolNames.at(6), prf.getHideBlacklisted() ? ("true") : ("false"));
 
     xmlWriter->writeTextElement(prefPathNames.at(0), prf.getPathSoTmplBridge(VstBridge::LinVst));
     xmlWriter->writeTextElement(prefPathNames.at(1), prf.getPathSoTmplBridge(VstBridge::LinVstX));
@@ -132,14 +134,15 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
                           boolValues.at(1),
                           boolValues.at(2),
                           boolValues.at(3),
+                          boolValues.at(4),
+                          boolValues.at(5),
+                          boolValues.at(6),
                           pathValues.at(0),
                           pathValues.at(1),
                           pathValues.at(2),
                           pathValues.at(3),
                           pathValues.at(4),
-                          pathValues.at(5),
-                          boolValues.at(4),
-                          boolValues.at(5));
+                          pathValues.at(5));
 
     // Skip the closing element (returns false)
     xmlReader->skipCurrentElement();

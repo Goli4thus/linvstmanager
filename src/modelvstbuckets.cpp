@@ -38,13 +38,13 @@ ModelVstBuckets::~ModelVstBuckets()
 
 int ModelVstBuckets::rowCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
     return mVstBuckets.size();
 }
 
 int ModelVstBuckets::columnCount(const QModelIndex &parent) const
 {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent)
 
     // Columns:
     // | New | Status | Name | Type | Bridge | Path | Index |
@@ -65,45 +65,35 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         }
 
                     }
-                    break;
                     case TableColumnPosType::Status: {
                         switch (mVstBuckets.at(index.row()).status) {
                             case Enabled: {
                                 return QString("Enabled");
                             }
-                            break;
                             case Disabled: {
                                 return QString("Disabled");
                             }
-                            break;
                             case Mismatch: {
                                 return QString("Mismatch");
                             }
-                            break;
                             case No_So: {
                                 return QString("No_So");
                             }
-                            break;
                             case NotFound: {
                                 return QString("NotFound");
                             }
-                            break;
                             case Orphan: {
                                 return QString("Orphan");
                             }
-                            break;
                             case NoBridge: {
                                 return QString("NoBridge");
                             }
-                            break;
                             case NA: {
                                 return QString("NA");
                             }
-                            break;
                             case Blacklisted: {
                                 return QString("Blacklisted");
                             }
-                            break;
                         }
                     }
                     break;
@@ -112,11 +102,9 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                             case VstType::VST2: {
                                 return QString("VST2");
                             }
-                            break;
                             case VstType::VST3: {
                                 return QString("VST3");
                             }
-                            break;
                         }
                     }
                     break;
@@ -125,26 +113,21 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                             case VstBridge::LinVst: {
                                 return QString("LinVst");
                             }
-                            break;
                             case VstBridge::LinVstX: {
                                 return QString("LinVst-X");
                             }
-                            break;
                             case VstBridge::LinVst3: {
                                 return QString("LinVst3");
                             }
-                            break;
                             case VstBridge::LinVst3X: {
                                 return QString("LinVst3-X");
                             }
-                            break;
                         }
                     }
                     break;
                     case TableColumnPosType::Name: {
                         return mVstBuckets.at(index.row()).name;
                     }
-                    break;
                     case TableColumnPosType::Path: {
 //                        // Show in '~/' notation
 //                        int lenHome = QDir::homePath().length();
@@ -152,11 +135,9 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
 //                        return mVstBuckets.at(index.row()).vstPath.right(lenFile - lenHome);
                         return mVstBuckets.at(index.row()).vstPath;
                     }
-                    break;
                     case TableColumnPosType::Index: {   // original index
                         return index.row();
                     }
-                    break;
                 }
             }
             break;
@@ -323,11 +304,9 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
             boldFont.setBold(false);
             return boldFont;
         }
-        break;
         case Qt::TextAlignmentRole: {
             return Qt::AlignLeft + Qt::AlignVCenter;
         }
-        break;
         case Qt::ToolTipRole: {
             if (section == TableColumnPosType::NewlyAdded) {
                 return QString("Newly added");
