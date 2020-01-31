@@ -172,11 +172,12 @@ void MainWindow::setupMenuBar()
     // menu: View
     QAction *actionResizeTableToContent = new QAction(tr("&Resize table to content"), this);
     QAction *actionFilter = new QAction(tr("&Filter"), this);
-    QMenu *subMenuDebug = new QMenu(tr("&Debug"), this);
     actionVerboseLogOutput = new QAction(tr("&Verbose log output"), this);
     actionVerboseLogOutput->setCheckable(true);
     actionVerboseLogOutput->setChecked(false);
-    subMenuDebug->addAction(actionVerboseLogOutput);
+    actionHideBlacklisted = new QAction(tr("&Hide blacklisted"), this);
+    actionHideBlacklisted->setCheckable(true);
+    actionHideBlacklisted->setChecked(false);
 
     // menu: Options
     QAction *actionPreferences = new QAction(tr("&Preferences"), this);
@@ -228,7 +229,9 @@ void MainWindow::setupMenuBar()
 
     menuView->addAction(actionFilter);
     menuView->addAction(actionResizeTableToContent);
-    menuView->addMenu(subMenuDebug);
+    menuView->addSeparator();
+    menuView->addAction(actionVerboseLogOutput);
+    menuView->addAction(actionHideBlacklisted);
 
     menuOptions->addAction(actionPreferences);
 
@@ -255,6 +258,7 @@ void MainWindow::setupMenuBar()
     connect(actionSetBridgeLinVst3X, &QAction::triggered, this, &MainWindow::slotSetBridgeLinVst3X);
 
     connect(actionVerboseLogOutput, &QAction::triggered, this, &MainWindow::slotVerboseLogOutput);
+    connect(actionHideBlacklisted, &QAction::triggered, this, &MainWindow::slotHideBlacklisted);
 
     connect(actionPreferences, &QAction::triggered, this, &MainWindow::slotDialogPreferences);
     connect(actionFilter, &QAction::triggered, this, &MainWindow::slotFilterBar);
@@ -563,6 +567,16 @@ void MainWindow::slotVerboseLogOutput()
         mLogOutput->enableVerboseLog(true);
     } else {
         mLogOutput->enableVerboseLog(false);
+    }
+}
+
+void MainWindow::slotHideBlacklisted()
+{
+    if (actionHideBlacklisted->isChecked()) {
+        // TODO: update prf
+        // TODO: inform model
+    } else {
+
     }
 }
 

@@ -18,6 +18,7 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
     this->setParent(parent);
     mHasher = new QCryptographicHash(QCryptographicHash::Sha1);
     mUpdateView = true;
+    mHideBlacklisted = false;
     prf = pPrf;
 
     // Fill model with data if available

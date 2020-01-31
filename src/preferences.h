@@ -22,6 +22,7 @@ public:
                            QString t_pathSoLinVst3X,
                            QString t_pathLinkFolder,
                            QString t_pathCheckTool,
+                           bool t_hideBlacklisted,
                            bool t_bridgeDefaultVst2IsX,
                            bool t_bridgeDefaultVst3IsX);
 
@@ -30,6 +31,7 @@ public:
     bool checkToolEnabled() const;
     bool getBridgeDefaultVst2IsX() const;
     bool getBridgeDefaultVst3IsX() const;
+    bool getHideBlacklisted() const;
     bool bridgeEnabled(VstBridge bridgeType) const;
     QString getPathSoTmplBridge(VstBridge bridgeType) const;
 
@@ -44,6 +46,7 @@ private:
     QString pathSoLinVst3X;
     QString pathLinkFolder;
     QString pathCheckTool;
+    bool hideBlacklisted;
     bool bridgeDefaultVst2IsX;
     bool bridgeDefaultVst3IsX;
 };

@@ -62,6 +62,7 @@ private:
     QFileInfo *configFileInfo;
     bool configNeedsSaving;
     QAction *actionVerboseLogOutput;
+    QAction *actionHideBlacklisted;
 
 private slots:
     void slotResizeMainUi();
@@ -78,6 +79,7 @@ private slots:
     void slotSetBridgeLinVst3();
     void slotSetBridgeLinVst3X();
     void slotVerboseLogOutput();
+    void slotHideBlacklisted();
     void slotAddScannedVst(QList<ScanResult> scanSelection);
 
     void slotMouseRightClickOnVst(QPoint point);

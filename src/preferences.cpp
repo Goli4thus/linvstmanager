@@ -27,7 +27,7 @@ bool Preferences::updatePreferences(bool t_enabledLinVst,
                                     QString t_pathSoLinVst3,
                                     QString t_pathSoLinVst3X,
                                     QString t_pathLinkFolder,
-                                    QString t_pathCheckTool,
+                                    QString t_pathCheckTool, bool t_hideBlacklisted,
                                     bool t_bridgeDefaultVst2IsX,
                                     bool t_bridgeDefaultVst3IsX)
 {
@@ -71,6 +71,10 @@ bool Preferences::updatePreferences(bool t_enabledLinVst,
     }
     if (pathCheckTool != t_pathCheckTool) {
         pathCheckTool = t_pathCheckTool;
+        prefsChanged = true;
+    }
+    if (hideBlacklisted != t_hideBlacklisted) {
+        hideBlacklisted = t_hideBlacklisted;
         prefsChanged = true;
     }
     if (bridgeDefaultVst2IsX != t_bridgeDefaultVst2IsX) {
@@ -146,4 +150,9 @@ QString Preferences::getPathSoTmplBridge(VstBridge bridgeType) const
         break;
     }
     return "";
+}
+
+bool Preferences::getHideBlacklisted() const
+{
+    return hideBlacklisted;
 }
