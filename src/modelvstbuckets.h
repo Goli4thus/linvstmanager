@@ -20,7 +20,6 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
 
-    // TODO: Consider adding return values to these methods in conjunctionw with LinkHandler implementation
     void addVstBucket(QStringList filepaths_VstDll);
     void removeVstBucket(QList<int>indexOfVstBuckets);
     void enableVstBucket(QList<int>indexOfVstBuckets);
@@ -47,6 +46,7 @@ private:
 signals:
     void signalTableOperationFinished();
     void signalConfigDataChanged();
+    void signalFeedbackLogOutput(QString msg, bool isVerbose = false);
 
 public slots:
     void slotUpdateHashes();

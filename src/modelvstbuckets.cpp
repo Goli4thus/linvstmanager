@@ -371,7 +371,14 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
                newVstFound = false;
                break;
             }
-            // TODO: Q: Or would skipping based on filename alone be more robust (if so, adapt scan as well)?
+            /* Q: Would skipping based on filename alone instead of full path be more robust?
+             * -->> Depends...
+             *    - If we assume that the same VST is installed in different folders,
+             *      then the hash would be different and both would be added as of now.
+             *    - Using a 'filename only' approach would fix this, but if two vendors create
+             *      a VST with the same name (i.e. EQ.dll), then only one would be added.
+             *      Whereas with a 'full path' approach both would.
+             */
         }
 
         if (newVstFound == true) {
@@ -398,10 +405,13 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
                     bridgeType = VstBridge::LinVst3;
                 }
             }
-
-            // TODO: Call linkhandler. Only update status if it actually worked.
-            // Actually not sure: Should we even do anything re linkhandler here?
-            // Would it be an option to allow user to trigger update to get to "Disabled" status?
+            /* One could invoke linkhandler here to get newly added
+             * VSTs to state "Disabled" right away. But if we consider that the user might
+             * want to change the bridge of a VST right after the add, getting to "Disabled"
+             * (meaning creating a so-file alongside the added VST file) beforehand would have
+             * been for nothing.
+             * So we leave the decision of when to perform an 'update' for the user.
+             */
 
             beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount());
             mVstBuckets.append(VstBucket(name,
@@ -415,7 +425,7 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
         }
         else
         {
-            // TODO: Consider informing user via logOutput about the Vst already being there in the table
+            emit (signalFeedbackLogOutput("- Skipped VST (already there): " + filepath));
         }
     }
     //    qDebug() << "filepath_Hash: " << filepath_Hash;
@@ -451,7 +461,9 @@ void ModelVstBuckets::enableVstBucket(QList<int> indexOfVstBuckets)
         if (lh->enableVst(index) == RvLinkHandler::LH_OK) {
             emit(signalConfigDataChanged());
         } else {
-            qDebug() << "(MVB): enableVstBucket: not LH_OK for index: " << index;
+            QString msg("(MVB): enableVstBucket: not LH_OK for index: " + QString::number(index));
+            qDebug() << msg;
+            emit(signalFeedbackLogOutput(msg, true));
         }
     }
 }
@@ -465,7 +477,9 @@ void ModelVstBuckets::disableVstBucket(QList<int> indexOfVstBuckets)
         if (lh->disableVst(index) == RvLinkHandler::LH_OK) {
             emit(signalConfigDataChanged());
         } else {
-            qDebug() << "(MVB): disableVstBucket: not LH_OK for index: " << index;
+            QString msg("(MVB): disableVstBucket: not LH_OK for index: " + QString::number(index));
+            qDebug() << msg;
+            emit(signalFeedbackLogOutput(msg, true));
         }
     }
 }
@@ -479,7 +493,9 @@ void ModelVstBuckets::blacklistVstBucket(QList<int> indexOfVstBuckets)
         if (lh->blacklistVst(index) == RvLinkHandler::LH_OK) {
             emit(signalConfigDataChanged());
         } else {
-            qDebug() << "(MVB): blacklistVstBucket: not LH_OK for index: " << index;
+            QString msg("(MVB): blacklistVstBucket: not LH_OK for index: " + QString::number(index));
+            qDebug() << msg;
+            emit(signalFeedbackLogOutput(msg, true));
         }
     }
 }
@@ -494,7 +510,9 @@ void ModelVstBuckets::unblacklistVstBucket(QList<int> indexOfVstBuckets)
         if (lh->refreshStatus(true, index) == RvLinkHandler::LH_OK) {
             emit(signalConfigDataChanged());
         } else {
-            qDebug() << "(MVB): unblacklistVstBucket: not LH_OK for index: " << index;
+            QString msg("(MVB): unblacklistVstBucket: not LH_OK for index: " + QString::number(index));
+            qDebug() << msg;
+            emit(signalFeedbackLogOutput(msg, true));
         }
     }
 }
@@ -502,7 +520,9 @@ void ModelVstBuckets::unblacklistVstBucket(QList<int> indexOfVstBuckets)
 void ModelVstBuckets::updateVsts()
 {
     if (lh->updateVsts() != RvLinkHandler::LH_OK) {
-        qDebug() << "(MVB): updateVsts: not LH_OK";
+        QString msg("(MVB): updateVsts: not LH_OK");
+        qDebug() << msg;
+        emit(signalFeedbackLogOutput(msg, true));
     }
 }
 

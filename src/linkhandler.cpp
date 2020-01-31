@@ -258,10 +258,6 @@ RvLinkHandler LinkHandler::changeBridge(int idx, VstBridge newBridgeType)
 }
 
 
-/* TODO: When to call:
- * - once at startup
- *    -->> possibly inform user about possibility of cleanup right after it (if there are orphans; which shouldn't be that often)
- */
 QStringList LinkHandler::checkForOrphans()
 {
     QStringList filePathsOrphans;

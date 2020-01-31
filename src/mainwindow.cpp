@@ -110,6 +110,7 @@ MainWindow::MainWindow(QWidget *parent)
     mDialogScan = new DialogScan(prf, mModelVstBuckets->getBufferVstBuckets());
 
     connect(mModelVstBuckets, &ModelVstBuckets::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
+    connect(mModelVstBuckets, &ModelVstBuckets::signalFeedbackLogOutput, this, &MainWindow::slotFeedbackLogOutput);
     connect(mDialogPreferences, &DialogPreferences::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
 
@@ -232,7 +233,6 @@ void MainWindow::setupMenuBar()
     connect(actionAddVst, &QAction::triggered, this, &MainWindow::slotAddVst);
     connect(actionRemoveVst, &QAction::triggered, this, &MainWindow::slotRemoveVst);
 
-    // TODO: add connections once slots are implemented
     connect(actionEnable, &QAction::triggered, this, &MainWindow::slotEnableVst);
     connect(actionDisable, &QAction::triggered, this, &MainWindow::slotDisableVst);
     connect(actionBlacklist, &QAction::triggered, this, &MainWindow::slotBlacklistVst);
@@ -374,6 +374,11 @@ void MainWindow::slotOrphanDetection()
             mModelVstBuckets->removeOrphans(orphansList);
         }
     }
+}
+
+void MainWindow::slotFeedbackLogOutput(QString msg, bool isVerboseInfo = false)
+{
+    mLogOutput->appendLog(msg, isVerboseInfo);
 }
 
 void MainWindow::slotResizeMainUi()

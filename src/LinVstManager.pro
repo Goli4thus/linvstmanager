@@ -38,6 +38,7 @@ SOURCES += \
         modelscan.cpp \
         modelvstbuckets.cpp \
         preferences.cpp \
+        runguard.cpp \
         scanhandler.cpp \
         scanresult.cpp \
         verticalline.cpp \
@@ -58,6 +59,7 @@ HEADERS += \
         modelscan.h \
         modelvstbuckets.h \
         preferences.h \
+        runguard.h \
         scanhandler.h \
         scanresult.h \
         verticalline.h \

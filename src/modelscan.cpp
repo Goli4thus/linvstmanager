@@ -158,10 +158,6 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
 
 void ModelScan::triggerScan(QString scanFolder, QString pathCheckTool, bool useCheckTool)
 {
-    /* TODO: triggerScan
-     * Q: The actual scan should probably be done in a separate thread, shouldn't it?
-     */
-
     emptyModel();
 
     // Pass temporary buffer. Buffer associated with model will be filled after scan is finished.

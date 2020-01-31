@@ -37,7 +37,6 @@ DialogScan::DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets) 
 
     connect(mModelScan, &ModelScan::signalScanDone, this, &DialogScan::slotScanDone);
     connect(mModelScan, &ModelScan::signalScanCanceled, this, &DialogScan::slotScanCanceled);
-    // TODO: Connect to user "Cancel scan" button
     connect(mProgressDialog, &CustomProgressDialog::signalCancelPressed, this, &DialogScan::slotScanCancel);
     connect(mModelScan, &ModelScan::signalFoundVst2, mProgressDialog, &CustomProgressDialog::slotFoundVst2);
     connect(mModelScan, &ModelScan::signalFoundVst3, mProgressDialog, &CustomProgressDialog::slotFoundVst3);

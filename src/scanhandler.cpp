@@ -82,7 +82,7 @@ bool ScanHandler::checkDll(QString &pathCheckTool, QString findingAbsPath)
 
 void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults, QString pathCheckTool, bool useCheckTool)
 {
-    /* TODO: slotPerformScan(): Basically:
+    /* Basically:
      * 1) Perform the iterative scan
      *    X filter based on VST type (.dll or .vst3)
      *    X calculate path hash on the fly and check via QList::contains, if part of mVstBuckets

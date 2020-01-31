@@ -88,6 +88,7 @@ private slots:
     void slotConfigDataChanged();
     void slotPostSetupInfo();
     void slotOrphanDetection();
+    void slotFeedbackLogOutput(QString msg, bool isVerboseInfo);
 };
 
 #endif // MAINWINDOW_H
