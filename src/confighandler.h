@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef CONFIGHANDLER_H
 #define CONFIGHANDLER_H
 

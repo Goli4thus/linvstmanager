@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef MODELSCAN_H
 #define MODELSCAN_H
 

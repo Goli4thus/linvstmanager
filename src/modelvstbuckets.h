@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef MODELVSTBUCKETS_H
 #define MODELVSTBUCKETS_H
 

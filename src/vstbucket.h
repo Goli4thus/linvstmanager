@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef VSTBUCKET_H
 #define VSTBUCKET_H
 

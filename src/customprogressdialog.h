@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef CUSTOMPROGRESSDIALOG_H
 #define CUSTOMPROGRESSDIALOG_H
 

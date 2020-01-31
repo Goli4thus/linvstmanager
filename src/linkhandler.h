@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef LINKHANDLER_H
 #define LINKHANDLER_H
 

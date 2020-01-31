@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 

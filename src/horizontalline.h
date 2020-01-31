@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef HORIZONTALLINE_H
 #define HORIZONTALLINE_H
 

@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "mainwindow.h"
 #include <QDebug>
 #include <QTimer>
@@ -7,6 +9,8 @@
 #include <QMessageBox>
 #include <QApplication>
 #include "defines.h"
+#include <QPixmap>
+#include "config.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -312,14 +316,23 @@ void MainWindow::slotDialogScan()
 
 void MainWindow::slotDialogAbout()
 {
-    // TODO: Implement 'About' dialog (or just MessageBox?)
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("About");
+    msgBox.setIconPixmap(QPixmap(":/icons/LinVstManager.png"));
     msgBox.setTextFormat(Qt::RichText);
-    msgBox.setText("<font size=\"4\"><b>LinVstManager</b></font><br><br>"
-                   "Companion application that allows managing various <br>"
-                   "VST bridges created by osxmidi (<a href='https://github.com/osxmidi/LinVst'>LinVst</a>, ...).<br><br>"
-                   "<a href='https://github.com/Goli4thus/linvstmanage'>on github</a>");
+
+    QString msg;
+    QTextStream tmp(&msg);
+    tmp << "<font size=\"4\"><b>LinVstManager</b></font><br>"
+        << "<br>"
+        << "Version: " << D_VERSION_MAJOR << "." << D_VERSION_MINOR << "." << D_VERSION_PATCH << "<br>"
+        << "Created by: Goli4thus <br>"
+        << "<br>"
+        << "Companion application that allows managing VSTs in conjunction <br>"
+        << "with various VST bridges created by osxmidi (<a href='https://github.com/osxmidi/LinVst'>LinVst</a>, ...).<br>"
+        << "<br>"
+        << "<a href='https://github.com/Goli4thus/linvstmanager'>LinVstManager on github</a>";
+    msgBox.setText(msg);
     msgBox.exec();
 }
 

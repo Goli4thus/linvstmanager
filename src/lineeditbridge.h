@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef LINEEDITBRIDGE_H
 #define LINEEDITBRIDGE_H
 

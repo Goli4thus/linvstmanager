@@ -1,5 +1,12 @@
+// This file is part of LinVstManager.
+
 #ifndef RUNGUARD_H
 #define RUNGUARD_H
+
+/*
+ * takeover from:
+ * https://stackoverflow.com/questions/5006547/qt-best-practice-for-a-single-instance-app-protection
+ */
 
 #include <QObject>
 #include <QSharedMemory>

@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "scanhandler.h"
 #include <QCryptographicHash>
 #include <QFileInfo>

@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "customprogressdialog.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>

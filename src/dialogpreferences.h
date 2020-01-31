@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef DIALOGPREFERENCES_H
 #define DIALOGPREFERENCES_H
 

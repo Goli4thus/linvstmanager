@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef LOGOUTPUT_H
 #define LOGOUTPUT_H
 

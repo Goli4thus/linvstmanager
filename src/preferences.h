@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef PREFERENCES_H
 #define PREFERENCES_H
 

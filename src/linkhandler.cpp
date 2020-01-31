@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "linkhandler.h"
 #include "preferences.h"
 #include <qdebug.h>
