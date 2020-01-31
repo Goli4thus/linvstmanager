@@ -34,8 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
                               "  " + configFileInfo->filePath() + "\n\n"
                               "This could mean one of two things:\n"
                               "  a) it got moved/deleted for some reason\n"
-                              "  b) it was never there to begin with (i.e. first time starting this app)\n\n"
-                              "In case of 'b)': It's fine.",
+                              "  b) it was never there to begin with (i.e. first time starting this app)\n",
                               QMessageBox::Ok, QMessageBox::Ok);
     } else if (retVal == RvConfFile::ErrorLoad) {
         QMessageBox::critical(this,
@@ -58,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     mWidgetTop = new QWidget();
     mLayoutTop = new QVBoxLayout();
     mTableview = new QTableView(this);
-    mSortFilter = new QSortFilterProxyModel(mTableview);
+    mSortFilter = new CustomSortFilterProxyModel(mTableview);
     mLogOutput = new LogOutput;
 
     mFilterBar = new QWidget();
@@ -98,10 +97,12 @@ MainWindow::MainWindow(QWidget *parent)
     mTableview->verticalHeader()->hide();
     mTableview->setSortingEnabled(true);
     mSortFilter->sort(1, Qt::AscendingOrder);
-    mSortFilter->setDynamicSortFilter(false);
+    mSortFilter->setDynamicSortFilter(true);
     mSortFilter->setFilterKeyColumn(-1); // -1: filter based on all columns
     mSortFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    connect(mFilterBarLineEdit, &QLineEdit::textChanged, mSortFilter, &QSortFilterProxyModel::setFilterFixedString);
+//    connect(mFilterBarLineEdit, &QLineEdit::textChanged, mSortFilter, &QSortFilterProxyModel::setFilterFixedString);
+    connect(mFilterBarLineEdit, &QLineEdit::textChanged, this, &MainWindow::slotFilterBarTextChanged);
+
 
     mTableview->setSelectionBehavior(QAbstractItemView::SelectRows);
 
@@ -172,12 +173,17 @@ void MainWindow::setupMenuBar()
     // menu: View
     QAction *actionResizeTableToContent = new QAction(tr("&Resize table to content"), this);
     QAction *actionFilter = new QAction(tr("&Filter"), this);
-    actionVerboseLogOutput = new QAction(tr("&Verbose log output"), this);
-    actionVerboseLogOutput->setCheckable(true);
-    actionVerboseLogOutput->setChecked(false);
+    actionDebugInfo = new QAction(tr("Debug &info"), this);
+    actionDebugInfo->setCheckable(true);
+    actionDebugInfo->setChecked(false);
     actionHideBlacklisted = new QAction(tr("&Hide blacklisted"), this);
     actionHideBlacklisted->setCheckable(true);
-    actionHideBlacklisted->setChecked(false);
+    bool initVal = prf->getHideBlacklisted();
+    // Restore preference
+    actionHideBlacklisted->setChecked(initVal);
+    // Init proxy model
+    mSortFilter->setHideBlacklisted(initVal);
+    mSortFilter->setShowIndexColumn(false);
 
     // menu: Options
     QAction *actionPreferences = new QAction(tr("&Preferences"), this);
@@ -199,6 +205,8 @@ void MainWindow::setupMenuBar()
     actionResizeTableToContent->setShortcut(QKeySequence("Alt+R"));
     actionFilter->setShortcut(QKeySequence("Ctrl+F"));
     actionScan->setShortcut(QKeySequence("Alt+S"));
+    actionDebugInfo->setShortcut(QKeySequence("Ctrl+I"));
+    actionHideBlacklisted->setShortcut(QKeySequence("H"));
     actionPreferences->setShortcut(QKeySequence("Ctrl+P"));
 
     // 'Change bridge' sub menus
@@ -230,7 +238,7 @@ void MainWindow::setupMenuBar()
     menuView->addAction(actionFilter);
     menuView->addAction(actionResizeTableToContent);
     menuView->addSeparator();
-    menuView->addAction(actionVerboseLogOutput);
+    menuView->addAction(actionDebugInfo);
     menuView->addAction(actionHideBlacklisted);
 
     menuOptions->addAction(actionPreferences);
@@ -257,7 +265,7 @@ void MainWindow::setupMenuBar()
     connect(actionSetBridgeLinVst3, &QAction::triggered, this, &MainWindow::slotSetBridgeLinVst3);
     connect(actionSetBridgeLinVst3X, &QAction::triggered, this, &MainWindow::slotSetBridgeLinVst3X);
 
-    connect(actionVerboseLogOutput, &QAction::triggered, this, &MainWindow::slotVerboseLogOutput);
+    connect(actionDebugInfo, &QAction::triggered, this, &MainWindow::slotDebugInfo);
     connect(actionHideBlacklisted, &QAction::triggered, this, &MainWindow::slotHideBlacklisted);
 
     connect(actionPreferences, &QAction::triggered, this, &MainWindow::slotDialogPreferences);
@@ -561,22 +569,39 @@ void MainWindow::slotSetBridgeLinVst3X()
     changeBridge(VstBridge::LinVst3X);
 }
 
-void MainWindow::slotVerboseLogOutput()
+void MainWindow::slotDebugInfo()
 {
-    if (actionVerboseLogOutput->isChecked()) {
+    if (actionDebugInfo->isChecked()) {
         mLogOutput->enableVerboseLog(true);
+        mSortFilter->setShowIndexColumn(true);
     } else {
         mLogOutput->enableVerboseLog(false);
+        mSortFilter->setShowIndexColumn(false);
     }
+    slotResizeTableToContent();
+//    QTimer::singleShot(10, this, SLOT(slotResizeTableToContent()));
+}
+
+void MainWindow::slotFilterBarTextChanged()
+{
+    QRegExp regExp(mFilterBarLineEdit->text(),
+                   Qt::CaseInsensitive,
+                   QRegExp::RegExp);
+    mSortFilter->setFilterRegExp(regExp);
 }
 
 void MainWindow::slotHideBlacklisted()
 {
     if (actionHideBlacklisted->isChecked()) {
-        // TODO: update prf
-        // TODO: inform model
+        mSortFilter->setHideBlacklisted(true);
+        if(prf->setHideBlacklisted(true)) {
+            slotConfigDataChanged();
+        }
     } else {
-
+        mSortFilter->setHideBlacklisted(false);
+        if(prf->setHideBlacklisted(false)) {
+            slotConfigDataChanged();
+        }
     }
 }
 

@@ -282,14 +282,15 @@ void DialogPreferences::slotButtonOk()
                                               mLineEditLinVstX->getBridgeEnabled(),
                                               mLineEditLinVst3->getBridgeEnabled(),
                                               mLineEditLinVst3X->getBridgeEnabled(),
+                                              mRadioButtonLinVstX->isChecked(),
+                                              mRadioButtonLinVst3X->isChecked(),
+                                              prf->getHideBlacklisted(),
                                               mLineEditLinVst->getPath(),
                                               mLineEditLinVstX->getPath(),
                                               mLineEditLinVst3->getPath(),
                                               mLineEditLinVst3X->getPath(),
                                               mLineEditLinkFolder->text(),
-                                              mLineEditCheckTool->text(),
-                                              mRadioButtonLinVstX->isChecked(),
-                                              mRadioButtonLinVst3X->isChecked());
+                                              mLineEditCheckTool->text());
         if (prefsChanged) {
             emit(signalConfigDataChanged());
         }

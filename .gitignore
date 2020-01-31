@@ -8,7 +8,7 @@ Makefile
 dialog.ui
 tags
 *.autosave
-build/
+build*
 *.exe
 *.exe.so
 *.wine.o

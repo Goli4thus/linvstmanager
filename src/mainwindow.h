@@ -9,7 +9,6 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
-#include <QSortFilterProxyModel>
 #include <QDir>
 #include <QLineEdit>
 #include <QLabel>
@@ -24,6 +23,7 @@
 #include "confighandler.h"
 #include "dialogscan.h"
 #include "scanresult.h"
+#include "customsortfilterproxymodel.h"
 
 
 class MainWindow : public QMainWindow
@@ -38,7 +38,7 @@ private:
     LogOutput *mLogOutput;
     QSplitter *mSplitter;
     QTableView *mTableview;
-    QSortFilterProxyModel *mSortFilter;
+    CustomSortFilterProxyModel *mSortFilter;
     QVBoxLayout *mLayoutTop;
     QWidget *mFilterBar;
     QHBoxLayout *mFilterBarLayout;
@@ -61,7 +61,7 @@ private:
     void closeEvent(QCloseEvent *event);
     QFileInfo *configFileInfo;
     bool configNeedsSaving;
-    QAction *actionVerboseLogOutput;
+    QAction *actionDebugInfo;
     QAction *actionHideBlacklisted;
 
 private slots:
@@ -78,7 +78,8 @@ private slots:
     void slotSetBridgeLinVstX();
     void slotSetBridgeLinVst3();
     void slotSetBridgeLinVst3X();
-    void slotVerboseLogOutput();
+    void slotDebugInfo();
+    void slotFilterBarTextChanged();
     void slotHideBlacklisted();
     void slotAddScannedVst(QList<ScanResult> scanSelection);
 

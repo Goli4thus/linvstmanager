@@ -27,6 +27,7 @@ CONFIG += c++11
 SOURCES += \
         confighandler.cpp \
         customprogressdialog.cpp \
+        customsortfilterproxymodel.cpp \
         dialogpreferences.cpp \
         dialogscan.cpp \
         horizontalline.cpp \
@@ -47,6 +48,7 @@ SOURCES += \
 HEADERS += \
         confighandler.h \
         customprogressdialog.h \
+        customsortfilterproxymodel.h \
         defines.h \
         dialogpreferences.h \
         dialogscan.h \
@@ -71,7 +73,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 FORMS += \
-    dialog.ui
 
 RESOURCES += \
     resources/resources.qrc
