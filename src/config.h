@@ -1,6 +1,8 @@
 // This file has been generated automatically by CMake. Do not edit it manually, as all
 // changes will be overwritten in the future.
 
+// This file is part of LinVstManager.
+
 #ifndef CORE_CONFIG_H
 #define CORE_CONFIG_H
 

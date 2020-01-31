@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "vstbucket.h"
 
 VstBucket::VstBucket(QString t_name,

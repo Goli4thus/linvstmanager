@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef SCANHANDLER_H
 #define SCANHANDLER_H
 

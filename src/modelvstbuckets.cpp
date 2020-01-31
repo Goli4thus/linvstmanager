@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "modelvstbuckets.h"
 #include <QCryptographicHash>
 #include <QtDebug>

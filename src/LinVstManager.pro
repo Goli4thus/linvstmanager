@@ -72,3 +72,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 FORMS += \
     dialog.ui
+
+RESOURCES += \
+    resources/resources.qrc

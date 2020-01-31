@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "mainwindow.h"
 #include <QDebug>
 #include <QTimer>
@@ -7,11 +9,15 @@
 #include <QMessageBox>
 #include <QApplication>
 #include "defines.h"
+#include <QPixmap>
+#include "config.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     this->setWindowTitle("LinVstManager");
+    // TODO: Set a window icon.
+//    this->setWindowIcon();
 
     prf = new Preferences();
     cfg = new ConfigHandler();
@@ -177,6 +183,7 @@ void MainWindow::setupMenuBar()
 
     // menu: About
     QAction *actionAbout = new QAction(tr("&About"), this);
+    QAction *actionAboutQt = new QAction(tr("About&Qt"), this);
 
     // Setup shortcuts
     actionSave->setShortcut(QKeySequence("Ctrl+S"));
@@ -225,6 +232,7 @@ void MainWindow::setupMenuBar()
     menuOptions->addAction(actionPreferences);
 
     menuHelp->addAction(actionAbout);
+    menuHelp->addAction(actionAboutQt);
 
 
     connect(actionSave, &QAction::triggered, this, &MainWindow::slotSave);
@@ -250,6 +258,7 @@ void MainWindow::setupMenuBar()
     connect(actionPreferences, &QAction::triggered, this, &MainWindow::slotDialogPreferences);
     connect(actionFilter, &QAction::triggered, this, &MainWindow::slotFilterBar);
     connect(actionAbout, &QAction::triggered, this, &MainWindow::slotDialogAbout);
+    connect(actionAboutQt, &QAction::triggered, this, &MainWindow::slotDialogAboutQt);
     qDebug() << "setupMenuBar(): Done";
 
     setupMouseMenu(subMenuChangeBridge);
@@ -307,7 +316,29 @@ void MainWindow::slotDialogScan()
 
 void MainWindow::slotDialogAbout()
 {
-    // TODO: Implement 'About' dialog (or just MessageBox?)
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("About");
+    msgBox.setIconPixmap(QPixmap(":/icons/LinVstManager.png"));
+    msgBox.setTextFormat(Qt::RichText);
+
+    QString msg;
+    QTextStream tmp(&msg);
+    tmp << "<font size=\"4\"><b>LinVstManager</b></font><br>"
+        << "<br>"
+        << "Version: " << D_VERSION_MAJOR << "." << D_VERSION_MINOR << "." << D_VERSION_PATCH << "<br>"
+        << "Created by: Goli4thus <br>"
+        << "<br>"
+        << "Companion application that allows managing VSTs in conjunction <br>"
+        << "with various VST bridges created by osxmidi (<a href='https://github.com/osxmidi/LinVst'>LinVst</a>, ...).<br>"
+        << "<br>"
+        << "<a href='https://github.com/Goli4thus/linvstmanager'>LinVstManager on github</a>";
+    msgBox.setText(msg);
+    msgBox.exec();
+}
+
+void MainWindow::slotDialogAboutQt()
+{
+    QMessageBox::aboutQt(this);
 }
 
 void MainWindow::slotSave()

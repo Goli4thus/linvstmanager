@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef DEFINES_H
 #define DEFINES_H
 

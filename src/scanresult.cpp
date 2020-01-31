@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "scanresult.h"
 
 ScanResult::ScanResult(QString t_name,

@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "modelscan.h"
 #include <QtDebug>
 #include <QFont>
