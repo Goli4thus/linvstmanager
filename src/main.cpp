@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <stdlib.h>
 #include "config.h"
+#include "runguard.h"
+#include <QDebug>
 
 void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -31,6 +33,12 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context, con
 
 int main(int argc, char *argv[])
 {
+    RunGuard guard( "some_random_key" );
+    if ( !guard.tryToRun() ) {
+        qInfo() << "Info: Another instance of LinVstManager is already running.";
+        return 0;
+    }
+
     qInstallMessageHandler(customMessageHandler);
     QApplication a(argc, argv);
     MainWindow w;

@@ -72,6 +72,7 @@ set(SOURCES
     src/modelscan.cpp
     src/modelvstbuckets.cpp
     src/preferences.cpp
+    src/runguard.cpp
     src/scanhandler.cpp
     src/scanresult.cpp
     src/verticalline.cpp
