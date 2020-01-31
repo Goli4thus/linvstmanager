@@ -197,6 +197,7 @@ void MainWindow::setupMenuBar()
     actionRemoveVst->setShortcut(QKeySequence("Shift+R"));
     actionResizeTableToContent->setShortcut(QKeySequence("Alt+R"));
     actionFilter->setShortcut(QKeySequence("Ctrl+F"));
+    actionScan->setShortcut(QKeySequence("Alt+S"));
     actionPreferences->setShortcut(QKeySequence("Ctrl+P"));
 
     // 'Change bridge' sub menus

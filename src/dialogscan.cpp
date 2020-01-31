@@ -59,11 +59,16 @@ void DialogScan::setupUI()
     mLayoutHBottom = new QHBoxLayout();
 
     mLabelInfo = new QLabel("Hint: \n"
-                            "Scanning will be recursive based on the selected folder. Folders\n"
-                            "starting with a dot '.' (usually hidden in file browser by default)\n"
-                            "will be ignored though. Therefore try to make an appropriate\n"
-                            "selection.\n"
-                            "(i.e. navigate into the desired wine-prefix where the VSTs are)");
+                            "Scanning will be recursive based on the selected folder. Folders starting with\n"
+                            "a dot '.' (usually hidden in file browser by default) will be ignored though.\n"
+                            "Therefore try to make an appropriate selection.\n"
+                            "(i.e. navigate into the desired wine-prefix where the VSTs are)\n\n"
+                            "Hint 2: \n"
+                            "Don't scan starting from the base of a wine prefix. There are A LOT of dll files\n"
+                            "located in a wine prefix and the scan will take forever to complete if it has to\n"
+                            "check every single dll file (using the \"Verify\" option below).\n"
+                            "So if the scan takes really long and the 'Dll' counter is going up much more than\n"
+                            "the other two, cancel the scan and narrow down the scan folder a bit.");
     HorizontalLine *hLineTop = new HorizontalLine();
     mLabelScanFolder = new QLabel("Scan folder:");
     mLineEditScanFolder = new QLineEdit();
