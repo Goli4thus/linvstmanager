@@ -61,6 +61,7 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCES
     src/confighandler.cpp
     src/customprogressdialog.cpp
+    src/customsortfilterproxymodel.cpp
     src/dialogpreferences.cpp
     src/dialogscan.cpp
     src/horizontalline.cpp
