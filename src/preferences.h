@@ -41,15 +41,15 @@ private:
     bool enabledLinVstX;
     bool enabledLinVst3;
     bool enabledLinVst3X;
+    bool bridgeDefaultVst2IsX;
+    bool bridgeDefaultVst3IsX;
+    bool hideBlacklisted;
     QString pathSoLinVst;
     QString pathSoLinVstX;
     QString pathSoLinVst3;
     QString pathSoLinVst3X;
     QString pathLinkFolder;
     QString pathCheckTool;
-    bool hideBlacklisted;
-    bool bridgeDefaultVst2IsX;
-    bool bridgeDefaultVst3IsX;
 };
 
 #endif // PREFERENCES_H

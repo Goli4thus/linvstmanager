@@ -8,14 +8,15 @@ Preferences::Preferences()
     enabledLinVstX = false;
     enabledLinVst3 = false;
     enabledLinVst3X = false;
+    bridgeDefaultVst2IsX = false;
+    bridgeDefaultVst3IsX = false;
+    hideBlacklisted = false;
     pathSoLinVst = "";
     pathSoLinVstX = "";
     pathSoLinVst3 = "";
     pathSoLinVst3X = "";
     pathLinkFolder = "";
     pathCheckTool = "";
-    bridgeDefaultVst2IsX = false;
-    bridgeDefaultVst3IsX = false;
 }
 
 bool Preferences::updatePreferences(bool t_enabledLinVst,
