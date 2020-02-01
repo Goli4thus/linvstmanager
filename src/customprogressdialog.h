@@ -18,8 +18,8 @@ class CustomProgressDialog : public QDialog
 public:
     CustomProgressDialog();
     QProgressBar *mProgressBar;
-    int exec();
-    void closeEvent(QCloseEvent *e);
+    int exec() override;
+    void closeEvent(QCloseEvent *e) override;
 
 private:
     QVBoxLayout *mLayoutVMain;

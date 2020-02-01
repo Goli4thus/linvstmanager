@@ -45,7 +45,7 @@ bool CustomSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
 
 bool CustomSortFilterProxyModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
 {
-//    QModelIndex modelIndex = sourceModel()->index()
+    Q_UNUSED(source_parent)
     int show;
     if (source_column == TableColumnPosType::Index) {
         if (mShowIndexColumn) {

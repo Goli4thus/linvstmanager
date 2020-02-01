@@ -31,6 +31,7 @@ class DialogScan : public QDialog
     Q_OBJECT
 public:
     DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets);
+    int exec() override;
 
 private:
     const QList<VstBucket> *mVstBuckets;
@@ -73,7 +74,7 @@ private:
     void enableViewUpdate(bool enable);
     void repaintTableview();
     QList<int> getSelectionOrigIdx(QModelIndexList indexList);
-    void reject();
+    void reject() override;
 private slots:
     void slotSelectScanFolder();
     void slotScan();

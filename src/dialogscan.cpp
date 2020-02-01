@@ -45,6 +45,20 @@ DialogScan::DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets) 
     connect(mModelScan, &ModelScan::signalFoundDll, mProgressDialog, &CustomProgressDialog::slotFoundDll);
 }
 
+int DialogScan::exec()
+{
+    // Update checkbox re CheckTool
+    if (prf->checkToolEnabled()) {
+        mCheckBoxCheckTool->setEnabled(true);
+        mCheckBoxCheckTool->setChecked(true);
+    } else {
+        mCheckBoxCheckTool->setEnabled(false);
+        mCheckBoxCheckTool->setChecked(false);
+    }
+
+    return QDialog::exec();
+}
+
 void DialogScan::setupUI()
 {
     this->setWindowTitle("Scan for VSTs");
@@ -190,15 +204,6 @@ void DialogScan::setupUI()
     this->setLayout(mLayoutVMain);
     setMinimumWidth(590);
     resize(650, 450);
-
-    // Setup checkbox re CheckTool
-    if (prf->checkToolEnabled()) {
-        mCheckBoxCheckTool->setEnabled(true);
-        mCheckBoxCheckTool->setChecked(true);
-    } else {
-        mCheckBoxCheckTool->setEnabled(false);
-        mCheckBoxCheckTool->setChecked(false);
-    }
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
