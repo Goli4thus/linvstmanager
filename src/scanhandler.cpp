@@ -43,7 +43,8 @@ bool ScanHandler::checkDll(QString &pathCheckTool, QString findingAbsPath)
     bool retVal;
     int exitCode;
 
-    exitCode = QProcess::execute(pathCheckTool + " " + findingAbsPath);
+    // Enclose 'finding' path in quotes to counteract possible spaces in path
+    exitCode = QProcess::execute(pathCheckTool + " \"" + findingAbsPath + "\"");
     switch (exitCode) {
         case D_CHECK_PASSED:
             qDebug() << "checkDll(): " << "D_CHECK_PASSED" << "( " << findingAbsPath << " )";
