@@ -16,7 +16,6 @@
 #include <QMessageBox>
 #include <QTableView>
 #include <QComboBox>
-#include <QSortFilterProxyModel>
 #include "modelscan.h"
 #include "vstbucket.h"
 #include <QHeaderView>
@@ -31,6 +30,7 @@
 #include "horizontalline.h"
 #include "verticalline.h"
 #include "preferences.h"
+#include "customsortfilterproxymodel.h"
 
 DialogScan::DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets) : mVstBuckets(pVstBuckets)
 {
@@ -89,7 +89,7 @@ void DialogScan::setupUI()
     mLineEditScanFolder = new QLineEdit();
     mPushButtonSelectFolder = new QPushButton("Select");
     mTableview = new QTableView(this);
-    mSortFilter = new QSortFilterProxyModel(mTableview);
+    mSortFilter = new CustomSortFilterProxyModel(mTableview);
     mModelScan = new ModelScan(mVstBuckets);
 
     mFilterBar = new QWidget();
@@ -132,9 +132,10 @@ void DialogScan::setupUI()
     mTableview->verticalHeader()->hide();
     mTableview->setSortingEnabled(true);
     mSortFilter->sort(1, Qt::AscendingOrder);
-    mSortFilter->setDynamicSortFilter(false);
+    mSortFilter->setDynamicSortFilter(true);
     mSortFilter->setFilterKeyColumn(-1); // -1: filter based on all columns
     mSortFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    connect(mFilterBarLineEdit, &QLineEdit::textChanged, this, &DialogScan::slotFilterBarTextChanged);
 
     mTableview->setSelectionBehavior(QAbstractItemView::SelectRows);
     mTableview->setShowGrid(false);
@@ -160,7 +161,6 @@ void DialogScan::setupUI()
 
     mFilterBar->setLayout(mFilterBarLayout);
     mFilterBar->hide();
-    connect(mFilterBarLineEdit, &QLineEdit::textChanged, mSortFilter, &QSortFilterProxyModel::setFilterFixedString);
 
     mLayoutVListViewLeft->addWidget(mTableview);
     mLayoutVListViewLeft->addWidget(mFilterBar);
@@ -275,6 +275,14 @@ void DialogScan::slotFilterBar()
         mFilterBar->hide();
         mFilterBarLineEdit->clear();
     }
+}
+
+void DialogScan::slotFilterBarTextChanged()
+{
+    QRegExp regExp(mFilterBarLineEdit->text(),
+                   Qt::CaseInsensitive,
+                   QRegExp::RegExp);
+    mSortFilter->setFilterRegExp(regExp);
 }
 
 void DialogScan::slotSelectEntry()

@@ -27,24 +27,24 @@ MainWindow::MainWindow(QWidget *parent)
     QList<VstBucket> tmpVstBuckets;
     RvConfFile retVal = cfg->loadConfig(*prf, tmpVstBuckets);
     if (retVal == RvConfFile::NotExists) {
-        QMessageBox::critical(this,
-                              "LinVstManager: Config file doesn't exist",
-                              "Seems like the config file isn't where it is supposed to be:\n"
-                              "  " + configFileInfo->filePath() + "\n\n"
-                              "This could mean one of two things:\n"
-                              "  a) it got moved/deleted for some reason\n"
-                              "  b) it was never there to begin with (i.e. first time starting this app)\n",
-                              QMessageBox::Ok, QMessageBox::Ok);
+        QMessageBox::warning(this,
+                             "LinVstManager: Config file doesn't exist",
+                             "Seems like the config file isn't where it is supposed to be:\n"
+                             "  " + configFileInfo->filePath() + "\n\n"
+                             "This could mean one of two things:\n"
+                             "  a) it got moved/deleted for some reason\n"
+                             "  b) it was never there to begin with (i.e. first time starting this app)\n",
+                             QMessageBox::Ok, QMessageBox::Ok);
     } else if (retVal == RvConfFile::ErrorLoad) {
         QMessageBox::critical(this,
                               "LinVstManager: Error on config load",
-                              "There was a problem with opening the config file.\n"
+                              "There was a problem with loading the config file.\n"
                               "Therefore nothing could be restored.",
                               QMessageBox::Ok, QMessageBox::Ok);
     } else if (retVal == RvConfFile::ParsingError) {
         QMessageBox::critical(this,
                               "LinVstManager: Parsing error during config load",
-                              "There was a problem with parsing the config file.\n"
+                              "There was a problem with loading the config file.\n"
                               "Therefore nothing could be restored.",
                               QMessageBox::Ok, QMessageBox::Ok);
     }
@@ -63,9 +63,10 @@ MainWindow::MainWindow(QWidget *parent)
     mFilterBarLayout = new QHBoxLayout();
     mFilterBarLabel = new QLabel("Filter:");
     mFilterBarLineEdit = new QLineEdit(this);
-    QString tooltipFilterBar("Filter works on all columns. Close filter bar by pressing 'Ctrl-F' once again.");
+    QString tooltipFilterBar("Filter works on a combined, space separated string of all columns. \nClose filter bar by pressing 'Ctrl-F' once again.");
     mFilterBarLineEdit->setToolTip(tooltipFilterBar);
     mFilterBarCloseButton = new QPushButton("X", this);
+    mFilterBarCloseButton->setToolTip("Close filter bar by pressing 'Ctrl-F' once again.");
 
     mFilterBarCloseButton->setFixedWidth(28);
     connect(mFilterBarCloseButton, &QPushButton::pressed, this, &MainWindow::slotFilterBarClose);

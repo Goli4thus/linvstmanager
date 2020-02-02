@@ -11,6 +11,7 @@ set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
 # Debug message enabling
+# Hint: Run cmake with "cmake -DENABLE_DEBUG_MSG=1 .." to enable the following:
 if(ENABLE_DEBUG_MSG)
     set(DEBUG_MSG_ENABLED "1")
 else()

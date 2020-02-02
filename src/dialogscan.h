@@ -87,6 +87,7 @@ private slots:
     void slotMouseRightClickOnEntry(QPoint point);
     void slotFilterBarClose();
     void slotFilterBar();
+    void slotFilterBarTextChanged();
     void slotSelectEntry();
     void slotUnselectEntry();
     void slotFilterBarOpen();

@@ -147,10 +147,12 @@ void DialogPreferences::setupUI()
     mLayoutHLinkFolder->addWidget(mPushButtonLinkFolder);
 
     // CheckTool
+    QString toolTipCheckTool("Locate the \'VstDllCheck.exe\" utility.\n"
+                             "Hint: Should be located in {repo-folder}/src/VstDllCheck/");
     mLineEditCheckTool->setReadOnly(true);
-    mLineEditCheckTool->setToolTip("Locate the \'VstDllCheck.exe\" utility.");
+    mLineEditCheckTool->setToolTip(toolTipCheckTool);
     labelCheckTool->setMinimumWidth(100);
-    labelCheckTool->setToolTip("Locate the \'VstDllCheck.exe\" utility.");
+    labelCheckTool->setToolTip(toolTipCheckTool);
     mLayoutHCheckTool->addWidget(labelCheckTool);
     mLayoutHCheckTool->addWidget(mLineEditCheckTool);
     mLayoutHCheckTool->addWidget(mPushButtonCheckTool);
