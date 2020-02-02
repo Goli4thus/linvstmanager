@@ -247,7 +247,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         color.setRgb(220, 220, 220);  // light grey
                         break;
                     case VstStatus::Blacklisted:
-                        color.setRgb(22, 22, 22);  // Black
+                        color.setRgb(51, 51, 51);  // Black
                         break;
                     default:
                         break;

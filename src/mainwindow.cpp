@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     this->setWindowTitle("LinVstManager");
     // TODO: Set a window icon.
-//    this->setWindowIcon();
+    this->setWindowIcon(QIcon(":/icons/LinVstManager.png"));
 
     prf = new Preferences();
     cfg = new ConfigHandler();
@@ -296,7 +296,7 @@ void MainWindow::setupMouseMenu(QMenu *subMenuChangeBridge)
 
 void MainWindow::slotMouseRightClickOnVst(QPoint point)
 {
-    Q_UNUSED(point);
+    Q_UNUSED(point)
     mouseMenu->exec(QCursor::pos());
 }
 
@@ -338,11 +338,11 @@ void MainWindow::slotDialogAbout()
     QTextStream tmp(&msg);
     tmp << "<font size=\"4\"><b>LinVstManager</b></font><br>"
         << "<br>"
-        << "Version: " << D_VERSION_MAJOR << "." << D_VERSION_MINOR << "." << D_VERSION_PATCH << "<br>"
-        << "Created by: Goli4thus <br>"
-        << "<br>"
         << "Companion application that allows managing VSTs in conjunction <br>"
         << "with various VST bridges created by osxmidi (<a href='https://github.com/osxmidi/LinVst'>LinVst</a>, ...).<br>"
+        << "<br>"
+        << "Version: " << D_VERSION_MAJOR << "." << D_VERSION_MINOR << "." << D_VERSION_PATCH << "<br>"
+        << "Created by: Goli4thus <br>"
         << "<br>"
         << "<a href='https://github.com/Goli4thus/linvstmanager'>LinVstManager on github</a>";
     msgBox.setText(msg);
@@ -603,6 +603,7 @@ void MainWindow::slotHideBlacklisted()
             slotConfigDataChanged();
         }
     }
+    slotResizeTableToContent();
 }
 
 void MainWindow::slotAddScannedVst(QList<ScanResult> scanSelection)
