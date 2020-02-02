@@ -6,6 +6,7 @@
 CustomSortFilterProxyModel::CustomSortFilterProxyModel(QObject *parent) : QSortFilterProxyModel(parent)
 {
     mHideBlacklisted = false;
+    mShowIndexColumn = false;
 }
 
 bool CustomSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const

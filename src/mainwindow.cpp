@@ -134,6 +134,7 @@ MainWindow::~MainWindow()
     delete cfg;
     delete mLogOutput;
     delete mModelVstBuckets;
+    delete mSortFilter;
 }
 
 void MainWindow::setupMenuBar()
