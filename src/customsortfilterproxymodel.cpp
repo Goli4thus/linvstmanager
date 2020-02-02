@@ -27,6 +27,10 @@ bool CustomSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
         // Apply RegExp filter (empty if not set by user via FilterBar; therefore always a match)
         bool match = false;
         for (int i=0; i < modelIndices.size(); i++) {
+            if ((i == TableColumnPosType::Index) && (!mShowIndexColumn)) {
+                // Skip evaluating 'index' column if it is hidden.
+                continue;
+            }
             if (sourceModel()->data(modelIndices.at(i)).toString().contains(filterRegExp())) {
                 match = true;
                 break;
