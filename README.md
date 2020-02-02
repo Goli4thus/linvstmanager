@@ -172,7 +172,7 @@ As opposed to [linvstmanage-cli](https://github.com/Goli4thus/linvstmanage), the
     
     
 ### Further usability features
-Apart from familiar table sorting features one can use _View -> Filter_ to open up a search bar. This search consideres all columns and is regex based (case insensitive). 
+Apart from familiar table sorting features one can use _View -> Filter_ to open up a search bar. This search consideres all columns and is regex based (case insensitive).
 
 Hint: Imagine all columns of a row being combined to one long string with rows being separated by one space character (cause that's how it's implemented).
 This means you can perform searches like:
