@@ -4,7 +4,7 @@
 #ifndef CORE_CONFIG_H
 #define CORE_CONFIG_H
 
-#define D_PROJECT_NAME "LinVstManager"
+#define D_PROJECT_NAME "linvstmanager"
 
 // Program version
 #define D_VERSION_MAJOR 1

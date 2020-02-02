@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-set(TARGET_NAME LinVstManager)
+set(TARGET_NAME linvstmanager)
 
 project(${TARGET_NAME})
 
@@ -31,7 +31,6 @@ find_package(Qt5Widgets REQUIRED)
 # Generate config header
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
-	#${CMAKE_CURRENT_BINARY_DIR}/src/config.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/config.h
 )
 
@@ -107,18 +106,18 @@ add_executable(${TARGET_NAME} ${SOURCES})
 # Use the Widgets module from Qt 5
 target_link_libraries(${TARGET_NAME} ${LIBRARIES})
 
-## Generate desktop file
-#configure_file(
-	#${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_NAME}.desktop.in
-	#${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
-#)
+# Generate desktop file
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET_NAME}.desktop.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
+)
 
 
-#install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION bin)
-#install(FILES resources/${TARGET_NAME}.png DESTINATION share/icons/hicolor/48x48/apps)
+install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION bin)
+install(FILES src/resources/${TARGET_NAME}.png DESTINATION share/icons/hicolor/48x48/apps)
 
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
-		#DESTINATION share/applications)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
+        DESTINATION share/applications)
         
 
 

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=LinVstManager
+Comment=A companion app for managing LinVst bridged VSTs
+Exec=@TARGET_NAME@
+Icon=@TARGET_NAME@
+Terminal=false
+Categories=Multimedia;AudioVideo;Player;Recorder;
