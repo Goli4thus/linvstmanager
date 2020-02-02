@@ -28,7 +28,7 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
                   << "f_enabledLinVst3X"
                   << "f_bridgeDefaultVst2IsX"
                   << "f_bridgeDefaultVst3IsX"
-                  << "t_hideBlacklisted";
+                  << "f_hideBlacklisted";
 
     prefPathNames << "pathSoLinVst"
                   << "pathSoLinVstX"
