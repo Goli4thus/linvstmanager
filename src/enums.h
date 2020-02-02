@@ -28,15 +28,29 @@ enum VstType {
     VST3
 };
 
-enum TableColumnPosType {
-    NewlyAdded = 0,
-    Status = 1,
-    Name = 2,
-    Type = 3,
-    Bridge = 4,
-    Path = 5,
-    Index = 6
-};
+namespace nsMainWindow {
+    enum TableColumnPosType {
+        NewlyAdded = 0,
+        Status = 1,
+        Name = 2,
+        Type = 3,
+        Bridge = 4,
+        Path = 5,
+        Index = 6
+    };
+}
+namespace nsMW = nsMainWindow;
+
+namespace nsDialogScan {
+    enum TableColumnPosType {
+        Status = 0,
+        Name = 1,
+        Type = 2,
+        Path = 3,
+        Index = 4
+    };
+}
+namespace nsDS = nsDialogScan;
 
 // Return values re config file
 enum RvConfFile {

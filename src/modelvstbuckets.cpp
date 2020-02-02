@@ -57,7 +57,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
         switch(role) {
             case Qt::DisplayRole: {
                 switch(index.column()) {
-                    case TableColumnPosType::NewlyAdded: {
+                    case nsMW::TableColumnPosType::NewlyAdded: {
                         if (mVstBuckets.at(index.row()).newlyAdded) {
                             return QString("*");
                         } else {
@@ -65,7 +65,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         }
 
                     }
-                    case TableColumnPosType::Status: {
+                    case nsMW::TableColumnPosType::Status: {
                         switch (mVstBuckets.at(index.row()).status) {
                             case Enabled: {
                                 return QString("Enabled");
@@ -97,7 +97,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         }
                     }
                     break;
-                    case TableColumnPosType::Type: {
+                    case nsMW::TableColumnPosType::Type: {
                         switch (mVstBuckets.at(index.row()).vstType) {
                             case VstType::VST2: {
                                 return QString("VST2");
@@ -108,7 +108,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         }
                     }
                     break;
-                    case TableColumnPosType::Bridge: {
+                    case nsMW::TableColumnPosType::Bridge: {
                         switch (mVstBuckets.at(index.row()).bridge) {
                             case VstBridge::LinVst: {
                                 return QString("LinVst");
@@ -125,17 +125,17 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         }
                     }
                     break;
-                    case TableColumnPosType::Name: {
+                    case nsMW::TableColumnPosType::Name: {
                         return mVstBuckets.at(index.row()).name;
                     }
-                    case TableColumnPosType::Path: {
+                    case nsMW::TableColumnPosType::Path: {
 //                        // Show in '~/' notation
 //                        int lenHome = QDir::homePath().length();
 //                        int lenFile = mVstBuckets.at(index.row()).vstPath.length();
 //                        return mVstBuckets.at(index.row()).vstPath.right(lenFile - lenHome);
                         return mVstBuckets.at(index.row()).vstPath;
                     }
-                    case TableColumnPosType::Index: {   // original index
+                    case nsMW::TableColumnPosType::Index: {   // original index
                         return index.row();
                     }
                 }
@@ -208,7 +208,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
 //                    }
 //                    return QBrush(color, Qt::Dense1Pattern);
 //                }
-                if (index.column() == TableColumnPosType::Bridge) {
+                if (index.column() == nsMW::TableColumnPosType::Bridge) {
                     QColor color;
 
                     if (!prf->bridgeEnabled(mVstBuckets.at(index.row()).bridge)) {
@@ -222,7 +222,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
             }
             break;
             case Qt::DecorationRole: {
-                if (index.column() == TableColumnPosType::Status) {
+                if (index.column() == nsMW::TableColumnPosType::Status) {
                     QColor color;
                     switch (mVstBuckets.at(index.row()).status) {
                     case VstStatus::Enabled:
@@ -257,13 +257,13 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
             }
             break;
             case Qt::ToolTipRole: {
-                if (index.column() == TableColumnPosType::NewlyAdded) {
+                if (index.column() == nsMW::TableColumnPosType::NewlyAdded) {
                     return QString("*\t: Newly added");
                 }
             }
             break;
             case Qt::TextAlignmentRole: {
-                if (index.column() == TableColumnPosType::NewlyAdded && role == Qt::TextAlignmentRole) {
+                if (index.column() == nsMW::TableColumnPosType::NewlyAdded && role == Qt::TextAlignmentRole) {
                     return Qt::AlignCenter;
                 } else {
                     return QVariant();
@@ -281,19 +281,19 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
             if (orientation == Qt::Horizontal) {
                 switch (section)
                 {
-                case TableColumnPosType::NewlyAdded:
+                case nsMW::TableColumnPosType::NewlyAdded:
                     return QString("N");
-                case TableColumnPosType::Status:
+                case nsMW::TableColumnPosType::Status:
                     return QString("Status");
-                case TableColumnPosType::Bridge:
+                case nsMW::TableColumnPosType::Bridge:
                     return QString("Bridge");
-                case TableColumnPosType::Name:
+                case nsMW::TableColumnPosType::Name:
                     return QString("Name");
-                case TableColumnPosType::Type:
+                case nsMW::TableColumnPosType::Type:
                     return QString("Type");
-                case TableColumnPosType::Path:
+                case nsMW::TableColumnPosType::Path:
                     return QString("Path");
-                case TableColumnPosType::Index:
+                case nsMW::TableColumnPosType::Index:
                     return QString("Index");
                 }
             }
@@ -308,9 +308,9 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
             return Qt::AlignLeft + Qt::AlignVCenter;
         }
         case Qt::ToolTipRole: {
-            if (section == TableColumnPosType::NewlyAdded) {
+            if (section == nsMW::TableColumnPosType::NewlyAdded) {
                 return QString("Newly added");
-            } else if(section == TableColumnPosType::Status) {
+            } else if(section == nsMW::TableColumnPosType::Status) {
                 return QString("Enabled,     // VST is enabled via active softlink\n"
                                "Disabled,    // VST is disabled due to missing softlink\n"
                                "Mismatch,    // Mismatch between linvst.so and *.so file associated with VST-dll\n"
@@ -320,7 +320,7 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
                                "Orphan,      // The so-file seems orphaned as it doesn't refer to an existing VST-dll\n"
                                "NA,          // Initial state\n"
                                "Blacklisted  // VST is blacklisted from being handled");
-            } else if (section == TableColumnPosType::Bridge) {
+            } else if (section == nsMW::TableColumnPosType::Bridge) {
                 return QString("A bridge colored in red means\n"
                                "the bridge is disabled in preferences");
             }

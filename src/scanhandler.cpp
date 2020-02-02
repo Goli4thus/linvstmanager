@@ -100,6 +100,7 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
     QByteArrayList existingPathHashes;
     QByteArray hash;
     VstType vstType;
+    bool verified;
     bool scanCanceledByUser = false;
 
     for (int i=0; i < mVstBuckets->size(); i++) {
@@ -134,7 +135,6 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
             if ((fileType.suffix() == "dll")
                     || (fileType.suffix() == "Dll")
                     || (fileType.suffix() == "DLL")) {
-                vstType = VstType::VST2;
 
                 if (useCheckTool) {
                     if (!checkDll(pathCheckTool, finding)) {
@@ -142,16 +142,22 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
                         emit (signalFoundDll());
                         continue;
                     }
+                    vstType = VstType::VST2;
+                    verified = true;
                 } else {
+                    vstType = VstType::VST2;
+                    verified = false;
                     emit (signalFoundVst2());
                 }
             } else {  // ".vst3"
                 vstType = VstType::VST3;
+                verified = true;
                 emit (signalFoundVst3());
             }
             scanResults->append(ScanResult(QFileInfo(finding).baseName(),
                                            finding,
                                            vstType,
+                                           verified,
                                            hash,
                                            false));
         }
@@ -172,6 +178,6 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
     if (scanCanceledByUser) {
         emit(signalScanCanceled());
     } else {
-        emit(signalScanDone());
+        emit(signalScanDone(!scanResults->isEmpty()));
     }
 }

@@ -56,20 +56,24 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
         switch(role) {
             case Qt::DisplayRole: {
                 switch(index.column()) {
-                    case 0: {
+                    case nsDS::TableColumnPosType::Status: {
                         if (mScanResults.at(index.row()).selected) {
                             return "-S-";
                         } else {
                             return "---";
                         }
                     }
-                    case 1: {
+                    case nsDS::TableColumnPosType::Name: {
                         return mScanResults.at(index.row()).name;
                     }
-                    case 2: {
+                    case nsDS::TableColumnPosType::Type: {
                         switch (mScanResults.at(index.row()).vstType) {
                             case VstType::VST2: {
-                                return QString("VST2");
+                                if (mScanResults.at(index.row()).verified) {
+                                    return QString("VST2");
+                                } else {
+                                    return QString("VST2 (?)");
+                                }
                             }
                             case VstType::VST3: {
                                 return QString("VST3");
@@ -77,20 +81,19 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                         }
                     }
                     break;
-                    case 3: {
+                    case nsDS::TableColumnPosType::Path: {
                         return mScanResults.at(index.row()).vstPath;
                     }
-                    case 4: {   // original index
+                    case nsDS::TableColumnPosType::Index: {   // original index
                         return index.row();
                     }
                 }
             }
             break;
             case Qt::DecorationRole: {
-                if (index.column() == 0) {
+                if (index.column() == nsDS::TableColumnPosType::Status) {
                     QColor color;
                     if (mScanResults.at(index.row()).selected) {
-//                        color.setRgb(91, 160, 255);  // Blue
                         color.setRgb(255, 216, 59);  // Blue
                     } else {
                         color.setRgb(220, 220, 220);  // light grey
@@ -100,9 +103,11 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
             }
             break;
             case Qt::ToolTipRole: {
-                if (index.column() == 0) {
+                if (index.column() == nsDS::TableColumnPosType::Status) {
                     return QString("-S-\t: Selected\n"
                                    "---\t: Unselected\n");
+                } else if (index.column() == nsDS::TableColumnPosType::Type) {
+                    return QString("VST2 (?)\t: Unverified dll-file\n");
                 }
             }
         }
@@ -140,9 +145,11 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
             return Qt::AlignLeft + Qt::AlignVCenter;
         }
         case Qt::ToolTipRole: {
-            if (section == 0) {
+            if (section == nsDS::TableColumnPosType::Status) {
                 return QString("-S-\t: Selected\n"
                                "---\t: Unselected\n");
+            } else if (section == nsDS::TableColumnPosType::Type) {
+                return QString("VST2 (?)\t: Unverified dll-file\n");
             }
         }
         break;

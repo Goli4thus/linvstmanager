@@ -438,13 +438,13 @@ void MainWindow::slotResizeTableToContent()
     mTableview->resizeRowsToContents();
 
     // Set rows to sensible with; some fixed width, some based on content
-    mTableview->setColumnWidth(TableColumnPosType::NewlyAdded, 30);
-    mTableview->setColumnWidth(TableColumnPosType::Status, 91);
-    mTableview->setColumnWidth(TableColumnPosType::Name, mTableview->columnWidth(TableColumnPosType::Name) + 10);
-    mTableview->setColumnWidth(TableColumnPosType::Type, 45);
-    mTableview->setColumnWidth(TableColumnPosType::Bridge, 65);
-    mTableview->setColumnWidth(TableColumnPosType::Path, mTableview->columnWidth(TableColumnPosType::Path) + 10);
-    mTableview->setColumnWidth(TableColumnPosType::Index, 20);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::NewlyAdded, 30);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::Status, 91);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::Name, mTableview->columnWidth(nsMW::TableColumnPosType::Name) + 10);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::Type, 45);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::Bridge, 65);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::Path, mTableview->columnWidth(nsMW::TableColumnPosType::Path) + 10);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::Index, 20);
 }
 
 void MainWindow::slotAddVst()

@@ -9,10 +9,11 @@
 class ScanResult
 {
 public:
-    ScanResult(QString t_name, QString t_vstPath, VstType t_vstType, QByteArray t_hash, bool t_selected);
+    ScanResult(QString t_name, QString t_vstPath, VstType t_vstType, bool t_verified, QByteArray t_hash, bool t_selected);
     QString name;
     QString vstPath;
     VstType vstType;
+    bool verified;
     QByteArray hash;
     bool selected;
 };

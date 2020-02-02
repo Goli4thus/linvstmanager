@@ -203,7 +203,7 @@ void DialogScan::setupUI()
 
     this->setLayout(mLayoutVMain);
     setMinimumWidth(590);
-    resize(650, 450);
+    resize(650, 600);
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -340,11 +340,11 @@ void DialogScan::slotScan()
     mProgressDialog->exec();
 }
 
-void DialogScan::slotScanDone(bool findings)
+void DialogScan::slotScanDone(bool newFindings)
 {
     slotResizeTableToContent();
 
-    if (!findings) {
+    if (!newFindings) {
         QMessageBox::information(this, "No findings",
                                        "Nothing new could be found during the scan.");
     }
@@ -427,7 +427,7 @@ void DialogScan::slotResizeTableToContent()
         // No entires yet; resize to fixed width
         mTableview->setColumnWidth(0, 55);  // Selection
         mTableview->setColumnWidth(1, 60);  // Name
-        mTableview->setColumnWidth(2, 45);  // Type
+        mTableview->setColumnWidth(2, 55);  // Type
         mTableview->setColumnWidth(3, 300); // Path
         mTableview->setColumnWidth(4, 20);  // Index
     } else {
@@ -437,7 +437,7 @@ void DialogScan::slotResizeTableToContent()
         // Set rows to sensible with; some fixed width, some based on content
         mTableview->setColumnWidth(0, 55);  // Selection
         mTableview->setColumnWidth(1, mTableview->columnWidth(1) + 10); // Name
-        mTableview->setColumnWidth(2, 45);  // Type
+        mTableview->setColumnWidth(2, 55);  // Type
         mTableview->setColumnWidth(3, mTableview->columnWidth(3) + 10); // Path
         mTableview->setColumnWidth(4, 20);  // Index
     }

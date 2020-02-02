@@ -25,7 +25,7 @@ private:
     bool checkDll(QString &pathCheckTool, QString findingAbsPath);
 
 signals:
-    void signalScanDone();
+    void signalScanDone(bool newFindings);
     void signalScanCanceled();
     void signalFoundVst3();
     void signalFoundVst2();

@@ -20,14 +20,14 @@ bool CustomSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
 
 
     // Filter out 'blacklisted' rows if they need to be hidden
-    QString strStatus = sourceModel()->data(modelIndices.at(TableColumnPosType::Status)).toString();
+    QString strStatus = sourceModel()->data(modelIndices.at(nsMW::TableColumnPosType::Status)).toString();
     if (mHideBlacklisted && (strStatus == "Blacklisted")) {
         retVal = false;
     } else {
         // Apply RegExp filter (empty if not set by user via FilterBar; therefore always a match)
         bool match = false;
         for (int i=0; i < modelIndices.size(); i++) {
-            if ((i == TableColumnPosType::Index) && (!mShowIndexColumn)) {
+            if ((i == nsMW::TableColumnPosType::Index) && (!mShowIndexColumn)) {
                 // Skip evaluating 'index' column if it is hidden.
                 continue;
             }
@@ -51,7 +51,7 @@ bool CustomSortFilterProxyModel::filterAcceptsColumn(int source_column, const QM
 {
     Q_UNUSED(source_parent)
     int show;
-    if (source_column == TableColumnPosType::Index) {
+    if (source_column == nsMW::TableColumnPosType::Index) {
         if (mShowIndexColumn) {
             show = true;
         } else {
