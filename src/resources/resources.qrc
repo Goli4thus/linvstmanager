@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/icons">
-        <file>LinVstManager.png</file>
+        <file>linvstmanager.png</file>
     </qresource>
 </RCC>

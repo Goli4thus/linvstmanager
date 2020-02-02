@@ -29,6 +29,7 @@
 
 DialogPreferences::DialogPreferences(Preferences *t_prf)
 {
+    this->setWindowIcon(QIcon(":/icons/linvstmanager.png"));
     prf = t_prf;
 
     mMapBridgeStr = new QMap<VstBridge, QString>;

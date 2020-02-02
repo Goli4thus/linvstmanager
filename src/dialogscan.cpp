@@ -34,6 +34,7 @@
 
 DialogScan::DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets) : mVstBuckets(pVstBuckets)
 {
+    this->setWindowIcon(QIcon(":/icons/linvstmanager.png"));
     prf = t_prf;
     setupUI();
 

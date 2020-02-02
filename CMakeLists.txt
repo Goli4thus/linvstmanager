@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0.0)
+# Not sure on what to define regarding minimm version. Have tested 3.16.3) myself.
 
 set(TARGET_NAME linvstmanager)
 
@@ -56,6 +57,8 @@ endif()
 
 # Instruct CMake to run moc automatically when needed
 set(CMAKE_AUTOMOC ON)
+# Enable AUTORCC for Qt resources processing
+set(CMAKE_AUTORCC ON)
 
 set(SOURCES
     src/confighandler.cpp
@@ -79,17 +82,9 @@ set(SOURCES
     src/vstbucket.cpp
 )
 
-#set(HEADERS
-	#../common/config.h
-	#../common/types.h
-	#models/generictreemodel.h
-	#widgets/generictreeview.h
-#)
-
-
-#set(RESOURCES
-	#resources/resources.qrc
-#)
+set(RESOURCES
+    src/resources/resources.qrc
+)
 
 set(LIBRARIES
 	Qt5::Widgets
@@ -100,8 +95,8 @@ set(LIBRARIES
 
 
 # Set target
-#add_executable(${TARGET_NAME} ${SOURCES} ${HEADERS} ${RCC_SOURCES})
-add_executable(${TARGET_NAME} ${SOURCES})
+#add_executable(${TARGET_NAME} ${SOURCES} ${RCC_SOURCES})
+add_executable(${TARGET_NAME} ${SOURCES} ${RESOURCES})
 
 # Use the Widgets module from Qt 5
 target_link_libraries(${TARGET_NAME} ${LIBRARIES})

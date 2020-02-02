@@ -16,8 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     this->setWindowTitle("LinVstManager");
-    // TODO: Set a window icon.
-    this->setWindowIcon(QIcon(":/icons/LinVstManager.png"));
+    this->setWindowIcon(QIcon(":/icons/linvstmanager.png"));
 
     prf = new Preferences();
     cfg = new ConfigHandler();
@@ -331,7 +330,7 @@ void MainWindow::slotDialogAbout()
 {
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("About");
-    msgBox.setIconPixmap(QPixmap(":/icons/LinVstManager.png"));
+    msgBox.setIconPixmap(QPixmap(":/icons/linvstmanager.png"));
     msgBox.setTextFormat(Qt::RichText);
 
     QString msg;
