@@ -115,7 +115,7 @@ After all that, take a moment and explore the menu bar. Some operations are also
 
 ### If you've been using [linvstmanage-cli](https://github.com/Goli4thus/linvstmanage) previously...
 ... you're in luck. Try _File -> Import legacy config_ and locate the previous config file _linvstmanage.ini_ (by default located in _'~/.config/linvst/manage/'_.
-Once selected it will be parsed and all previously set up VSTs will be added into _LinVstManager_.
+Once selected, it will be parsed and all previously set up VSTs will be added into _LinVstManager_.
 
 ### Manually adding VSTs
 Choose _Edit -> Add VST_ and locate one or more VSTs which shall be added.
