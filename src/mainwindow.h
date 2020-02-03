@@ -24,6 +24,7 @@
 #include "dialogscan.h"
 #include "scanresult.h"
 #include "customsortfilterproxymodel.h"
+#include "legacyconfigparser.h"
 
 
 class MainWindow : public QMainWindow
@@ -58,6 +59,7 @@ private:
     DialogScan *mDialogScan;
     Preferences *prf;
     ConfigHandler *cfg;
+    LegacyConfigParser *legacyConfigParser;
     void closeEvent(QCloseEvent *event);
     QFileInfo *configFileInfo;
     bool configNeedsSaving;
@@ -82,6 +84,7 @@ private slots:
     void slotFilterBarTextChanged();
     void slotHideBlacklisted();
     void slotAddScannedVst(QList<ScanResult> scanSelection);
+    void slotImportLegacyConfig();
 
     void slotMouseRightClickOnVst(QPoint point);
     void slotFilterBar();

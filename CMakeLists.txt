@@ -68,6 +68,7 @@ set(SOURCES
     src/dialogpreferences.cpp
     src/dialogscan.cpp
     src/horizontalline.cpp
+    src/legacyconfigparser.cpp
     src/lineeditbridge.cpp
     src/linkhandler.cpp
     src/logoutput.cpp

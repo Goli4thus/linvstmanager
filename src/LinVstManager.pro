@@ -31,6 +31,7 @@ SOURCES += \
         dialogpreferences.cpp \
         dialogscan.cpp \
         horizontalline.cpp \
+        legacyconfigparser.cpp \
         lineeditbridge.cpp \
         linkhandler.cpp \
         logoutput.cpp \
@@ -54,6 +55,7 @@ HEADERS += \
         dialogscan.h \
         enums.h \
         horizontalline.h \
+        legacyconfigparser.h \
         lineeditbridge.h \
         linkhandler.h \
         logoutput.h \

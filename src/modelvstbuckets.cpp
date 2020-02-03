@@ -238,7 +238,7 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         color.setRgb(91, 160, 255);  // Blue
                         break;
                     case VstStatus::NotFound:
-                        color.setRgb(226, 85, 37);  // Red
+                        color.setRgb(182, 0, 231);  // Violette
                         break;
                     case VstStatus::NoBridge:
                         color.setRgb(226, 85, 37);  // Red

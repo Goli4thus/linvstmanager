@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     prf = new Preferences();
     cfg = new ConfigHandler();
+    legacyConfigParser = new LegacyConfigParser();
     configFileInfo = new QFileInfo(D_CONFIG_FILE_PATH);
     configNeedsSaving = false;
 
@@ -150,6 +151,7 @@ void MainWindow::setupMenuBar()
     // Create actions
     // menu: File
     QAction *actionSave = new QAction(tr("&Save"), this);
+    QAction *actionImport = new QAction(tr("&Import legacy config..."), this);
     QAction *actionExit = new QAction(tr("&Exit"), this);
 
     // menu: Edit
@@ -220,7 +222,8 @@ void MainWindow::setupMenuBar()
 
     // Add actions to menus
     menuFile->addAction(actionSave);
-    menuEdit->addSeparator();
+    menuFile->addAction(actionImport);
+    menuFile->addSeparator();
     menuFile->addAction(actionExit);
 
     menuEdit->addAction(actionEnable);
@@ -249,6 +252,7 @@ void MainWindow::setupMenuBar()
 
 
     connect(actionSave, &QAction::triggered, this, &MainWindow::slotSave);
+    connect(actionImport, &QAction::triggered, this, &MainWindow::slotImportLegacyConfig);
     connect(actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(actionResizeTableToContent, &QAction::triggered, this, &MainWindow::slotResizeTableToContent);
     connect(actionAddVst, &QAction::triggered, this, &MainWindow::slotAddVst);
@@ -613,6 +617,32 @@ void MainWindow::slotAddScannedVst(QList<ScanResult> scanSelection)
     mModelVstBuckets->addScanSelection(&scanSelection);
     enableViewUpdate(true);
     slotResizeTableToContent();
+}
+
+void MainWindow::slotImportLegacyConfig()
+{
+    QString filepathLegacyConfig = QFileDialog::getOpenFileName(
+                this,
+                "Locate the legacy config file of linvstmanage-cli to import previous VSTs.",
+                QDir::homePath(),
+                "linvstmanage.ini");
+    if (!filepathLegacyConfig.isEmpty()) {
+        // Parse config to get a list of dll paths
+        QStringList dllPaths = legacyConfigParser->parseLegacyConfig(filepathLegacyConfig);
+        if (dllPaths.isEmpty()) {
+            QMessageBox::information(
+                        this,
+                        "Import failed",
+                        "Either linvstmanage.ini is empty or \n"
+                        "there was a problem reading it.",
+                        QMessageBox::Ok, QMessageBox::Ok);
+        } else {
+            enableViewUpdate(false);
+            mModelVstBuckets->addVstBucket(dllPaths);
+            enableViewUpdate(true);
+            slotResizeTableToContent();
+        }
+    }
 }
 
 void MainWindow::repaintTableview()
