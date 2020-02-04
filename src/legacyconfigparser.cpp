@@ -65,8 +65,12 @@ QStringList LegacyConfigParser::parseLegacyConfig(QString configPath)
 
         // Construct dll paths
         foreach(const QString &dllName, dllNameList) {
-            // Convert to absolute paths
-            dllPaths.append(QDir::homePath() + QString(path + dllName).remove(0, 1));
+            // Convert to absolute paths if needed
+            if (path.startsWith('~')) {
+                dllPaths.append(QDir::homePath() + QString(path + dllName).remove(0, 1));
+            } else {
+                dllPaths.append(QString(path + dllName));
+            }
         }
 
         config.endGroup();
