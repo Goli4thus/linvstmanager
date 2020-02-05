@@ -8,32 +8,18 @@
 #include "enums.h"
 #include "scanhandler.h"
 #include <QByteArray>
+#include <QMetaType>
 
 ModelScan::ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent) : mVstBuckets(pVstBuckets)
 {
     this->setParent(parent);
 
     mUpdateView = true;
-    mScanHandler = new ScanHandler(mVstBuckets);
-
-    /* Move ScanHandler to dedicated thread to circumvent
-     * obvious UI lock-up during long scans. */
-    mScanHandler->moveToThread(&mScanThread);
-    mScanThread.start();
-
-    connect(this, &ModelScan::signalPerformScan, mScanHandler, &ScanHandler::slotPerformScan);
-    connect(mScanHandler, &ScanHandler::signalScanDone, this, &ModelScan::slotScanDone);
-    connect(mScanHandler, &ScanHandler::signalScanCanceled, this, &ModelScan::slotScanCanceled);
-    connect(mScanHandler, &ScanHandler::signalFoundVst2, this, &ModelScan::signalFoundVst2);
-    connect(mScanHandler, &ScanHandler::signalFoundVst3, this, &ModelScan::signalFoundVst3);
-    connect(mScanHandler, &ScanHandler::signalFoundDll, this, &ModelScan::signalFoundDll);
 }
 
 ModelScan::~ModelScan()
 {
     delete mScanHandler;
-    mScanThread.quit();
-    mScanThread.wait();
 }
 
 int ModelScan::rowCount(const QModelIndex &parent) const
@@ -161,9 +147,27 @@ void ModelScan::triggerScan(QString scanFolder, QString pathCheckTool, bool useC
 {
     emptyModel();
 
-    // Pass temporary buffer. Buffer associated with model will be filled after scan is finished.
-    mScanResultsTmp.clear();
-    emit(signalPerformScan(scanFolder, &mScanResultsTmp, pathCheckTool, useCheckTool));
+    /* Move ScanHandler to dedicated thread to circumvent
+     * obvious UI lock-up during long scans. */
+    mScanHandler = new ScanHandler(*mVstBuckets, scanFolder, pathCheckTool, useCheckTool);
+    mScanThread = new QThread(this);
+    mScanHandler->moveToThread(mScanThread);
+
+    // Signal chain for scan start
+    connect(mScanThread, &QThread::started, mScanHandler, &ScanHandler::slotPerformScan);
+
+    // Signal chain for scan finish/cancel
+    connect(mScanHandler, &ScanHandler::signalScanFinished, this, &ModelScan::slotScanFinished);
+    connect(mScanHandler, &ScanHandler::signalScanFinished, mScanHandler, &ScanHandler::deleteLater);
+    connect(mScanThread, &QThread::finished, mScanThread, &QThread::deleteLater);
+
+    // Scan progress reporting
+    connect(mScanHandler, &ScanHandler::signalFoundVst2, this, &ModelScan::signalFoundVst2);
+    connect(mScanHandler, &ScanHandler::signalFoundVst3, this, &ModelScan::signalFoundVst3);
+    connect(mScanHandler, &ScanHandler::signalFoundDll, this, &ModelScan::signalFoundDll);
+
+    // Start thread which will start scan
+    mScanThread->start();
 }
 
 void ModelScan::emptyModel()
@@ -173,27 +177,28 @@ void ModelScan::emptyModel()
     endRemoveRows();
 }
 
-void ModelScan::fillModel()
+void ModelScan::fillModel(QList<ScanResult> &scanResults)
 {
-    beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + mScanResultsTmp.size() - 1);
-    mScanResults.append(mScanResultsTmp);
+    beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + scanResults.size() - 1);
+    mScanResults.append(scanResults);
     endInsertRows();
 }
 
-void ModelScan::slotScanDone()
+void ModelScan::slotScanFinished(bool wasCanceled, QList<ScanResult> scanResults)
 {
-    fillModel();
-    emit(signalScanDone(!mScanResults.isEmpty()));
+    if (wasCanceled) {
+        emit(signalScanCanceled());
+    } else {
+        fillModel(scanResults);
+        emit(signalScanFinished(!scanResults.isEmpty()));
+    }
+
+    mScanThread->quit();
 }
 
 void ModelScan::slotScanCancel()
 {
-    mScanThread.requestInterruption();
-}
-
-void ModelScan::slotScanCanceled()
-{
-    emit(signalScanCanceled());
+    mScanThread->requestInterruption();
 }
 
 bool ModelScan::isModelEmpty()

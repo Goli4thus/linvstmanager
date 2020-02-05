@@ -78,7 +78,7 @@ private:
 private slots:
     void slotSelectScanFolder();
     void slotScan();
-    void slotScanDone(bool newFindings);
+    void slotScanFinished(bool newFindings);
     void slotCancel();
     void slotAdd();
     void slotScanCancel();

@@ -14,17 +14,24 @@
 #include "pathhasher.h"
 
 
-ScanHandler::ScanHandler(const QList<VstBucket> *pVstBuckets, QObject *parent)
-    : QObject(parent), mVstBuckets(pVstBuckets)
+ScanHandler::ScanHandler(const QList<VstBucket> pVstBuckets,
+                         QString pScanFolder,
+                         QString pPathCheckTool,
+                         bool pUseCheckTool,
+                         QObject *parent)
 {
-    pathHasher = new PathHasher();
+    Q_UNUSED(parent)
+    mVstBuckets = pVstBuckets;
+    mScanFolder = pScanFolder;
+    mPathCheckTool = pPathCheckTool;
+    mUseCheckTool = pUseCheckTool;
+
     mapVstExtension.insert(VstType::VST2, "*.dll");
     mapVstExtension.insert(VstType::VST3, "*.vst3");
 }
 
 ScanHandler::~ScanHandler()
 {
-    delete pathHasher;
 }
 
 bool ScanHandler::checkDll(QString &pathCheckTool, QString findingAbsPath)
@@ -76,7 +83,7 @@ bool ScanHandler::checkDll(QString &pathCheckTool, QString findingAbsPath)
     return retVal;
 }
 
-void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults, QString pathCheckTool, bool useCheckTool)
+void ScanHandler::slotPerformScan()
 {
     /* Basically:
      * 1) Perform the iterative scan
@@ -90,17 +97,19 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
 
 //#define D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
 #ifndef D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
+    QList<ScanResult> scanResults;
     QByteArrayList existingPathHashes;
     QByteArray hash;
     VstType vstType;
     bool verified;
     bool scanCanceledByUser = false;
+    PathHasher pathHasher;
 
-    for (int i=0; i < mVstBuckets->size(); i++) {
-        existingPathHashes.append(mVstBuckets->at(i).hash);
+    for (int i=0; i < mVstBuckets.size(); i++) {
+        existingPathHashes.append(mVstBuckets.at(i).hash);
     }
 
-    QDirIterator it(scanFolder,
+    QDirIterator it(mScanFolder,
                     QStringList() << "*.dll" << "*.vst3",
                     QDir::Files,
                     QDirIterator::Subdirectories);
@@ -120,7 +129,7 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
         }
 
         // Skip findings that are already part of tracked VstBuckets
-        hash = pathHasher->calcFilepathHash(finding);
+        hash = pathHasher.calcFilepathHash(finding);
         if (!existingPathHashes.contains(hash)) {
             qDebug() << "New finding: " << finding;
 
@@ -129,30 +138,29 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
                     || (fileType.suffix() == "Dll")
                     || (fileType.suffix() == "DLL")) {
 
-                if (useCheckTool) {
-                    if (!checkDll(pathCheckTool, finding)) {
+                if (mUseCheckTool) {
+                    if (!checkDll(mPathCheckTool, finding)) {
                         // Not a VST; therefore skip.
                         emit (signalFoundDll());
                         continue;
                     }
-                    vstType = VstType::VST2;
                     verified = true;
                 } else {
-                    vstType = VstType::VST2;
                     verified = false;
-                    emit (signalFoundVst2());
                 }
+                vstType = VstType::VST2;
+                emit (signalFoundVst2());
             } else {  // ".vst3"
                 vstType = VstType::VST3;
                 verified = true;
                 emit (signalFoundVst3());
             }
-            scanResults->append(ScanResult(QFileInfo(finding).baseName(),
-                                           finding,
-                                           vstType,
-                                           verified,
-                                           hash,
-                                           false));
+            scanResults.append(ScanResult(QFileInfo(finding).baseName(),
+                                          finding,
+                                          vstType,
+                                          verified,
+                                          hash,
+                                          false));
         }
     }
 #else
@@ -169,8 +177,8 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
     qDebug() << "--------------------------------------------";
 
     if (scanCanceledByUser) {
-        emit(signalScanCanceled());
+        emit(signalScanFinished(true, scanResults));
     } else {
-        emit(signalScanDone(!scanResults->isEmpty()));
+        emit(signalScanFinished(false, scanResults));
     }
 }

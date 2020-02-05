@@ -38,7 +38,7 @@ DialogScan::DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets) 
     prf = t_prf;
     setupUI();
 
-    connect(mModelScan, &ModelScan::signalScanDone, this, &DialogScan::slotScanDone);
+    connect(mModelScan, &ModelScan::signalScanFinished, this, &DialogScan::slotScanFinished);
     connect(mModelScan, &ModelScan::signalScanCanceled, this, &DialogScan::slotScanCanceled);
     connect(mProgressDialog, &CustomProgressDialog::signalCancelPressed, this, &DialogScan::slotScanCancel);
     connect(mModelScan, &ModelScan::signalFoundVst2, mProgressDialog, &CustomProgressDialog::slotFoundVst2);
@@ -349,7 +349,7 @@ void DialogScan::slotScan()
     mProgressDialog->exec();
 }
 
-void DialogScan::slotScanDone(bool newFindings)
+void DialogScan::slotScanFinished(bool newFindings)
 {
     slotResizeTableToContent();
 

@@ -6,32 +6,36 @@
 #include <QObject>
 #include "enums.h"
 #include <QMap>
-class VstBucket;
-class ScanResult;
-class PathHasher;
+#include "scanresult.h"
+#include "vstbucket.h"
 
 class ScanHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit ScanHandler(const QList<VstBucket> *pVstBuckets, QObject *parent = nullptr);
+    explicit ScanHandler(const QList<VstBucket> pVstBuckets,
+                         QString pScanFolder,
+                         QString pPathCheckTool,
+                         bool pUseCheckTool,
+                         QObject *parent = nullptr);
     ~ScanHandler();
 
 private:
-    PathHasher *pathHasher;
-    const QList<VstBucket> *mVstBuckets;
+    QList<VstBucket> mVstBuckets;
+    QString mScanFolder;
+    QString mPathCheckTool;
+    bool mUseCheckTool;
     QMap<VstType, QString> mapVstExtension;
     bool checkDll(QString &pathCheckTool, QString findingAbsPath);
 
 signals:
-    void signalScanDone(bool newFindings);
-    void signalScanCanceled();
+    void signalScanFinished(bool wasCanceled, QList<ScanResult> scanResults);
     void signalFoundVst3();
     void signalFoundVst2();
     void signalFoundDll();
 
 public slots:
-    void slotPerformScan(QString scanFolder, QList<ScanResult> *scanResults, QString pathCheckTool, bool useCheckTool);
+    void slotPerformScan();
 
 };
 

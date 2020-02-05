@@ -28,26 +28,24 @@ public:
     void emptyModel();
 
 private:
-    ScanHandler *mScanHandler;
     const QList<VstBucket> *mVstBuckets;
     QList<ScanResult> mScanResults;
-    QList<ScanResult> mScanResultsTmp;
-    void fillModel();
-    QThread mScanThread;
+    void fillModel(QList<ScanResult> &scanResults);
+    ScanHandler *mScanHandler;
+    QThread *mScanThread;
 
 signals:
     void signalTableOperationFinished();
-    void signalPerformScan(QString scanFolder, QList<ScanResult> *scanResults, QString pathCheckTool, bool useCheckTool);
-    void signalScanDone(bool findings);
+//    void signalPerformScan(QString scanFolder, QList<ScanResult> scanResults, QString pathCheckTool, bool useCheckTool);
     void signalScanCanceled();
     void signalFoundVst3();
     void signalFoundVst2();
     void signalFoundDll();
+    void signalScanFinished(bool findings);
 
 public slots:
-    void slotScanDone();
     void slotScanCancel();
-    void slotScanCanceled();
+    void slotScanFinished(bool wasCanceled, QList<ScanResult> scanResults);
     void slotSelectEntry(QList<int> selectionIndices);
     void slotUnselectEntry(QList<int> selectionIndices);
 };
