@@ -9,12 +9,14 @@
 #include <QStringList>
 #include <QMap>
 class Preferences;
+class PathHasher;
 
 class LinkHandler : public QObject
 {
     Q_OBJECT
 public:
     explicit LinkHandler(const Preferences &t_prf, QList<VstBucket>*pVstBuckets, QObject *parent = nullptr);
+    ~LinkHandler();
     RvLinkHandler refreshStatus(bool refreshSingle = false, int singleIndex = 0);
     RvLinkHandler updateVsts();
     RvLinkHandler enableVst(int idx);
@@ -29,6 +31,7 @@ private:
     bool checkSoFileMatch(QString filePathA, QString filePathB);
     QMap<VstType, int> mMapVstExtLen;
     QList<VstBucket>*mVstBuckets;
+    PathHasher *pathHasher;
 
 signals:
 

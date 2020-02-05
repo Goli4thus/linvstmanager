@@ -39,6 +39,7 @@ SOURCES += \
         mainwindow.cpp \
         modelscan.cpp \
         modelvstbuckets.cpp \
+        pathhasher.cpp \
         preferences.cpp \
         runguard.cpp \
         scanhandler.cpp \
@@ -62,6 +63,7 @@ HEADERS += \
         mainwindow.h \
         modelscan.h \
         modelvstbuckets.h \
+        pathhasher.h \
         preferences.h \
         runguard.h \
         scanhandler.h \

@@ -6,9 +6,9 @@
 #include <QObject>
 #include "enums.h"
 #include <QMap>
-class QCryptographicHash;
 class VstBucket;
 class ScanResult;
+class PathHasher;
 
 class ScanHandler : public QObject
 {
@@ -18,8 +18,7 @@ public:
     ~ScanHandler();
 
 private:
-    QCryptographicHash *mHasher;
-    QByteArray calcFilepathHash(QString filepath);
+    PathHasher *pathHasher;
     const QList<VstBucket> *mVstBuckets;
     QMap<VstType, QString> mapVstExtension;
     bool checkDll(QString &pathCheckTool, QString findingAbsPath);

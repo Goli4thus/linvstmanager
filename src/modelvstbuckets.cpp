@@ -1,7 +1,6 @@
 // This file is part of LinVstManager.
 
 #include "modelvstbuckets.h"
-#include <QCryptographicHash>
 #include <QtDebug>
 #include <QFont>
 #include <QColor>
@@ -16,9 +15,9 @@
 ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets, Preferences *pPrf)
 {
     this->setParent(parent);
-    mHasher = new QCryptographicHash(QCryptographicHash::Sha1);
     mUpdateView = true;
     prf = pPrf;
+    pathHasher = new PathHasher();
 
     // Fill model with data if available
     if (!pVstBuckets.empty()) {
@@ -32,8 +31,8 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
 
 ModelVstBuckets::~ModelVstBuckets()
 {
-    delete mHasher;
     delete lh;
+    delete pathHasher;
 }
 
 int ModelVstBuckets::rowCount(const QModelIndex &parent) const
@@ -343,7 +342,7 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
     for (int i = 0; i < filepaths_VstDll.size(); i++) {
         filepath = filepaths_VstDll.at(i);
         QString name = QFileInfo(filepath).baseName();
-        QByteArray filepath_Hash = this->calcFilepathHash(filepath);
+        QByteArray filepath_Hash = pathHasher->calcFilepathHash(filepath);
 
         // Check if VST dll is already part of model and skip if so
         bool newVstFound = true;
@@ -617,18 +616,10 @@ QList<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
     return &mVstBuckets;
 }
 
-QByteArray ModelVstBuckets::calcFilepathHash(QString filepath)
-{
-    // Calculate sha1-hash of filepath_VstDll
-    mHasher->reset();
-    mHasher->addData(filepath.toUtf8());
-    return mHasher->result();
-}
-
 void ModelVstBuckets::slotUpdateHashes()
 {
     for (int i = 0; i < mVstBuckets.size(); i++) {
-        mVstBuckets[i].hash = calcFilepathHash(mVstBuckets.at(i).vstPath);
+        mVstBuckets[i].hash = pathHasher->calcFilepathHash(mVstBuckets.at(i).vstPath);
     }
 }
 

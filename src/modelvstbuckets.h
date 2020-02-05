@@ -7,7 +7,7 @@
 #include <QAbstractTableModel>
 #include "vstbucket.h"
 #include "scanresult.h"
-class QCryptographicHash;
+#include "pathhasher.h"
 class Preferences;
 class LinkHandler;
 
@@ -39,11 +39,10 @@ public:
     QList<VstBucket> *getBufferVstBuckets();
 
 private:
-    QCryptographicHash *mHasher;
-    QByteArray calcFilepathHash(QString filepath);
     Preferences *prf;
     LinkHandler *lh;
     QList<VstBucket>mVstBuckets;
+    PathHasher *pathHasher;
 
 signals:
     void signalTableOperationFinished();

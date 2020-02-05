@@ -8,12 +8,20 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QStringList>
+#include "pathhasher.h"
 
 LinkHandler::LinkHandler(const Preferences &t_prf, QList<VstBucket> *pVstBuckets, QObject *parent) : QObject(parent), prf(t_prf)
 {
     mMapVstExtLen.insert(VstType::VST2, 4); // ".dll"
     mMapVstExtLen.insert(VstType::VST3, 5); // ".vst3"
     mVstBuckets = pVstBuckets;
+
+    pathHasher = new PathHasher();
+}
+
+LinkHandler::~LinkHandler()
+{
+    delete pathHasher;
 }
 
 RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex)
@@ -264,32 +272,54 @@ QStringList LinkHandler::checkForOrphans()
 {
     QStringList filePathsOrphans;
     QDir linkFolder(prf.getPathLinkFolder());
+
+    // Filter for file "*.so" files including broken softlinks
     linkFolder.setNameFilters(QStringList() << "*.so");
     linkFolder.setFilter(QDir::AllEntries | QDir::System);
     QStringList strListSoFiles = linkFolder.entryList();
+
     QFileInfo fileInfo;
     for (int i=0; i < strListSoFiles.size(); i++) {
         fileInfo.setFile(linkFolder.path() + "/" + strListSoFiles.at(i));
         // Qt docs: "Note: If the file is a symlink that points to a non-existing file, false is returned."
         // -->> Exactly what we want.
+        bool isOrphan = false;
         if (!fileInfo.exists()) {
-            // symlink seems to be pointing nowhere
-            // Cross check if it doesn't relate to any entry in vst list
-            bool isOrphan = true;
-            QString imaginarySoFile;
-            for (int k=0; k < mVstBuckets->size(); k++) {
-                // Actually check if symlink points at an imaginary ".so" file alongside any of the tracked vstPaths
-                imaginarySoFile = (*mVstBuckets).at(k).vstPath.left(
-                            (*mVstBuckets).at(k).vstPath.size() - mMapVstExtLen.value((*mVstBuckets).at(k).vstType)) + ".so";
-                if (imaginarySoFile == fileInfo.symLinkTarget()) {
+            // softlink is pointing nowhere
+            isOrphan = true;
+        } else {
+            // softlink is pointing somewhere
+            /* Furthermore: Any softlinks that are present in link folder
+             * but aren't "tracked" by LinVstManager should be cleaned up as well
+             * in order to avoid confusing situations. (i.e. DAW loading a potentially
+             * version mismatching VST that actually isn't showing up in LinVstManager) */
+
+            // Contruct "*.so"-paths of all currently tracked VSTs
+            QStringList targetSoPaths;
+            for (int i=0; i < mVstBuckets->size(); i++) {
+                if (mVstBuckets->at(i).vstType == VstType::VST2) {
+                    // Chop extension "dll"
+                    targetSoPaths.append(mVstBuckets->at(i).vstPath.chopped(3) + "so");
+                } else { // VST3
+                    // Chop extension "vst3"
+                    targetSoPaths.append(mVstBuckets->at(i).vstPath.chopped(4) + "so");
+                }
+            }
+
+            // Check if the current softlink points to any one of them
+            isOrphan = true;
+            QString softlinkTarget = fileInfo.symLinkTarget();
+            for (int i=0; i < targetSoPaths.size(); i++) {
+                if (targetSoPaths.at(i) == softlinkTarget) {
+                    // Softlink actually refers to tracked VST. Therefore no orphan
                     isOrphan = false;
                     break;
                 }
             }
+        }
 
-            if (isOrphan) {
-                filePathsOrphans.append(fileInfo.filePath());
-            }
+        if (isOrphan) {
+            filePathsOrphans.append(fileInfo.filePath());
         }
     }
     return filePathsOrphans;

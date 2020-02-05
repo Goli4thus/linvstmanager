@@ -11,27 +11,20 @@
 #include <QProcess>
 #include <QThread>
 #include "VstDllCheck/vstdllcheck.h"
+#include "pathhasher.h"
 
 
 ScanHandler::ScanHandler(const QList<VstBucket> *pVstBuckets, QObject *parent)
     : QObject(parent), mVstBuckets(pVstBuckets)
 {
-    mHasher = new QCryptographicHash(QCryptographicHash::Sha1);
+    pathHasher = new PathHasher();
     mapVstExtension.insert(VstType::VST2, "*.dll");
     mapVstExtension.insert(VstType::VST3, "*.vst3");
 }
 
 ScanHandler::~ScanHandler()
 {
-    delete mHasher;
-}
-
-QByteArray ScanHandler::calcFilepathHash(QString filepath)
-{
-    // Calculate sha1-hash of filepath_VstDll
-    mHasher->reset();
-    mHasher->addData(filepath.toUtf8());
-    return mHasher->result();
+    delete pathHasher;
 }
 
 bool ScanHandler::checkDll(QString &pathCheckTool, QString findingAbsPath)
@@ -127,7 +120,7 @@ void ScanHandler::slotPerformScan(QString scanFolder, QList<ScanResult> *scanRes
         }
 
         // Skip findings that are already part of tracked VstBuckets
-        hash = calcFilepathHash(finding);
+        hash = pathHasher->calcFilepathHash(finding);
         if (!existingPathHashes.contains(hash)) {
             qDebug() << "New finding: " << finding;
 
