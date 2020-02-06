@@ -22,20 +22,20 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
 
-    void addVstBucket(QStringList filepaths_VstDll);
+    void addVstBucket(const QStringList &filepaths_VstDll);
     void removeVstBucket(QList<int>indexOfVstBuckets);
-    void enableVstBucket(QList<int>indexOfVstBuckets);
-    void disableVstBucket(QList<int>indexOfVstBuckets);
-    void blacklistVstBucket(QList<int>indexOfVstBuckets);
-    void unblacklistVstBucket(QList<int>indexOfVstBuckets);
+    void enableVstBucket(const QList<int> &indexOfVstBuckets);
+    void disableVstBucket(const QList<int> &indexOfVstBuckets);
+    void blacklistVstBucket(const QList<int> &indexOfVstBuckets);
+    void unblacklistVstBucket(const QList<int> &indexOfVstBuckets);
     void updateVsts();
     void refreshStatus();
     void addScanSelection(QList<ScanResult> *scanSelection);
 
-    QList<int> changeBridges(QList<int>indexOfVstBuckets, VstBridge reqBridgeType);
+    QList<int> changeBridges(const QList<int> &indexOfVstBuckets, VstBridge reqBridgeType);
     bool mUpdateView;
     QStringList checkForOrphans();
-    bool removeOrphans(QStringList filePathsOrphans);
+    bool removeOrphans(const QStringList &filePathsOrphans);
     QList<VstBucket> *getBufferVstBuckets();
 
 private:

@@ -76,7 +76,7 @@ private:
     void setupMouseMenu();
     void enableViewUpdate(bool enable);
     void repaintTableview();
-    QList<int> getSelectionOrigIdx(QModelIndexList indexList);
+    QList<int> getSelectionOrigIdx(const QModelIndexList &indexList);
     void reject() override;
     void getScanAmount(const QString &path, int &numDll, int &numVst3);
     int mNumVst3, mNumDll;

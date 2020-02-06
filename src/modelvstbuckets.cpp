@@ -329,13 +329,13 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
     return QVariant();
 }
 
-void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
+void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
 {
     QString filepath;
 
     // Clear 'newlyAdded' flags
-    for (int i = 0; i < mVstBuckets.size(); i++) {
-        mVstBuckets[i].newlyAdded = false;
+    for (auto vstBucket : mVstBuckets) {
+        vstBucket.newlyAdded = false;
     }
 
     // Start processing selection
@@ -346,8 +346,8 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
 
         // Check if VST dll is already part of model and skip if so
         bool newVstFound = true;
-        for (int i = 0; i < mVstBuckets.size(); i++) {
-            if (mVstBuckets.at(i).hash.compare(filepath_Hash) == 0) {
+        for (const auto & vstBucket : mVstBuckets) {
+            if (vstBucket.hash.compare(filepath_Hash) == 0) {
                newVstFound = false;
                break;
             }
@@ -361,7 +361,7 @@ void ModelVstBuckets::addVstBucket(QStringList filepaths_VstDll)
              */
         }
 
-        if (newVstFound == true) {
+        if (newVstFound) {
             // Check if VST2 or VST3 file and set 'bridge' type accordingly
             VstType vstType;
             VstBridge bridgeType;
@@ -432,7 +432,7 @@ void ModelVstBuckets::removeVstBucket(QList<int>indexOfVstBuckets)
     emit(signalConfigDataChanged());
 }
 
-void ModelVstBuckets::enableVstBucket(QList<int> indexOfVstBuckets)
+void ModelVstBuckets::enableVstBucket(const QList<int> &indexOfVstBuckets)
 {
     int index = 0;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
@@ -448,7 +448,7 @@ void ModelVstBuckets::enableVstBucket(QList<int> indexOfVstBuckets)
     }
 }
 
-void ModelVstBuckets::disableVstBucket(QList<int> indexOfVstBuckets)
+void ModelVstBuckets::disableVstBucket(const QList<int> &indexOfVstBuckets)
 {
     int index = 0;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
@@ -464,7 +464,7 @@ void ModelVstBuckets::disableVstBucket(QList<int> indexOfVstBuckets)
     }
 }
 
-void ModelVstBuckets::blacklistVstBucket(QList<int> indexOfVstBuckets)
+void ModelVstBuckets::blacklistVstBucket(const QList<int> &indexOfVstBuckets)
 {
     int index = 0;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
@@ -480,7 +480,7 @@ void ModelVstBuckets::blacklistVstBucket(QList<int> indexOfVstBuckets)
     }
 }
 
-void ModelVstBuckets::unblacklistVstBucket(QList<int> indexOfVstBuckets)
+void ModelVstBuckets::unblacklistVstBucket(const QList<int> &indexOfVstBuckets)
 {
     int index;
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
@@ -513,17 +513,16 @@ void ModelVstBuckets::refreshStatus()
 
 void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
 {
-    QString filepath;
     VstBridge bridgeType;
 
     // Clear 'newlyAdded' flags
-    for (int i = 0; i < mVstBuckets.size(); i++) {
-        mVstBuckets[i].newlyAdded = false;
+    for (auto &vstBucket : mVstBuckets) {
+        vstBucket.newlyAdded = false;
     }
 
     beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + scanSelection->size() - 1);
-    for (int i = 0; i < scanSelection->size(); i++) {
-        if (scanSelection->at(i).vstType == VstType::VST2) {
+    for (const auto &i : *scanSelection) {
+        if (i.vstType == VstType::VST2) {
             if (prf->getBridgeDefaultVst2IsX()) {
                 bridgeType = VstBridge::LinVstX;
             } else {
@@ -537,12 +536,12 @@ void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
             }
         }
 
-        mVstBuckets.append(VstBucket(scanSelection->at(i).name,
-                                     scanSelection->at(i).vstPath,
-                                     scanSelection->at(i).hash,
+        mVstBuckets.append(VstBucket(i.name,
+                                     i.vstPath,
+                                     i.hash,
                                      VstStatus::NA,
                                      bridgeType,
-                                     scanSelection->at(i).vstType,
+                                     i.vstType,
                                      true));
     }
     endInsertRows();
@@ -550,7 +549,7 @@ void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
     emit(signalConfigDataChanged());
 }
 
-QList<int> ModelVstBuckets::changeBridges(QList<int> indexOfVstBuckets, VstBridge reqBridgeType)
+QList<int> ModelVstBuckets::changeBridges(const QList<int> &indexOfVstBuckets, VstBridge reqBridgeType)
 {
     int index;
     bool configDataChanged = false;
@@ -602,13 +601,9 @@ QStringList ModelVstBuckets::checkForOrphans()
     return lh->checkForOrphans();
 }
 
-bool ModelVstBuckets::removeOrphans(QStringList filePathsOrphans)
+bool ModelVstBuckets::removeOrphans(const QStringList &filePathsOrphans)
 {
-    if (lh->removeOrphans(filePathsOrphans) == RvLinkHandler::LH_OK) {
-        return true;
-    } else {
-        return false;
-    }
+    return (lh->removeOrphans(filePathsOrphans) == RvLinkHandler::LH_OK);
 }
 
 QList<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
@@ -618,8 +613,8 @@ QList<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
 
 void ModelVstBuckets::slotUpdateHashes()
 {
-    for (int i = 0; i < mVstBuckets.size(); i++) {
-        mVstBuckets[i].hash = pathHasher->calcFilepathHash(mVstBuckets.at(i).vstPath);
+    for (auto &vstBucket : mVstBuckets) {
+        vstBucket.hash = pathHasher->calcFilepathHash(vstBucket.vstPath);
     }
 }
 

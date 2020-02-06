@@ -24,11 +24,11 @@ public:
     RvLinkHandler blacklistVst(int idx);
     RvLinkHandler changeBridge(int idx, VstBridge newBridgeType);
     QStringList checkForOrphans();
-    RvLinkHandler removeOrphans(QStringList filePathsOrphans);
+    RvLinkHandler removeOrphans(const QStringList &filePathsOrphans);
 
 private:
     const Preferences &prf;
-    bool checkSoFileMatch(QString filePathA, QString filePathB);
+    bool checkSoFileMatch(const QString &filePathA, const QString &filePathB);
     QMap<VstType, int> mMapVstExtLen;
     QList<VstBucket>*mVstBuckets;
     PathHasher *pathHasher;

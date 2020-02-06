@@ -20,7 +20,7 @@
 
 #include "mainwindow.h"
 #include <QApplication>
-#include <stdlib.h>
+#include <cstdlib>
 #include "config.h"
 #include "runguard.h"
 #include <QDebug>
@@ -68,5 +68,5 @@ int main(int argc, char *argv[])
     w.resize(800, 550);
     w.show();
 
-    return a.exec();
+    return QApplication::exec();
 }

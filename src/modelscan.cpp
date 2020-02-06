@@ -143,7 +143,7 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void ModelScan::triggerScan(QString scanFolder, QString pathCheckTool, bool useCheckTool)
+void ModelScan::triggerScan(const QString &scanFolder, const QString &pathCheckTool, bool useCheckTool)
 {
     emptyModel();
 
@@ -209,23 +209,23 @@ bool ModelScan::isModelEmpty()
 QList<ScanResult> ModelScan::getScanSelection()
 {
     QList<ScanResult> scanSelection;
-    for (int i=0; i < mScanResults.size(); i++) {
-        if (mScanResults.at(i).selected) {
-            scanSelection.append(mScanResults.at(i));
+    for (const auto &scanResult : mScanResults) {
+        if (scanResult.selected) {
+            scanSelection.append(scanResult);
         }
     }
 
     return scanSelection;
 }
 
-void ModelScan::slotSelectEntry(QList<int> selectionIndices)
+void ModelScan::slotSelectEntry(const QList<int> &selectionIndices)
 {
     for(int i = selectionIndices.size() - 1; i >= 0; i--) {
         mScanResults[selectionIndices.at(i)].selected = true;
     }
 }
 
-void ModelScan::slotUnselectEntry(QList<int> selectionIndices)
+void ModelScan::slotUnselectEntry(const QList<int> &selectionIndices)
 {
     for(int i = selectionIndices.size() - 1; i >= 0; i--) {
         mScanResults[selectionIndices.at(i)].selected = false;

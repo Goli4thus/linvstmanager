@@ -18,7 +18,7 @@
 
 LineEditBridge::LineEditBridge(QString t_name, QWidget *parent) : QWidget(parent)
 {
-    this->name = t_name;
+    this->name = std::move(t_name);
 
     // Allocate starting from parent to children
     mLayoutHBridge = new QHBoxLayout();
@@ -66,11 +66,7 @@ bool LineEditBridge::getBridgeEnabled()
 
 bool LineEditBridge::pathIsSet()
 {
-    if (mLineEditBridge->text() == "") {
-        return false;
-    } else {
-        return true;
-    }
+    return mLineEditBridge->text() != "";
 }
 
 QString LineEditBridge::getPath()
@@ -93,7 +89,7 @@ void LineEditBridge::setBridgeEnabled(bool setEnabled)
     }
 }
 
-void LineEditBridge::setPath(QString path)
+void LineEditBridge::setPath(const QString &path)
 {
     mLineEditBridge->setText(path);
 }

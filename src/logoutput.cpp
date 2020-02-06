@@ -9,7 +9,7 @@ LogOutput::LogOutput()
     menu = createStandardContextMenu();
     mVerboseLogEnabled = false;
 
-    QAction *clearLog = new QAction("Clear", this);
+    auto *clearLog = new QAction("Clear", this);
 
     menu->addSeparator();
     menu->addAction(clearLog);

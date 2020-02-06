@@ -13,12 +13,11 @@ class ScanHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit ScanHandler(const QList<VstBucket> pVstBuckets,
+    explicit ScanHandler(const QList<VstBucket> &pVstBuckets,
                          QString pScanFolder,
                          QString pPathCheckTool,
                          bool pUseCheckTool,
                          QObject *parent = nullptr);
-    ~ScanHandler();
 
 private:
     QList<VstBucket> mVstBuckets;
@@ -26,7 +25,7 @@ private:
     QString mPathCheckTool;
     bool mUseCheckTool;
     QMap<VstType, QString> mapVstExtension;
-    bool checkDll(QString &pathCheckTool, QString findingAbsPath);
+    bool checkDll(QString &pathCheckTool, const QString &findingAbsPath);
 
 signals:
     void signalScanFinished(bool wasCanceled, QList<ScanResult> scanResults);

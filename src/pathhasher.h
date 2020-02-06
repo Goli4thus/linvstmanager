@@ -12,7 +12,7 @@ class PathHasher
 public:
     PathHasher();
     ~PathHasher();
-    QByteArray calcFilepathHash(QString filepath);
+    QByteArray calcFilepathHash(const QString &filepath);
 
 private:
     QCryptographicHash *mHasher;

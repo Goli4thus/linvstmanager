@@ -85,14 +85,14 @@ RvLinkHandler LinkHandler::updateVsts()
     QString filePathSoTmpl;
     QString filePathSoDest;
 
-    for (int i=0; i < mVstBuckets->size(); i++) {
-        if (   ((*mVstBuckets).at(i).status == VstStatus::No_So)
-            || ((*mVstBuckets).at(i).status == VstStatus::Mismatch)
-            || ((*mVstBuckets).at(i).status == VstStatus::NoBridge)) {
-            if (prf.bridgeEnabled((*mVstBuckets).at(i).bridge)) {
-                filePathSoTmpl = prf.getPathSoTmplBridge((*mVstBuckets).at(i).bridge);
-                filePathSoDest = (*mVstBuckets).at(i).vstPath.left(
-                            (*mVstBuckets).at(i).vstPath.size() - mMapVstExtLen.value((*mVstBuckets).at(i).vstType)) + ".so";
+    for (auto vstBucket : *mVstBuckets) {
+        if (   (vstBucket.status == VstStatus::No_So)
+            || (vstBucket.status == VstStatus::Mismatch)
+            || (vstBucket.status == VstStatus::NoBridge)) {
+            if (prf.bridgeEnabled(vstBucket.bridge)) {
+                filePathSoTmpl = prf.getPathSoTmplBridge(vstBucket.bridge);
+                filePathSoDest = vstBucket.vstPath.left(
+                            vstBucket.vstPath.size() - mMapVstExtLen.value(vstBucket.vstType)) + ".so";
                 if (!QFile::remove(filePathSoDest)) {
                     qDebug() << "(LH): updateVsts(): remove file failed";
                 }
@@ -100,7 +100,7 @@ RvLinkHandler LinkHandler::updateVsts()
                     qDebug() << "(LH): updateVsts(): copy file failed";
                 }
             } else {
-                (*mVstBuckets)[i].status = VstStatus::NoBridge;
+                vstBucket.status = VstStatus::NoBridge;
                 continue;
             }
         }
@@ -296,13 +296,13 @@ QStringList LinkHandler::checkForOrphans()
 
             // Contruct "*.so"-paths of all currently tracked VSTs
             QStringList targetSoPaths;
-            for (int i=0; i < mVstBuckets->size(); i++) {
-                if (mVstBuckets->at(i).vstType == VstType::VST2) {
+            for (auto vstBucket : *mVstBuckets) {
+                if (vstBucket.vstType == VstType::VST2) {
                     // Chop extension "dll"
-                    targetSoPaths.append(mVstBuckets->at(i).vstPath.chopped(3) + "so");
+                    targetSoPaths.append(vstBucket.vstPath.chopped(3) + "so");
                 } else { // VST3
                     // Chop extension "vst3"
-                    targetSoPaths.append(mVstBuckets->at(i).vstPath.chopped(4) + "so");
+                    targetSoPaths.append(vstBucket.vstPath.chopped(4) + "so");
                 }
             }
 
@@ -325,13 +325,13 @@ QStringList LinkHandler::checkForOrphans()
     return filePathsOrphans;
 }
 
-RvLinkHandler LinkHandler::removeOrphans(QStringList filePathsOrphans)
+RvLinkHandler LinkHandler::removeOrphans(const QStringList &filePathsOrphans)
 {
     RvLinkHandler retVal = RvLinkHandler::LH_OK;
 
-    for (int i=0; i < filePathsOrphans.size(); i++) {
-        if (!QFile::remove(filePathsOrphans.at(i))) {
-            qDebug() << "(LH): removeOrphans(): link delete failed for: '" << filePathsOrphans.at(i) << "'";
+    for (const auto &orphanPath : filePathsOrphans) {
+        if (!QFile::remove(orphanPath)) {
+            qDebug() << "(LH): removeOrphans(): link delete failed for: '" << orphanPath << "'";
             retVal = RvLinkHandler::LH_NOT_OK;
         }
     }
@@ -339,16 +339,8 @@ RvLinkHandler LinkHandler::removeOrphans(QStringList filePathsOrphans)
     return retVal;
 }
 
-bool LinkHandler::checkSoFileMatch(QString filePathA, QString filePathB)
+bool LinkHandler::checkSoFileMatch(const QString &filePathA, const QString &filePathB)
 {
-    bool match;
-
-    if (QProcess::execute("diff", QStringList() << filePathA << filePathB) == 0)
-    {
-        match = true;
-    } else {
-        match = false;
-    }
-    return match;
+    return QProcess::execute("diff", QStringList() << filePathA << filePathB) == 0;
 }
 

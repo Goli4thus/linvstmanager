@@ -9,12 +9,7 @@
 #include <QFile>
 #include <QDebug>
 
-LegacyConfigParser::LegacyConfigParser()
-{
-
-}
-
-QStringList LegacyConfigParser::parseLegacyConfig(QString configPath)
+QStringList LegacyConfigParser::parseLegacyConfig(const QString &configPath)
 {
     /* Escaped spaces contained within values of the original "linvstmanage.ini"
      * file are a problem. Therefore a temporary, "sanitized" ini-file is created,
@@ -45,8 +40,9 @@ QStringList LegacyConfigParser::parseLegacyConfig(QString configPath)
 
 
     // Now the actual ini-file parsing
-    QStringList dllPaths, dllNameList;
-    QString path, dllNames;
+    QStringList dllPaths;
+    QStringList dllNameList;
+    QString path;
 
     QSettings config(QFileInfo(sanitizedFile).filePath(), QSettings::IniFormat);
 

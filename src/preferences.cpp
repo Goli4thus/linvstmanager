@@ -26,12 +26,12 @@ bool Preferences::updatePreferences(bool t_enabledLinVst,
                                     bool t_bridgeDefaultVst2IsX,
                                     bool t_bridgeDefaultVst3IsX,
                                     bool t_hideBlacklisted,
-                                    QString t_pathSoLinVst,
-                                    QString t_pathSoLinVstX,
-                                    QString t_pathSoLinVst3,
-                                    QString t_pathSoLinVst3X,
-                                    QString t_pathLinkFolder,
-                                    QString t_pathCheckTool)
+                                    const QString &t_pathSoLinVst,
+                                    const QString &t_pathSoLinVstX,
+                                    const QString &t_pathSoLinVst3,
+                                    const QString &t_pathSoLinVst3X,
+                                    const QString &t_pathLinkFolder,
+                                    const QString &t_pathCheckTool)
 {
     bool prefsChanged = false;
 

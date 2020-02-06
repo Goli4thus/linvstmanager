@@ -14,7 +14,7 @@
 #include "pathhasher.h"
 
 
-ScanHandler::ScanHandler(const QList<VstBucket> pVstBuckets,
+ScanHandler::ScanHandler(const QList<VstBucket> &pVstBuckets,
                          QString pScanFolder,
                          QString pPathCheckTool,
                          bool pUseCheckTool,
@@ -22,19 +22,15 @@ ScanHandler::ScanHandler(const QList<VstBucket> pVstBuckets,
 {
     Q_UNUSED(parent)
     mVstBuckets = pVstBuckets;
-    mScanFolder = pScanFolder;
-    mPathCheckTool = pPathCheckTool;
+    mScanFolder = std::move(pScanFolder);
+    mPathCheckTool = std::move(pPathCheckTool);
     mUseCheckTool = pUseCheckTool;
 
     mapVstExtension.insert(VstType::VST2, "*.dll");
     mapVstExtension.insert(VstType::VST3, "*.vst3");
 }
 
-ScanHandler::~ScanHandler()
-{
-}
-
-bool ScanHandler::checkDll(QString &pathCheckTool, QString findingAbsPath)
+bool ScanHandler::checkDll(QString &pathCheckTool, const QString &findingAbsPath)
 {
     /*
      * Call the external utility "vstdllcheck" and evaluate its exit code
@@ -105,8 +101,8 @@ void ScanHandler::slotPerformScan()
     bool scanCanceledByUser = false;
     PathHasher pathHasher;
 
-    for (int i=0; i < mVstBuckets.size(); i++) {
-        existingPathHashes.append(mVstBuckets.at(i).hash);
+    for (const auto &vstBucket : mVstBuckets) {
+        existingPathHashes.append(vstBucket.hash);
     }
 
     QDirIterator it(mScanFolder,

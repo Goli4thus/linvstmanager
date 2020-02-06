@@ -11,6 +11,11 @@
 CustomProgressDialog::CustomProgressDialog()
 {
     this->setWindowTitle("Scan");
+    mCntVst2 = 0;
+    mCntVst3 = 0;
+    mCntDll = 0;
+    mScanAmount = 0;
+    mFoundSoFar = 0;
 
     mLayoutVMain = new QVBoxLayout();
     mLayoutGridCounter = new QGridLayout();

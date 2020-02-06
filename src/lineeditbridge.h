@@ -20,7 +20,7 @@ public:
     bool pathIsSet();
     QString getPath();
     void setBridgeEnabled(bool setEnabled);
-    void setPath(QString path);
+    void setPath(const QString &path);
 private:
     QHBoxLayout *mLayoutHBridge;
     QLabel *mLabelBridge;

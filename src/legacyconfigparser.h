@@ -9,8 +9,8 @@ class QStringList;
 class LegacyConfigParser
 {
 public:
-    LegacyConfigParser();
-    QStringList parseLegacyConfig(QString configPath);
+    LegacyConfigParser() = default;
+    QStringList parseLegacyConfig(const QString &configPath);
 };
 
 #endif // LEGACYCONFIGPARSER_H

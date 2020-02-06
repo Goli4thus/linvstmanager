@@ -84,15 +84,15 @@ void ConfigHandler::writePreferences(const Preferences &prf)
 
 void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
 {
-    for (int i = 0; i < vstBuckets.size(); ++i) {
+    for (const auto &vstBucket : vstBuckets) {
         xmlWriter->writeStartElement("VstBucketEntry");
-        xmlWriter->writeTextElement("name", vstBuckets.at(i).name);
-        xmlWriter->writeTextElement("vstPath", vstBuckets.at(i).vstPath);
+        xmlWriter->writeTextElement("name", vstBucket.name);
+        xmlWriter->writeTextElement("vstPath", vstBucket.vstPath);
 //        xmlWriter->writeTextElement("hash", QString::fromStdString(vstBuckets.at(i).hash.toStdString()));
 
-        xmlWriter->writeTextElement("status", mapStatusStr.value(vstBuckets.at(i).status));
-        xmlWriter->writeTextElement("bridge", mapBridgeStr.value(vstBuckets.at(i).bridge));
-        xmlWriter->writeTextElement("vstType", mapTypeStr.value(vstBuckets.at(i).vstType));
+        xmlWriter->writeTextElement("status", mapStatusStr.value(vstBucket.status));
+        xmlWriter->writeTextElement("bridge", mapBridgeStr.value(vstBucket.bridge));
+        xmlWriter->writeTextElement("vstType", mapTypeStr.value(vstBucket.vstType));
 
         xmlWriter->writeEndElement();
     }

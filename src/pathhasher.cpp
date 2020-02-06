@@ -14,7 +14,7 @@ PathHasher::~PathHasher()
     delete mHasher;
 }
 
-QByteArray PathHasher::calcFilepathHash(QString filepath)
+QByteArray PathHasher::calcFilepathHash(const QString &filepath)
 {
     // Calculate sha1-hash of filepath_VstDll
     mHasher->reset();

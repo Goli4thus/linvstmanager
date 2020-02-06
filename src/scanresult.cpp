@@ -9,10 +9,10 @@ ScanResult::ScanResult(QString t_name,
                        QByteArray t_hash,
                        bool t_selected)
 {
-    name = t_name;
-    vstPath = t_vstPath;
+    name = std::move(t_name);
+    vstPath = std::move(t_vstPath);
     vstType = t_vstType;
     verified = t_verified;
-    hash = t_hash;
+    hash = std::move(t_hash);
     selected = t_selected;
 }

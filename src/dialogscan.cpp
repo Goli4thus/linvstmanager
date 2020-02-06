@@ -438,7 +438,7 @@ void DialogScan::repaintTableview()
     mTableview->viewport()->repaint();
 }
 
-QList<int> DialogScan::getSelectionOrigIdx(QModelIndexList indexList)
+QList<int> DialogScan::getSelectionOrigIdx(const QModelIndexList &indexList)
 {
     QList<int> indexOfScanResults;
     foreach (QModelIndex index, indexList) {
@@ -471,8 +471,6 @@ void DialogScan::getScanAmount(const QString &path, int &numDll, int &numVst3)
     process.waitForFinished();
     retStr = process.readAllStandardOutput();
     numVst3 = retStr.toUInt();
-
-    return;
 }
 
 void DialogScan::slotResizeTableToContent()
