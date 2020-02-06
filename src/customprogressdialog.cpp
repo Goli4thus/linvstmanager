@@ -7,7 +7,6 @@
 #include <QProgressBar>
 #include "horizontalline.h"
 #include <QPushButton>
-#include <QTimer>
 
 CustomProgressDialog::CustomProgressDialog()
 {
@@ -18,14 +17,14 @@ CustomProgressDialog::CustomProgressDialog()
     mLayoutHBottom = new QHBoxLayout();
     mLabelMain = new QLabel("Scanning for VSTs...", this);
     mProgressBar = new QProgressBar(this);
-    HorizontalLine *hline = new HorizontalLine();
-    HorizontalLine *hline2 = new HorizontalLine();
+    auto *hline = new HorizontalLine();
+    auto *hline2 = new HorizontalLine();
     mButtonCancel = new QPushButton("Cancel", this);
 
-    QLabel *mLabelTextVst2 = new QLabel("Vst2:");
-    QLabel *mLabelTextVst3 = new QLabel("Vst3:");
-    QLabel *mLabelTextDll = new QLabel("Dll:");
-    QLabel *mLabelTextInfo = new QLabel("Found so far:");
+    auto *mLabelTextVst2 = new QLabel("Vst2:");
+    auto *mLabelTextVst3 = new QLabel("Vst3:");
+    auto *mLabelTextDll = new QLabel("Dll:");
+    auto *mLabelTextInfo = new QLabel("Found so far:");
     mLabelTextDll->setToolTip("Random dll files that are no VSTs.");
     mLabelCounterVst2 = new QLabel("0");
     mLabelCounterVst3 = new QLabel("0");
@@ -55,15 +54,26 @@ CustomProgressDialog::CustomProgressDialog()
 
     mProgressBar->setMinimum(0);
     mProgressBar->setMaximum(100);
+    mProgressBar->setTextVisible(true);
 
-    mProgressTimer = new QTimer(this);
 
     connect(mButtonCancel, &QPushButton::pressed, this, &CustomProgressDialog::slotButtonCancel);
-    connect(mProgressTimer, &QTimer::timeout, this, &CustomProgressDialog::slotProgressTimerElapsed);
 }
 
 int CustomProgressDialog::exec()
 {
+    return QDialog::exec();
+}
+
+void CustomProgressDialog::closeEvent(QCloseEvent *e)
+{
+    return QDialog::closeEvent(e);
+}
+
+void CustomProgressDialog::init(quint16 pScanAmount)
+{
+    mScanAmount = pScanAmount;
+    mFoundSoFar = 0;
     mLabelCounterVst2->setText("0");
     mLabelCounterVst3->setText("0");
     mLabelCounterDll->setText("0");
@@ -71,27 +81,11 @@ int CustomProgressDialog::exec()
     mCntVst3 = 0;
     mCntDll = 0;
     mProgressBar->reset();
-    mProgressTimer->start(500); // 500 ms interval timer
-    return QDialog::exec();
 }
 
-void CustomProgressDialog::closeEvent(QCloseEvent *e)
+void CustomProgressDialog::updateProgress()
 {
-    mProgressTimer->stop();
-    return QDialog::closeEvent(e);
-}
-
-void CustomProgressDialog::slotProgressTimerElapsed()
-{
-    int currentValue = mProgressBar->value();
-    if (currentValue < 90) {
-        mProgressBar->setValue(currentValue + 1);
-        // Let timer run
-    } else {
-        // Stop timer at approx. 90 percent and simply wait.
-        mProgressTimer->stop();
-        mLabelMain->setText("Well, this seems to take longer than expected (> 45s).");
-    }
+    mProgressBar->setValue((++mFoundSoFar * 100) / mScanAmount);
 }
 
 void CustomProgressDialog::slotButtonCancel()
@@ -101,15 +95,18 @@ void CustomProgressDialog::slotButtonCancel()
 
 void CustomProgressDialog::slotFoundVst3()
 {
+    updateProgress();
     mLabelCounterVst3->setText(QString::number(++mCntVst3));
 }
 
 void CustomProgressDialog::slotFoundVst2()
 {
+    updateProgress();
     mLabelCounterVst2->setText(QString::number(++mCntVst2));
 }
 
 void CustomProgressDialog::slotFoundDll()
 {
+    updateProgress();
     mLabelCounterDll->setText(QString::number(++mCntDll));
 }

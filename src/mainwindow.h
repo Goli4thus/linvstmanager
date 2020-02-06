@@ -53,7 +53,7 @@ private:
     void repaintTableview();
     void enableViewUpdate(bool f_enable);
     void changeBridge(VstBridge bridgeType);
-    QList<int> getSelectionOrigIdx(QModelIndexList indexList);
+    QList<int> getSelectionOrigIdx(const QModelIndexList &indexList);
     QMenu *mouseMenu;
     DialogPreferences *mDialogPreferences;
     DialogScan *mDialogScan;
@@ -97,7 +97,7 @@ private slots:
     void slotConfigDataChanged();
     void slotPostSetupInfo();
     void slotOrphanDetection();
-    void slotFeedbackLogOutput(QString msg, bool isVerboseInfo);
+    void slotFeedbackLogOutput(const QString &msg, bool isVerboseInfo);
 };
 
 #endif // MAINWINDOW_H

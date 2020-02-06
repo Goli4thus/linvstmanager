@@ -82,7 +82,7 @@ void DialogPreferences::setupUI()
     mButtonGroupDefaultVst2 = new QButtonGroup();
     mButtonGroupDefaultVst3 = new QButtonGroup();
 
-    VerticalLine *vLine1 = new VerticalLine();
+    auto *vLine1 = new VerticalLine();
     labelLinkFolder = new QLabel("Link folder:");
     mLineEditLinkFolder = new QLineEdit();
     mPushButtonLinkFolder = new QPushButton("Select");
@@ -91,8 +91,8 @@ void DialogPreferences::setupUI()
     mPushButtonCheckTool = new QPushButton("Select");
     mButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                       QDialogButtonBox::Cancel);
-    HorizontalLine *line1 = new HorizontalLine();
-    HorizontalLine *line2 = new HorizontalLine();
+    auto *line1 = new HorizontalLine();
+    auto *line2 = new HorizontalLine();
 
 
     // ===========

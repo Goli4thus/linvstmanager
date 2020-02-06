@@ -10,36 +10,35 @@ class QGridLayout;
 class QLabel;
 class QProgressBar;
 class QPushButton;
-class QTimer;
 
 class CustomProgressDialog : public QDialog
 {
     Q_OBJECT
 public:
     CustomProgressDialog();
-    QProgressBar *mProgressBar;
     int exec() override;
     void closeEvent(QCloseEvent *e) override;
+    void init(quint16 pScanAmount);
 
 private:
     QVBoxLayout *mLayoutVMain;
     QGridLayout *mLayoutGridCounter;
     QHBoxLayout *mLayoutHBottom;
+    QProgressBar *mProgressBar;
     QLabel *mLabelMain;
     QLabel *mLabelCounterVst2;
     QLabel *mLabelCounterVst3;
     QLabel *mLabelCounterDll;
     QPushButton *mButtonCancel;
-    QTimer *mProgressTimer;
     quint16 mCntVst2;
     quint16 mCntVst3;
     quint16 mCntDll;
+    quint16 mScanAmount;
+    quint16 mFoundSoFar;
+    void updateProgress();
 
 signals:
     void signalCancelPressed();
-
-private slots:
-    void slotProgressTimerElapsed();
 
 public slots:
     void slotButtonCancel();

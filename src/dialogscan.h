@@ -37,12 +37,15 @@ private:
     const QList<VstBucket> *mVstBuckets;
     QVBoxLayout *mLayoutVMain;
     QHBoxLayout *mLayoutHScanFolder;
+    QHBoxLayout *mLayoutHVerifyAndAmount;
     QHBoxLayout *mLayoutHListView;
     QVBoxLayout *mLayoutVListViewLeft;
     QVBoxLayout *mLayoutVListViewRight;
     QHBoxLayout *mLayoutHBottom;
     QLabel *mLabelInfo;
     QLabel *mLabelScanFolder;
+    QLineEdit *mLineEditAmountDll;
+    QLineEdit *mLineEditAmountVst3;
     QLineEdit *mLineEditScanFolder;
     QPushButton *mPushButtonSelectFolder;
     QPushButton *mPushButtonScan;
@@ -75,6 +78,8 @@ private:
     void repaintTableview();
     QList<int> getSelectionOrigIdx(QModelIndexList indexList);
     void reject() override;
+    void getScanAmount(const QString &path, int &numDll, int &numVst3);
+    int mNumVst3, mNumDll;
 private slots:
     void slotSelectScanFolder();
     void slotScan();

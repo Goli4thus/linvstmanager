@@ -26,6 +26,7 @@
 #include <customprogressdialog.h>
 #include <QTimer>
 #include <QCheckBox>
+#include <QProcess>
 
 #include "horizontalline.h"
 #include "verticalline.h"
@@ -67,6 +68,7 @@ void DialogScan::setupUI()
     // Allocate starting from parent to children
     mLayoutVMain = new QVBoxLayout();
     mLayoutHScanFolder = new QHBoxLayout();
+    mLayoutHVerifyAndAmount = new QHBoxLayout();
     mLayoutHListView = new QHBoxLayout();
     mLayoutVListViewLeft = new QVBoxLayout();
     mLayoutVListViewRight = new QVBoxLayout();
@@ -77,14 +79,15 @@ void DialogScan::setupUI()
                             "Scanning will be recursive based on the selected folder. Folders starting with\n"
                             "a dot '.' (usually hidden in file browser by default) will be ignored though.\n"
                             "Therefore try to make an appropriate selection.\n"
-                            "(i.e. navigate into the desired wine-prefix where the VSTs are)\n\n"
-                            "Hint 2: \n"
-                            "Don't scan starting from the base of a wine prefix. There are A LOT of dll files\n"
-                            "located in a wine prefix and the scan will take forever to complete if it has to\n"
+                            "(i.e. navigate into the desired wine-prefix where the VSTs are)\n"
+                            "\n"
+                            "Try not to scan starting from the base of a wine prefix. There are A LOT of dll files\n"
+                            "located in a wine prefix and the scan will take lots of time to complete, if it has to\n"
                             "check every single dll file (using the \"Verify\" option below).\n"
-                            "So if the scan takes really long and the 'Dll' counter is going up much more than\n"
-                            "the other two, cancel the scan and narrow down the scan folder a bit.");
-    HorizontalLine *hLineTop = new HorizontalLine();
+                            "\n"
+                            "The \"Scan folder contains:\" section will show the amount of *.dll and *.vst3 files\n"
+                            "that are located within the currently selected scan folder.");
+    auto *hLineTop = new HorizontalLine();
     mLabelScanFolder = new QLabel("Scan folder:");
     mLineEditScanFolder = new QLineEdit();
     mPushButtonSelectFolder = new QPushButton("Select");
@@ -99,11 +102,20 @@ void DialogScan::setupUI()
 
     mPushButtonScan = new QPushButton("Scan");
     mPushButtonFilter = new QPushButton("Filter");
-    HorizontalLine *hLine0 = new HorizontalLine();
+    auto *hLine0 = new HorizontalLine();
     mPushButtonCancel = new QPushButton("Cancel");
     mPushButtonAdd = new QPushButton("Add");
-    HorizontalLine *hLine1 = new HorizontalLine();
-    HorizontalLine *hLine2 = new HorizontalLine();
+    auto *hLine1 = new HorizontalLine();
+    auto *hLine2 = new HorizontalLine();
+    auto *vLine0 = new VerticalLine();
+    mLineEditAmountDll = new QLineEdit();
+    mLineEditAmountDll->setReadOnly(true);
+    mLineEditAmountDll->setAlignment(Qt::AlignRight);
+    mLineEditAmountDll->setFixedWidth(50);
+    mLineEditAmountVst3 = new QLineEdit();
+    mLineEditAmountVst3 ->setReadOnly(true);
+    mLineEditAmountVst3->setAlignment(Qt::AlignRight);
+    mLineEditAmountVst3->setFixedWidth(50);
 
 
 
@@ -192,7 +204,20 @@ void DialogScan::setupUI()
     mLayoutVMain->addWidget(hLineTop);
     mLayoutVMain->addLayout(mLayoutHScanFolder);
     mLayoutVMain->addSpacing(5);
-    mLayoutVMain->addWidget(mCheckBoxCheckTool);
+
+    mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckTool);
+    mLayoutHVerifyAndAmount->addSpacing(40);
+    mLayoutHVerifyAndAmount->addWidget(vLine0);
+    mLayoutHVerifyAndAmount->addSpacing(20);
+    mLayoutHVerifyAndAmount->addWidget(new QLabel("Scan folder contains: "));
+    mLayoutHVerifyAndAmount->addWidget(new QLabel("*.dll: "));
+    mLayoutHVerifyAndAmount->addWidget(mLineEditAmountDll);
+    mLayoutHVerifyAndAmount->addSpacing(10);
+    mLayoutHVerifyAndAmount->addWidget(new QLabel("*.vst3: "));
+    mLayoutHVerifyAndAmount->addWidget(mLineEditAmountVst3);
+    mLayoutHVerifyAndAmount->addStretch();
+    mLayoutVMain->addLayout(mLayoutHVerifyAndAmount);
+
     mLayoutVMain->addSpacing(5);
     mLayoutVMain->addWidget(hLine1);
     mLayoutVMain->addSpacing(5);
@@ -326,13 +351,18 @@ void DialogScan::slotSelectScanFolder()
                                          lastDir);
     if (!pathScanFolder.isEmpty()) {
         mLineEditScanFolder->setText(pathScanFolder);
-    } else {
     }
 
     if (mLineEditScanFolder->text() != "") {
         mPushButtonScan->setEnabled(true);
+        // update information on how many VSTs there are to be scanned.
+        getScanAmount(mLineEditScanFolder->text(), mNumDll, mNumVst3);
+        mLineEditAmountDll->setText(QString::number(mNumDll));
+        mLineEditAmountVst3->setText(QString::number(mNumVst3));
     } else {
         mPushButtonScan->setEnabled(false);
+        mLineEditAmountDll->setText("-");
+        mLineEditAmountVst3->setText("-");
     }
 }
 
@@ -340,12 +370,8 @@ void DialogScan::slotScan()
 {
     mModelScan->triggerScan(mLineEditScanFolder->text(), prf->getPathCheckTool(), mCheckBoxCheckTool->isChecked());
 
-    /* Start progressbar dialog based on fixed increments by timer
-     * Though: We don't know how long the scan actually takes, therefore
-     * just increment cyclically until reaching like 90%.
-     * Most likely the scanning process is finished beforehand.
-     * If not, the progressbar will stop incrementing until scan is finished.
-     */
+    // Start progressbar dialog based on actual scan volume
+    mProgressDialog->init(mNumDll + mNumVst3);
     mProgressDialog->exec();
 }
 
@@ -428,6 +454,25 @@ void DialogScan::reject()
     mModelScan->emptyModel();
 
     QDialog::reject();
+}
+
+void DialogScan::getScanAmount(const QString &path, int &numDll, int &numVst3)
+{
+    QProcess process;
+
+    QString cmd = (QStringList() << "bash -c \"find " << path << " -iname '*.dll' | wc -l\"").join("");
+    process.start(cmd);
+    process.waitForFinished();
+    QString retStr(process.readAllStandardOutput());
+    numDll = retStr.toUInt();
+
+    cmd = (QStringList() << "bash -c \"find " << path << " -iname '*.vst3' | wc -l\"").join("");
+    process.start(cmd);
+    process.waitForFinished();
+    retStr = process.readAllStandardOutput();
+    numVst3 = retStr.toUInt();
+
+    return;
 }
 
 void DialogScan::slotResizeTableToContent()

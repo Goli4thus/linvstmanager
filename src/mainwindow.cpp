@@ -143,40 +143,40 @@ MainWindow::~MainWindow()
 void MainWindow::setupMenuBar()
 {
     // Create menus
-    QMenu *menuFile = menuBar()->addMenu(tr("&File"));
-    QMenu *menuEdit = menuBar()->addMenu(tr("&Edit"));
-    QMenu *menuView = menuBar()->addMenu(tr("&View"));
-    QMenu *menuOptions = menuBar()->addMenu(tr("&Options"));
-    QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
+    auto *menuFile = menuBar()->addMenu(tr("&File"));
+    auto *menuEdit = menuBar()->addMenu(tr("&Edit"));
+    auto *menuView = menuBar()->addMenu(tr("&View"));
+    auto *menuOptions = menuBar()->addMenu(tr("&Options"));
+    auto *menuHelp = menuBar()->addMenu(tr("&Help"));
 
     // Create actions
     // menu: File
-    QAction *actionSave = new QAction(tr("&Save"), this);
-    QAction *actionImport = new QAction(tr("&Import legacy config..."), this);
-    QAction *actionExit = new QAction(tr("&Exit"), this);
+    auto *actionSave = new QAction(tr("&Save"), this);
+    auto *actionImport = new QAction(tr("&Import legacy config..."), this);
+    auto *actionExit = new QAction(tr("&Exit"), this);
 
     // menu: Edit
-    QAction *actionEnable = new QAction(tr("&Enable"), this);
-    QAction *actionDisable = new QAction(tr("&Disable"), this);
-    QAction *actionUpdate = new QAction(tr("&Update"), this);
-    QAction *actionBlacklist = new QAction(tr("&Blacklist"), this);
-    QAction *actionUnblacklist = new QAction(tr("Un&blacklist"), this);
-    QAction *actionAddVst = new QAction(tr("&Add VST"), this);
-    QAction *actionRemoveVst = new QAction(tr("&Remove VST"), this);
-    QAction *actionScan = new QAction(tr("&Scan"), this);
+    auto *actionEnable = new QAction(tr("&Enable"), this);
+    auto *actionDisable = new QAction(tr("&Disable"), this);
+    auto *actionUpdate = new QAction(tr("&Update"), this);
+    auto *actionBlacklist = new QAction(tr("&Blacklist"), this);
+    auto *actionUnblacklist = new QAction(tr("Un&blacklist"), this);
+    auto *actionAddVst = new QAction(tr("&Add VST"), this);
+    auto *actionRemoveVst = new QAction(tr("&Remove VST"), this);
+    auto *actionScan = new QAction(tr("&Scan"), this);
 
     // subMenu: Change bridge
-    QMenu *subMenuChangeBridge = menuEdit->addMenu(tr("&Change bridge"));
-    QMenu *subMenuOfVST2 = new QMenu(tr("of VST&2"), this);
-    QAction *actionSetBridgeLinVst = new QAction(tr("&LinVst"), this);
-    QAction *actionSetBridgeLinVstX = new QAction(tr("LinVst-&X"), this);
-    QMenu *subMenuOfVST3 = new QMenu(tr("of VST&3"), this);
-    QAction *actionSetBridgeLinVst3 = new QAction(tr("&LinVst3"), this);
-    QAction *actionSetBridgeLinVst3X = new QAction(tr("LinVst3-&X"), this);
+    auto *subMenuChangeBridge = menuEdit->addMenu(tr("&Change bridge"));
+    auto *subMenuOfVST2 = new QMenu(tr("of VST&2"), this);
+    auto *actionSetBridgeLinVst = new QAction(tr("&LinVst"), this);
+    auto *actionSetBridgeLinVstX = new QAction(tr("LinVst-&X"), this);
+    auto *subMenuOfVST3 = new QMenu(tr("of VST&3"), this);
+    auto *actionSetBridgeLinVst3 = new QAction(tr("&LinVst3"), this);
+    auto *actionSetBridgeLinVst3X = new QAction(tr("LinVst3-&X"), this);
 
     // menu: View
-    QAction *actionResizeTableToContent = new QAction(tr("&Resize table to content"), this);
-    QAction *actionFilter = new QAction(tr("&Filter"), this);
+    auto *actionResizeTableToContent = new QAction(tr("&Resize table to content"), this);
+    auto *actionFilter = new QAction(tr("&Filter"), this);
     actionDebugInfo = new QAction(tr("Debug &info"), this);
     actionDebugInfo->setCheckable(true);
     actionDebugInfo->setChecked(false);
@@ -190,11 +190,11 @@ void MainWindow::setupMenuBar()
     mSortFilter->setShowIndexColumn(false);
 
     // menu: Options
-    QAction *actionPreferences = new QAction(tr("&Preferences"), this);
+    auto *actionPreferences = new QAction(tr("&Preferences"), this);
 
     // menu: About
-    QAction *actionAbout = new QAction(tr("&About"), this);
-    QAction *actionAboutQt = new QAction(tr("About&Qt"), this);
+    auto *actionAbout = new QAction(tr("&About"), this);
+    auto *actionAboutQt = new QAction(tr("About&Qt"), this);
 
     // Setup shortcuts
     actionSave->setShortcut(QKeySequence("Ctrl+S"));
@@ -288,8 +288,8 @@ void MainWindow::setupMouseMenu(QMenu *subMenuChangeBridge)
     // Right click menu on table entries
     mTableview->setContextMenuPolicy(Qt::CustomContextMenu);
     mouseMenu = new QMenu(mTableview);
-    QAction *mouseEnable = new QAction("Enable", this);
-    QAction *mouseDisable = new QAction("Disable", this);
+    auto *mouseEnable = new QAction("Enable", this);
+    auto *mouseDisable = new QAction("Disable", this);
     mouseMenu->addAction(mouseEnable);
     mouseMenu->addAction(mouseDisable);
     mouseMenu->addSeparator();
@@ -426,7 +426,7 @@ void MainWindow::slotOrphanDetection()
     }
 }
 
-void MainWindow::slotFeedbackLogOutput(QString msg, bool isVerboseInfo = false)
+void MainWindow::slotFeedbackLogOutput(const QString &msg, bool isVerboseInfo = false)
 {
     mLogOutput->appendLog(msg, isVerboseInfo);
 }
@@ -681,8 +681,9 @@ void MainWindow::changeBridge(VstBridge bridgeType)
                                   "the selected VST's type or is not enabled in preferences.\n"
                                   "Therefore nothing has been change for the respective VSTs.");
             QString tmpStr;
-            for (int i=0; i < skippedIndices.size(); i++) {
-                tmpStr.append(QString::number(skippedIndices.at(i)));
+//            for (int i=0; i < skippedIndices.size(); i++) {
+            for (int skippedIndice : skippedIndices) {
+                tmpStr.append(QString::number(skippedIndice));
                 tmpStr.append(", ");
             }
             tmpStr.truncate(tmpStr.size() - 2);
@@ -691,7 +692,7 @@ void MainWindow::changeBridge(VstBridge bridgeType)
     }
 }
 
-QList<int> MainWindow::getSelectionOrigIdx(QModelIndexList indexList)
+QList<int> MainWindow::getSelectionOrigIdx(const QModelIndexList &indexList)
 {
     QList<int> indexOfVstBuckets;
     foreach (QModelIndex index, indexList) {

@@ -124,9 +124,12 @@ Choose _Edit -> Add VST_ and locate one or more VSTs which shall be added.
 Choose _Edit -> Scan_ and give the text on top of the dialog an initial read.
 Everything is explained there.
 
-During the scan a progress indicator is shown. The actual progress bar is more for show, because it's unknown before the scan, how much there is to scan. But the three counters actually show in realtime what is being found.
+During the scan a progress indicator is shown which represents the actual scan progress.
+Furthermore there are three counters indicating in realtime what is being found.
 
-Hint: Once a scan is done and the results are shown in the dialog's table, the entries can be filtered same as in the main table. Entries need to be selected (see right click menu) before they can be added.
+![ScanProgress](https://github.com/Goli4thus/images/blob/master/images_linvstmanager/ScanProgress.png)
+
+Hint: Once a scan is done and the results are shown in the dialog's table, the entries can be filtered the same way as in the main table. Entries need to be selected (see right click menu) before they can be added. This allows to make a sub-selection of what was found (or just Ctrl-a, select, add).
 
 ### Once VSTs are added,...
 ... their status will be _No *.so_ initially.
