@@ -237,10 +237,9 @@ RvLinkHandler LinkHandler::blacklistVst(const QVector<int> &indexOfVstBuckets)
                 if (!QFile::remove(filePathSoSrc.filePath())) {
                     qDebug() << "(LH): blacklisteVst(): filePathSoSrc delete failed";
                     retVal = RvLinkHandler::LH_NOT_OK;
-                } else {
-                    vstBucket.status = VstStatus::Blacklisted;
                 }
             }
+            vstBucket.status = VstStatus::Blacklisted;
         }
     }
 
