@@ -330,17 +330,15 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
 
 void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
 {
-    QString filepath;
-
     // Clear 'newlyAdded' flags
     for (auto vstBucket : mVstBuckets) {
         vstBucket.newlyAdded = false;
     }
 
     // Start processing selection
-    for (int i = 0; i < filepaths_VstDll.size(); i++) {
-        filepath = filepaths_VstDll.at(i);
-        QString name = QFileInfo(filepath).baseName();
+    for (const auto &filepath : filepaths_VstDll) {
+        QString fileName = QFileInfo(filepath).fileName();
+        QString suffix = QFileInfo(filepath).suffix();
         QByteArray filepath_Hash = dataHasher.calcFilepathHash(filepath);
         QByteArray soFile_Hash = dataHasher.calcFilepathHash(filepath);
 
@@ -394,7 +392,8 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
              */
 
             beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount());
-            mVstBuckets.append(VstBucket(name,
+            // subtrace suffix including period fro filename
+            mVstBuckets.append(VstBucket(fileName.chopped(suffix.size() + 1),
                                          filepath,
                                          filepath_Hash,
                                          soFile_Hash,
