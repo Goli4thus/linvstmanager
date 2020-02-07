@@ -8,71 +8,83 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QStringList>
-#include "pathhasher.h"
+#include "datahasher.h"
+#include <QElapsedTimer>
 
-LinkHandler::LinkHandler(const Preferences &t_prf, QList<VstBucket> *pVstBuckets, QObject *parent) : QObject(parent), prf(t_prf)
+LinkHandler::LinkHandler(const Preferences &t_prf, QVector<VstBucket> *pVstBuckets, DataHasher &pDataHasher, QObject *parent)
+    : QObject(parent), prf(t_prf), dataHasher(pDataHasher)
 {
-    mMapVstExtLen.insert(VstType::VST2, 4); // ".dll"
-    mMapVstExtLen.insert(VstType::VST3, 5); // ".vst3"
     mVstBuckets = pVstBuckets;
-
-    pathHasher = new PathHasher();
 }
 
 LinkHandler::~LinkHandler()
 {
-    delete pathHasher;
 }
 
-RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex)
+RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bool updateSoFileHash)
 {
     QFileInfo fileInfoVst;
     QFileInfo fileInfoSo;
     QFileInfo fileInfoLink;
     QString filePathSoTmpl;
+    QVector<int> indexOfVstBuckets;
 
-    for (int i=0; i < mVstBuckets->size(); i++) {
-        if (refreshSingle && (i != singleIndex)) {
+    if (refreshSingle) {
+        indexOfVstBuckets.append(singleIndex);
+    } else {
+        for (int i=0; i < mVstBuckets->size(); i++) {
+            indexOfVstBuckets.append(i);
+        }
+    }
+
+    for(const auto &index : indexOfVstBuckets) {
+        auto &vstBucket = (*mVstBuckets)[index];
+        if (vstBucket.status == VstStatus::Blacklisted) {
             continue;
         } else {
-            if ((*mVstBuckets).at(i).status == VstStatus::Blacklisted) {
-                continue;
-            } else {
-                fileInfoVst.setFile((*mVstBuckets).at(i).vstPath);
+            fileInfoVst.setFile(vstBucket.vstPath);
 
-                if (fileInfoVst.exists()) {
-                    fileInfoSo.setFile(fileInfoVst.filePath().left(
-                                           fileInfoVst.filePath().size() - mMapVstExtLen.value((*mVstBuckets).at(i).vstType)) + ".so");
+            if (fileInfoVst.exists()) {
+                QString filePathSo;
+                if (vstBucket.vstType == VstType::VST2) {
+                    filePathSo = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
+                } else { // VST3
+                    filePathSo = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
+                }
+                fileInfoSo.setFile(filePathSo);
 
-                    if (!prf.bridgeEnabled((*mVstBuckets).at(i).bridge)) {
-                        (*mVstBuckets)[i].status = VstStatus::NoBridge;
-                        continue;
-                    } else {
-                        if (fileInfoSo.exists()) {
-                            fileInfoLink.setFile(prf.getPathLinkFolder() + "/" + (*mVstBuckets).at(i).name + ".so");
+                if (!prf.bridgeEnabled(vstBucket.bridge)) {
+                    vstBucket.status = VstStatus::NoBridge;
+                    continue;
+                } else {
+                    if (fileInfoSo.exists()) {
+                        fileInfoLink.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
 
+                        // Calculate soFileHash, if actually needed (i.e. after startup)
+                        if (updateSoFileHash) {
+                            vstBucket.soFileHash = dataHasher.calcFiledataHash(filePathSo);
+                        }
 
-                            filePathSoTmpl = prf.getPathSoTmplBridge((*mVstBuckets).at(i).bridge);
+                        filePathSoTmpl = prf.getPathSoTmplBridge(vstBucket.bridge);
 
-                            if (checkSoFileMatch(filePathSoTmpl, fileInfoSo.filePath())) {
-                                // Qt docs re QFileInfo::exists():
-                                // "Note: If the file is a symlink that points to a non-existing file, false is returned."
-                                // -->> No problem in this case, as we already made sure the source so-file exists.
-                                if (fileInfoLink.exists()) {
-                                    (*mVstBuckets)[i].status = VstStatus::Enabled;
-                                } else {
-                                    (*mVstBuckets)[i].status = VstStatus::Disabled;
-                                }
+                        if (checkSoHashMatch(vstBucket.soFileHash, vstBucket.bridge)) {
+                            // Qt docs re QFileInfo::exists():
+                            // "Note: If the file is a symlink that points to a non-existing file, false is returned."
+                            // -->> No problem in this case, as we already made sure the source so-file exists.
+                            if (fileInfoLink.exists()) {
+                                vstBucket.status = VstStatus::Enabled;
                             } else {
-                                (*mVstBuckets)[i].status = VstStatus::Mismatch;
+                                vstBucket.status = VstStatus::Disabled;
                             }
                         } else {
-                            (*mVstBuckets)[i].status = VstStatus::No_So;
+                            vstBucket.status = VstStatus::Mismatch;
                         }
+                    } else {
+                        vstBucket.status = VstStatus::No_So;
                     }
-                } else {
-                    (*mVstBuckets)[i].status = VstStatus::NotFound;
                 }
+            } else {
+                vstBucket.status = VstStatus::NotFound;
             }
         }
     }
@@ -91,13 +103,21 @@ RvLinkHandler LinkHandler::updateVsts()
             || (vstBucket.status == VstStatus::NoBridge)) {
             if (prf.bridgeEnabled(vstBucket.bridge)) {
                 filePathSoTmpl = prf.getPathSoTmplBridge(vstBucket.bridge);
-                filePathSoDest = vstBucket.vstPath.left(
-                            vstBucket.vstPath.size() - mMapVstExtLen.value(vstBucket.vstType)) + ".so";
-                if (!QFile::remove(filePathSoDest)) {
-                    qDebug() << "(LH): updateVsts(): remove file failed";
+                if (vstBucket.vstType == VstType::VST2) {
+                    filePathSoDest = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
+                } else { // VST3
+                    filePathSoDest = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
+                }
+                if (QFile::exists(filePathSoDest)) {
+                    if (!QFile::remove(filePathSoDest)) {
+                        qDebug() << "(LH): updateVsts(): remove file failed";
+                    }
                 }
                 if (!QFile::copy(filePathSoTmpl, filePathSoDest)) {
                     qDebug() << "(LH): updateVsts(): copy file failed";
+                } else {
+                    // Update soFile hash by simple copy of template hash
+                    vstBucket.soFileHash = dataHasher.getHashSoTmplBridge(vstBucket.bridge);
                 }
             } else {
                 vstBucket.status = VstStatus::NoBridge;
@@ -112,110 +132,116 @@ RvLinkHandler LinkHandler::updateVsts()
      *         an update action, the status should be "fixed" as well
      *         (meaning being updated to what is actually the case).
      */
-    refreshStatus();
+    refreshStatus(false, 0, true);
 
     return RvLinkHandler::LH_OK;
 }
 
-RvLinkHandler LinkHandler::enableVst(int idx)
+RvLinkHandler LinkHandler::enableVst(const QVector<int> &indexOfVstBuckets)
 {
     RvLinkHandler retVal = RvLinkHandler::LH_OK;
     QString filePathSoSrc;
     QString filePathLinkDest;
     QDir linkFolder(prf.getPathLinkFolder());
 
-    // Enable a currently disabled VST
-    if ((*mVstBuckets).at(idx).status == VstStatus::Disabled) {
-        filePathSoSrc = (*mVstBuckets).at(idx).vstPath.left(
-                    (*mVstBuckets).at(idx).vstPath.size() - mMapVstExtLen.value((*mVstBuckets).at(idx).vstType)) + ".so";
-        filePathLinkDest = prf.getPathLinkFolder() + "/" + (*mVstBuckets).at(idx).name + ".so";
-
-        // Sanity check: Ensure that the link folder actually exists before attempting to make a softlink
-        // (Should never be the case unless the folder got deleted after it was selected in preferences dialog)
-        if (!linkFolder.exists()) {
-            qDebug() << "(LH): enableVst(): link folder doesn't exist";
-            retVal = RvLinkHandler::LH_NOT_OK;
-        } else {
-            if (!QFile::link(filePathSoSrc, filePathLinkDest)) {
-                qDebug() << "(LH): enableVst(): making link failed";
-                retVal = RvLinkHandler::LH_NOT_OK;
-            }
-        }
-    } else {
-        retVal = RvLinkHandler::LH_IGNORED;
+    // Sanity check: Ensure that the link folder actually exists before attempting to make a softlink
+    // (Should never be the case unless the folder got deleted after it was selected in preferences dialog)
+    if (!linkFolder.exists()) {
+        qDebug() << "(LH): enableVst(): link folder doesn't exist";
+        retVal = RvLinkHandler::LH_NOT_OK;
     }
 
-    if (retVal == RvLinkHandler::LH_OK) {
-        (*mVstBuckets)[idx].status = VstStatus::Enabled;
+    // Enable a currently disabled VST
+    for(const auto &index : indexOfVstBuckets) {
+//        const auto &vstBucket = (*mVstBuckets).at(index);
+        auto &vstBucket = (*mVstBuckets)[index];
+        if (vstBucket.status == VstStatus::Disabled) {
+            if (vstBucket.vstType == VstType::VST2) {
+                filePathSoSrc = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
+            } else { // VST3
+                filePathSoSrc = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
+            }
+
+            filePathLinkDest = prf.getPathLinkFolder() + "/" + vstBucket.name + ".so";
+
+            if (!QFile::link(filePathSoSrc, filePathLinkDest)) {
+                qDebug() << "(LH): enableVst(): making link failed (errno: " << strerror(errno) << ") (index: " << index << ")";
+                retVal = RvLinkHandler::LH_NOT_OK;
+            } else {
+                vstBucket.status = VstStatus::Enabled;
+            }
+        }
     }
 
     return retVal;
 }
 
-RvLinkHandler LinkHandler::disableVst(int idx)
+RvLinkHandler LinkHandler::disableVst(const QVector<int> &indexOfVstBuckets)
 {
     RvLinkHandler retVal = RvLinkHandler::LH_OK;
     QFileInfo filePathLinkDest;
 
     // Disable a currently enabled VST
-    if ((*mVstBuckets).at(idx).status == VstStatus::Enabled) {
-        filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + (*mVstBuckets).at(idx).name + ".so");
+    for(const auto &index : indexOfVstBuckets) {
+        auto &vstBucket = (*mVstBuckets)[index];
+        if (vstBucket.status == VstStatus::Enabled) {
+            filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
 
-        if (!filePathLinkDest.isSymLink()) {
-            qDebug() << "(LH): disableVst(): not a symlink";
-            retVal = RvLinkHandler::LH_NOT_OK;
-        } else {
-            if (!QFile::remove(filePathLinkDest.filePath())) {
-                qDebug() << "(LH): disableVst(): link delete failed";
+            if (!filePathLinkDest.isSymLink()) {
+                qDebug() << "(LH): disableVst(): not a symlink";
                 retVal = RvLinkHandler::LH_NOT_OK;
+            } else {
+                if (!QFile::remove(filePathLinkDest.filePath())) {
+                    qDebug() << "(LH): disableVst(): link delete failed";
+                    retVal = RvLinkHandler::LH_NOT_OK;
+                } else {
+                    vstBucket.status = VstStatus::Disabled;
+                }
             }
         }
-    } else {
-        retVal = RvLinkHandler::LH_IGNORED;
-    }
-
-    if (retVal == RvLinkHandler::LH_OK) {
-        (*mVstBuckets)[idx].status = VstStatus::Disabled;
     }
 
     return retVal;
 }
 
-RvLinkHandler LinkHandler::blacklistVst(int idx)
+RvLinkHandler LinkHandler::blacklistVst(const QVector<int> &indexOfVstBuckets)
 {
     RvLinkHandler retVal = RvLinkHandler::LH_OK;
     QFileInfo filePathSoSrc;
     QFileInfo filePathLinkDest;
 
     // Blacklisting means removing both the softlink in link folder and the so-file alongside the VST.
-    if ((*mVstBuckets).at(idx).status != VstStatus::Blacklisted) {
-        filePathSoSrc = (*mVstBuckets).at(idx).vstPath.left(
-                    (*mVstBuckets).at(idx).vstPath.size() - mMapVstExtLen.value((*mVstBuckets).at(idx).vstType)) + ".so";
-        filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + (*mVstBuckets).at(idx).name + ".so");
+    for(const auto &index : indexOfVstBuckets) {
+        auto &vstBucket = (*mVstBuckets)[index];
+        if (vstBucket.status != VstStatus::Blacklisted) {
+            if (vstBucket.vstType == VstType::VST2) {
+                filePathSoSrc = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
+            } else { // VST3
+                filePathSoSrc = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
+            }
 
-        if (!filePathLinkDest.isSymLink()) {
-            qDebug() << "(LH): blacklisteVst(): not a symlink";
-        } else {
-            if (!QFile::remove(filePathLinkDest.filePath())) {
-                qDebug() << "(LH): blacklisteVst(): link delete failed";
-                retVal = RvLinkHandler::LH_NOT_OK;
+            filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
+
+            if (filePathLinkDest.exists()) {
+                if (!filePathLinkDest.isSymLink()) {
+                    qDebug() << "(LH): blacklisteVst(): not a symlink";
+                } else {
+                    if (!QFile::remove(filePathLinkDest.filePath())) {
+                        qDebug() << "(LH): blacklisteVst(): link delete failed";
+                        retVal = RvLinkHandler::LH_NOT_OK;
+                    }
+                }
+            }
+
+            if (filePathSoSrc.exists()) {
+                if (!QFile::remove(filePathSoSrc.filePath())) {
+                    qDebug() << "(LH): blacklisteVst(): filePathSoSrc delete failed";
+                    retVal = RvLinkHandler::LH_NOT_OK;
+                } else {
+                    vstBucket.status = VstStatus::Blacklisted;
+                }
             }
         }
-
-        if (!filePathSoSrc.exists()) {
-            qDebug() << "(LH): blacklisteVst(): filePathSoSrc doesn't exist";
-        } else {
-            if (!QFile::remove(filePathSoSrc.filePath())) {
-                qDebug() << "(LH): blacklisteVst(): filePathSoSrc delete failed";
-                retVal = RvLinkHandler::LH_NOT_OK;
-            }
-        }
-    } else {
-        retVal = RvLinkHandler::LH_IGNORED;
-    }
-
-    if (retVal == RvLinkHandler::LH_OK) {
-        (*mVstBuckets)[idx].status = VstStatus::Blacklisted;
     }
 
     return retVal;
@@ -233,14 +259,18 @@ RvLinkHandler LinkHandler::changeBridge(int idx, VstBridge newBridgeType)
     QFileInfo filePathSoDest;
     QString filePathSoTmpl;
 
+    auto &vstBucket = (*mVstBuckets)[idx];
     // Attempt to change bridge only in certain states that "make sense".
-    if (   (*mVstBuckets).at(idx).status == VstStatus::Enabled
-        || (*mVstBuckets).at(idx).status == VstStatus::Disabled
-        || (*mVstBuckets).at(idx).status == VstStatus::NoBridge
-        || (*mVstBuckets).at(idx).status == VstStatus::No_So) {
+    if (   vstBucket.status == VstStatus::Enabled
+        || vstBucket.status == VstStatus::Disabled
+        || vstBucket.status == VstStatus::NoBridge
+        || vstBucket.status == VstStatus::No_So) {
 
-        filePathSoDest = (*mVstBuckets).at(idx).vstPath.left(
-                    (*mVstBuckets).at(idx).vstPath.size() - mMapVstExtLen.value((*mVstBuckets).at(idx).vstType)) + ".so";
+        if (vstBucket.vstType == VstType::VST2) {
+            filePathSoDest = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
+        } else { // VST3
+            filePathSoDest = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
+        }
 
         // Could be that the "old so-file" doesn't exist
         if (filePathSoDest.exists()) {
@@ -255,6 +285,9 @@ RvLinkHandler LinkHandler::changeBridge(int idx, VstBridge newBridgeType)
         if (!QFile::copy(filePathSoTmpl, filePathSoDest.filePath())) {
             qDebug() << "(LH): changeBridge(): new filePathSoDest copy failed";
             retVal = RvLinkHandler::LH_NOT_OK;
+        } else {
+            // Update soFile hash by simple copy of template hash
+            vstBucket.soFileHash = dataHasher.getHashSoTmplBridge(vstBucket.bridge);
         }
     } else {
         retVal = RvLinkHandler::LH_IGNORED;
@@ -296,7 +329,7 @@ QStringList LinkHandler::checkForOrphans()
 
             // Contruct "*.so"-paths of all currently tracked VSTs
             QStringList targetSoPaths;
-            for (auto vstBucket : *mVstBuckets) {
+            for (const auto &vstBucket : *mVstBuckets) {
                 if (vstBucket.vstType == VstType::VST2) {
                     // Chop extension "dll"
                     targetSoPaths.append(vstBucket.vstPath.chopped(3) + "so");
@@ -339,8 +372,9 @@ RvLinkHandler LinkHandler::removeOrphans(const QStringList &filePathsOrphans)
     return retVal;
 }
 
-bool LinkHandler::checkSoFileMatch(const QString &filePathA, const QString &filePathB)
+bool LinkHandler::checkSoHashMatch(const QByteArray &soFileHash, const VstBridge vstBridge)
 {
-    return QProcess::execute("diff", QStringList() << filePathA << filePathB) == 0;
+    // Compare hash values of soFile and soTmplFile
+    return soFileHash.compare(dataHasher.getHashSoTmplBridge(vstBridge)) == 0;
 }
 

@@ -82,7 +82,7 @@ void ConfigHandler::writePreferences(const Preferences &prf)
     xmlWriter->writeTextElement(prefPathNames.at(5), prf.getPathCheckTool());
 }
 
-void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
+void ConfigHandler::writeVstBuckets(const QVector<VstBucket> &vstBuckets)
 {
     for (const auto &vstBucket : vstBuckets) {
         xmlWriter->writeStartElement("VstBucketEntry");
@@ -101,7 +101,7 @@ void ConfigHandler::writeVstBuckets(const QList<VstBucket> &vstBuckets)
 quint8 ConfigHandler::readPreferences(Preferences &prf)
 {
     // Read 4 boolean values
-    QList<bool> boolValues;
+    QVector<bool> boolValues;
     QString temp;
     for (int i = 0; i < prefBoolNames.size(); i++) {
         xmlReader->readNextStartElement();
@@ -130,6 +130,7 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
         }
     }
 
+    QVector<VstBridge> emptyList;
     prf.updatePreferences(boolValues.at(0),
                           boolValues.at(1),
                           boolValues.at(2),
@@ -142,7 +143,8 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
                           pathValues.at(2),
                           pathValues.at(3),
                           pathValues.at(4),
-                          pathValues.at(5));
+                          pathValues.at(5),
+                          emptyList);
 
     // Skip the closing element (returns false)
     xmlReader->skipCurrentElement();
@@ -150,7 +152,7 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
     return true;
 }
 
-quint8 ConfigHandler::readVstBucket(QList<VstBucket> &vstBuckets)
+quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
 {
     QString name;
     QString vstPath;
@@ -201,6 +203,7 @@ quint8 ConfigHandler::readVstBucket(QList<VstBucket> &vstBuckets)
     vstBuckets.append(VstBucket(name,
                                 vstPath,
                                 hash, // being re-calculated later
+                                hash, // being re-calculated later
                                 status,
                                 bridge,
                                 vstType,
@@ -212,7 +215,7 @@ quint8 ConfigHandler::readVstBucket(QList<VstBucket> &vstBuckets)
     return true;
 }
 
-RvConfFile ConfigHandler::saveConfig(const Preferences &prf, const QList<VstBucket> &vstBuckets)
+RvConfFile ConfigHandler::saveConfig(const Preferences &prf, const QVector<VstBucket> &vstBuckets)
 {
     QElapsedTimer timer;
     timer.start();
@@ -268,7 +271,7 @@ RvConfFile ConfigHandler::saveConfig(const Preferences &prf, const QList<VstBuck
     return RvConfFile::CH_OK;
 }
 
-RvConfFile ConfigHandler::loadConfig(Preferences &prf, QList<VstBucket> &vstBuckets)
+RvConfFile ConfigHandler::loadConfig(Preferences &prf, QVector<VstBucket> &vstBuckets)
 {
     // Check if file actually exists (check folder path first)
     QFile configFile(QDir::homePath() + QString(D_CONFIG_FILE_PATH));
@@ -316,7 +319,7 @@ RvConfFile ConfigHandler::loadConfig(Preferences &prf, QList<VstBucket> &vstBuck
 
     configFile.close();
 
-    qDebug() << "=========   loadConfig done!   =============";
+//    qDebug() << "=========   loadConfig done!   =============";
 
     return RvConfFile::CH_OK;
 }

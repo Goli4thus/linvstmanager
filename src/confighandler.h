@@ -22,9 +22,9 @@ private:
     QXmlStreamWriter *xmlWriter;
     QXmlStreamReader *xmlReader;
     void writePreferences(const Preferences &prf);
-    void writeVstBuckets(const QList<VstBucket> &vstBuckets);
+    void writeVstBuckets(const QVector<VstBucket> &vstBuckets);
     quint8 readPreferences(Preferences &prf);
-    quint8 readVstBucket(QList<VstBucket> &vstBuckets);
+    quint8 readVstBucket(QVector<VstBucket> &vstBuckets);
     QStringList prefBoolNames;
     QStringList prefPathNames;
     QMap<VstBridge, QString> mapBridgeStr;
@@ -35,8 +35,8 @@ signals:
     void configSaveDone(bool f_ErrorOnOpeningFile);
 
 public slots:
-    RvConfFile saveConfig(const Preferences &prf, const QList<VstBucket> &vstBuckets);
-    RvConfFile loadConfig(Preferences &prf, QList<VstBucket> &vstBuckets);
+    RvConfFile saveConfig(const Preferences &prf, const QVector<VstBucket> &vstBuckets);
+    RvConfFile loadConfig(Preferences &prf, QVector<VstBucket> &vstBuckets);
 };
 
 #endif // CONFIGHANDLER_H

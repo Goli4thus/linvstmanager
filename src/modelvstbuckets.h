@@ -7,7 +7,7 @@
 #include <QAbstractTableModel>
 #include "vstbucket.h"
 #include "scanresult.h"
-#include "pathhasher.h"
+#include "datahasher.h"
 class Preferences;
 class LinkHandler;
 
@@ -15,39 +15,40 @@ class ModelVstBuckets : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets, Preferences *pPrf);
-    ~ModelVstBuckets();
+    ModelVstBuckets(QObject *parent, QVector<VstBucket> &pVstBuckets, Preferences *pPrf, DataHasher &pDataHasher);
+    ~ModelVstBuckets() override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
 
     void addVstBucket(const QStringList &filepaths_VstDll);
-    void removeVstBucket(QList<int>indexOfVstBuckets);
-    void enableVstBucket(const QList<int> &indexOfVstBuckets);
-    void disableVstBucket(const QList<int> &indexOfVstBuckets);
-    void blacklistVstBucket(const QList<int> &indexOfVstBuckets);
-    void unblacklistVstBucket(const QList<int> &indexOfVstBuckets);
+    void removeVstBucket(QVector<int>indexOfVstBuckets);
+    void enableVstBucket(const QVector<int> &indexOfVstBuckets);
+    void disableVstBucket(const QVector<int> &indexOfVstBuckets);
+    void blacklistVstBucket(const QVector<int> &indexOfVstBuckets);
+    void unblacklistVstBucket(const QVector<int> &indexOfVstBuckets);
     void updateVsts();
     void refreshStatus();
-    void addScanSelection(QList<ScanResult> *scanSelection);
+    void addScanSelection(QVector<ScanResult> *scanSelection);
 
-    QList<int> changeBridges(const QList<int> &indexOfVstBuckets, VstBridge reqBridgeType);
+    QVector<int> changeBridges(const QVector<int> &indexOfVstBuckets, VstBridge reqBridgeType);
     bool mUpdateView;
     QStringList checkForOrphans();
     bool removeOrphans(const QStringList &filePathsOrphans);
-    QList<VstBucket> *getBufferVstBuckets();
+    QVector<VstBucket> *getBufferVstBuckets();
 
 private:
     Preferences *prf;
     LinkHandler *lh;
-    QList<VstBucket>mVstBuckets;
-    PathHasher *pathHasher;
+    QVector<VstBucket>mVstBuckets;
+    DataHasher &dataHasher;
 
 signals:
     void signalTableOperationFinished();
-    void signalConfigDataChanged();
+    void signalConfigDataChanged(bool needsRefresh = false, QVector<VstBridge> changedBridges = {});
     void signalFeedbackLogOutput(QString msg, bool isVerbose = false);
+    void signalFeedbackUpdateDone();
 
 public slots:
     void slotUpdateHashes();

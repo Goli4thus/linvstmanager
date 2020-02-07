@@ -281,6 +281,7 @@ void DialogPreferences::slotButtonOk()
                                  QMessageBox::Ok);
     } else {
         bool prefsChanged;
+        QVector<VstBridge> changedBridges;
         prefsChanged = prf->updatePreferences(mLineEditLinVst->getBridgeEnabled(),
                                               mLineEditLinVstX->getBridgeEnabled(),
                                               mLineEditLinVst3->getBridgeEnabled(),
@@ -293,9 +294,10 @@ void DialogPreferences::slotButtonOk()
                                               mLineEditLinVst3->getPath(),
                                               mLineEditLinVst3X->getPath(),
                                               mLineEditLinkFolder->text(),
-                                              mLineEditCheckTool->text());
+                                              mLineEditCheckTool->text(),
+                                              changedBridges);
         if (prefsChanged) {
-            emit(signalConfigDataChanged());
+            emit(signalConfigDataChanged(true, changedBridges));
         }
         this->close();
     }

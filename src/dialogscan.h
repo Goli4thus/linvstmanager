@@ -30,11 +30,11 @@ class DialogScan : public QDialog
 {
     Q_OBJECT
 public:
-    DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets);
+    DialogScan(Preferences *t_prf, const QVector<VstBucket> *pVstBuckets);
     int exec() override;
 
 private:
-    const QList<VstBucket> *mVstBuckets;
+    const QVector<VstBucket> *mVstBuckets;
     QVBoxLayout *mLayoutVMain;
     QHBoxLayout *mLayoutHScanFolder;
     QHBoxLayout *mLayoutHVerifyAndAmount;
@@ -76,7 +76,7 @@ private:
     void setupMouseMenu();
     void enableViewUpdate(bool enable);
     void repaintTableview();
-    QList<int> getSelectionOrigIdx(const QModelIndexList &indexList);
+    QVector<int> getSelectionOrigIdx(const QModelIndexList &indexList);
     void reject() override;
     void getScanAmount(const QString &path, int &numDll, int &numVst3);
     int mNumVst3, mNumDll;
@@ -98,7 +98,7 @@ private slots:
     void slotFilterBarOpen();
     void slotResizeTableToContent();
 signals:
-    void signalScanSelection(QList<ScanResult> scanSelection);
+    void signalScanSelection(QVector<ScanResult> scanSelection);
 };
 
 #endif // DIALOGSCAN_H

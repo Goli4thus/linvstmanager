@@ -12,12 +12,12 @@
 #include "linkhandler.h"
 #include "scanresult.h"
 
-ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets, Preferences *pPrf)
+ModelVstBuckets::ModelVstBuckets(QObject *parent, QVector<VstBucket> &pVstBuckets, Preferences *pPrf, DataHasher &pDataHasher)
+    : dataHasher(pDataHasher)
 {
     this->setParent(parent);
     mUpdateView = true;
     prf = pPrf;
-    pathHasher = new PathHasher();
 
     // Fill model with data if available
     if (!pVstBuckets.empty()) {
@@ -25,14 +25,13 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QList<VstBucket> &pVstBuckets,
         slotUpdateHashes();
     }
 
-    lh = new LinkHandler(*prf, &mVstBuckets);
-    lh->refreshStatus();
+    lh = new LinkHandler(*prf, &mVstBuckets, dataHasher);
+    lh->refreshStatus(false, 0, true);
 }
 
 ModelVstBuckets::~ModelVstBuckets()
 {
     delete lh;
-    delete pathHasher;
 }
 
 int ModelVstBuckets::rowCount(const QModelIndex &parent) const
@@ -342,12 +341,13 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
     for (int i = 0; i < filepaths_VstDll.size(); i++) {
         filepath = filepaths_VstDll.at(i);
         QString name = QFileInfo(filepath).baseName();
-        QByteArray filepath_Hash = pathHasher->calcFilepathHash(filepath);
+        QByteArray filepath_Hash = dataHasher.calcFilepathHash(filepath);
+        QByteArray soFile_Hash = dataHasher.calcFilepathHash(filepath);
 
         // Check if VST dll is already part of model and skip if so
         bool newVstFound = true;
         for (const auto & vstBucket : mVstBuckets) {
-            if (vstBucket.hash.compare(filepath_Hash) == 0) {
+            if (vstBucket.pathHash.compare(filepath_Hash) == 0) {
                newVstFound = false;
                break;
             }
@@ -397,6 +397,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
             mVstBuckets.append(VstBucket(name,
                                          filepath,
                                          filepath_Hash,
+                                         soFile_Hash,
                                          VstStatus::NA,
                                          bridgeType,
                                          vstType,
@@ -409,22 +410,27 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
         }
     }
     //    qDebug() << "filepath_Hash: " << filepath_Hash;
-    emit(signalConfigDataChanged());
+    emit(signalConfigDataChanged(true));
 }
 
-void ModelVstBuckets::removeVstBucket(QList<int>indexOfVstBuckets)
+void ModelVstBuckets::removeVstBucket(QVector<int>indexOfVstBuckets)
 {
     /* Sort the original indices so that we can start removal with
      * the highest index and avoid running into issues of indices
      * becoming 'outdated'. */
     std::sort(indexOfVstBuckets.begin(), indexOfVstBuckets.end());
     int index = 0;
+
+    lh->blacklistVst(indexOfVstBuckets);
+
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
         beginRemoveRows(QModelIndex(), index, index);
         // Removing a VstBucket is the same as blacklisting it with
         // the addition of removing it from the model.
-        lh->blacklistVst(index);
+//        QVector<int> tmp;
+//        tmp.append(index);
+//        lh->blacklistVst(tmp);
         mVstBuckets.removeAt(index);
         endRemoveRows();
     }
@@ -432,59 +438,42 @@ void ModelVstBuckets::removeVstBucket(QList<int>indexOfVstBuckets)
     emit(signalConfigDataChanged());
 }
 
-void ModelVstBuckets::enableVstBucket(const QList<int> &indexOfVstBuckets)
+void ModelVstBuckets::enableVstBucket(const QVector<int> &indexOfVstBuckets)
 {
-    int index = 0;
-    for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
-        index = indexOfVstBuckets.at(i);
-
-        if (lh->enableVst(index) == RvLinkHandler::LH_OK) {
-            emit(signalConfigDataChanged());
-        } else {
-            QString msg("(MVB): enableVstBucket: not LH_OK for index: " + QString::number(index));
-            qDebug() << msg;
-            emit(signalFeedbackLogOutput(msg, true));
-        }
+    if (lh->enableVst(indexOfVstBuckets) == RvLinkHandler::LH_OK) {
+        emit(signalConfigDataChanged());
+    } else {
+        //            QString msg("(MVB): enableVstBucket: not LH_OK for index: " + QString::number(index));
+        //            qDebug() << msg;
+        //            emit(signalFeedbackLogOutput(msg, true));
     }
 }
 
-void ModelVstBuckets::disableVstBucket(const QList<int> &indexOfVstBuckets)
+void ModelVstBuckets::disableVstBucket(const QVector<int> &indexOfVstBuckets)
 {
-    int index = 0;
-    for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
-        index = indexOfVstBuckets.at(i);
-
-        if (lh->disableVst(index) == RvLinkHandler::LH_OK) {
-            emit(signalConfigDataChanged());
-        } else {
-            QString msg("(MVB): disableVstBucket: not LH_OK for index: " + QString::number(index));
-            qDebug() << msg;
-            emit(signalFeedbackLogOutput(msg, true));
-        }
+    if (lh->disableVst(indexOfVstBuckets) == RvLinkHandler::LH_OK) {
+        emit(signalConfigDataChanged());
+    } else {
+//		QString msg("(MVB): disableVstBucket: not LH_OK for index: " + QString::number(index));
+//		qDebug() << msg;
+//		emit(signalFeedbackLogOutput(msg, true));
     }
 }
 
-void ModelVstBuckets::blacklistVstBucket(const QList<int> &indexOfVstBuckets)
+void ModelVstBuckets::blacklistVstBucket(const QVector<int> &indexOfVstBuckets)
 {
-    int index = 0;
-    for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
-        index = indexOfVstBuckets.at(i);
-
-        if (lh->blacklistVst(index) == RvLinkHandler::LH_OK) {
-            emit(signalConfigDataChanged());
-        } else {
-            QString msg("(MVB): blacklistVstBucket: not LH_OK for index: " + QString::number(index));
-            qDebug() << msg;
-            emit(signalFeedbackLogOutput(msg, true));
-        }
+    if (lh->blacklistVst(indexOfVstBuckets) == RvLinkHandler::LH_OK) {
+        emit(signalConfigDataChanged());
+    } else {
+        //            QString msg("(MVB): blacklistVstBucket: not LH_OK for index: " + QString::number(index));
+        //            qDebug() << msg;
+        //            emit(signalFeedbackLogOutput(msg, true));
     }
 }
 
-void ModelVstBuckets::unblacklistVstBucket(const QList<int> &indexOfVstBuckets)
+void ModelVstBuckets::unblacklistVstBucket(const QVector<int> &indexOfVstBuckets)
 {
-    int index;
-    for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
-        index = indexOfVstBuckets.at(i);
+    for(const auto &index : indexOfVstBuckets) {
         mVstBuckets[index].status = VstStatus::NA;
 
         if (lh->refreshStatus(true, index) == RvLinkHandler::LH_OK) {
@@ -499,7 +488,9 @@ void ModelVstBuckets::unblacklistVstBucket(const QList<int> &indexOfVstBuckets)
 
 void ModelVstBuckets::updateVsts()
 {
-    if (lh->updateVsts() != RvLinkHandler::LH_OK) {
+    if (lh->updateVsts() == RvLinkHandler::LH_OK) {
+        emit(signalFeedbackUpdateDone());
+    } else {
         QString msg("(MVB): updateVsts: not LH_OK");
         qDebug() << msg;
         emit(signalFeedbackLogOutput(msg, true));
@@ -511,7 +502,7 @@ void ModelVstBuckets::refreshStatus()
     lh->refreshStatus();
 }
 
-void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
+void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
 {
     VstBridge bridgeType;
 
@@ -538,7 +529,8 @@ void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
 
         mVstBuckets.append(VstBucket(i.name,
                                      i.vstPath,
-                                     i.hash,
+                                     i.pathHash,
+                                     i.soFileHash, // empty for now (no_so yet)
                                      VstStatus::NA,
                                      bridgeType,
                                      i.vstType,
@@ -549,11 +541,11 @@ void ModelVstBuckets::addScanSelection(QList<ScanResult> *scanSelection)
     emit(signalConfigDataChanged());
 }
 
-QList<int> ModelVstBuckets::changeBridges(const QList<int> &indexOfVstBuckets, VstBridge reqBridgeType)
+QVector<int> ModelVstBuckets::changeBridges(const QVector<int> &indexOfVstBuckets, VstBridge reqBridgeType)
 {
     int index;
     bool configDataChanged = false;
-    QList<int> skippedIndices;
+    QVector<int> skippedIndices;
 
     for(int i = indexOfVstBuckets.size() - 1; i >= 0; i--) {
         index = indexOfVstBuckets.at(i);
@@ -606,7 +598,7 @@ bool ModelVstBuckets::removeOrphans(const QStringList &filePathsOrphans)
     return (lh->removeOrphans(filePathsOrphans) == RvLinkHandler::LH_OK);
 }
 
-QList<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
+QVector<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
 {
     return &mVstBuckets;
 }
@@ -614,7 +606,7 @@ QList<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
 void ModelVstBuckets::slotUpdateHashes()
 {
     for (auto &vstBucket : mVstBuckets) {
-        vstBucket.hash = pathHasher->calcFilepathHash(vstBucket.vstPath);
+        vstBucket.pathHash = dataHasher.calcFilepathHash(vstBucket.vstPath);
     }
 }
 

@@ -11,7 +11,7 @@
 class ScanResult
 {
 public:
-    ScanResult(QString t_name, QString t_vstPath, VstType t_vstType, bool t_verified, QByteArray t_hash, bool t_selected);
+    ScanResult(QString t_name, QString t_vstPath, VstType t_vstType, bool t_verified, QByteArray t_pathHash, QByteArray t_soFileHash, bool t_selected);
     ScanResult() = default;
     ~ScanResult() = default;
     ScanResult(const ScanResult &) = default;
@@ -19,7 +19,8 @@ public:
     QString vstPath;
     VstType vstType;
     bool verified;
-    QByteArray hash;
+    QByteArray pathHash;
+    QByteArray soFileHash;
     bool selected;
 };
 Q_DECLARE_METATYPE(ScanResult);

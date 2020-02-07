@@ -1,6 +1,7 @@
 // This file is part of LinVstManager.
 
 #include "preferences.h"
+#include <QVector>
 
 Preferences::Preferences()
 {
@@ -19,72 +20,77 @@ Preferences::Preferences()
     pathCheckTool = "";
 }
 
-bool Preferences::updatePreferences(bool t_enabledLinVst,
-                                    bool t_enabledLinVstX,
-                                    bool t_enabledLinVst3,
-                                    bool t_enabledLinVst3X,
-                                    bool t_bridgeDefaultVst2IsX,
-                                    bool t_bridgeDefaultVst3IsX,
-                                    bool t_hideBlacklisted,
-                                    const QString &t_pathSoLinVst,
-                                    const QString &t_pathSoLinVstX,
-                                    const QString &t_pathSoLinVst3,
-                                    const QString &t_pathSoLinVst3X,
-                                    const QString &t_pathLinkFolder,
-                                    const QString &t_pathCheckTool)
+bool Preferences::updatePreferences(bool pEnabledLinVst,
+                                    bool pEnabledLinVstX,
+                                    bool pEnabledLinVst3,
+                                    bool pEnabledLinVst3X,
+                                    bool pBridgeDefaultVst2IsX,
+                                    bool pBridgeDefaultVst3IsX,
+                                    bool pHideBlacklisted,
+                                    const QString &pPathSoLinVst,
+                                    const QString &pPathSoLinVstX,
+                                    const QString &pPathSoLinVst3,
+                                    const QString &pPathSoLinVst3X,
+                                    const QString &pPathLinkFolder,
+                                    const QString &pPathCheckTool,
+                                    QVector<VstBridge> &pChangedBridges)
 {
     bool prefsChanged = false;
 
-    if (enabledLinVst != t_enabledLinVst) {
-        enabledLinVst = t_enabledLinVst;
+    if (enabledLinVst != pEnabledLinVst) {
+        enabledLinVst = pEnabledLinVst;
         prefsChanged = true;
     }
-    if (enabledLinVstX != t_enabledLinVstX) {
-        enabledLinVstX = t_enabledLinVstX;
+    if (enabledLinVstX != pEnabledLinVstX) {
+        enabledLinVstX = pEnabledLinVstX;
         prefsChanged = true;
     }
-    if (enabledLinVst3 != t_enabledLinVst3) {
-        enabledLinVst3 = t_enabledLinVst3;
+    if (enabledLinVst3 != pEnabledLinVst3) {
+        enabledLinVst3 = pEnabledLinVst3;
         prefsChanged = true;
     }
-    if (enabledLinVst3X != t_enabledLinVst3X) {
-        enabledLinVst3X = t_enabledLinVst3X;
+    if (enabledLinVst3X != pEnabledLinVst3X) {
+        enabledLinVst3X = pEnabledLinVst3X;
         prefsChanged = true;
     }
-    if (pathSoLinVst != t_pathSoLinVst) {
-        pathSoLinVst = t_pathSoLinVst;
+    if (pathSoLinVst != pPathSoLinVst) {
+        pathSoLinVst = pPathSoLinVst;
+        prefsChanged = true;
+        pChangedBridges.append(VstBridge::LinVst);
+    }
+    if (pathSoLinVstX != pPathSoLinVstX) {
+        pathSoLinVstX = pPathSoLinVstX;
+        prefsChanged = true;
+        pChangedBridges.append(VstBridge::LinVstX);
+    }
+    if (pathSoLinVst3 != pPathSoLinVst3) {
+        pathSoLinVst3 = pPathSoLinVst3;
+        prefsChanged = true;
+        pChangedBridges.append(VstBridge::LinVst3);
+    }
+    if (pathSoLinVst3X != pPathSoLinVst3X) {
+        pathSoLinVst3X = pPathSoLinVst3X;
+        prefsChanged = true;
+        pChangedBridges.append(VstBridge::LinVst3X);
+    }
+    if (pathLinkFolder != pPathLinkFolder) {
+        pathLinkFolder = pPathLinkFolder;
         prefsChanged = true;
     }
-    if (pathSoLinVstX != t_pathSoLinVstX) {
-        pathSoLinVstX = t_pathSoLinVstX;
+    if (pathCheckTool != pPathCheckTool) {
+        pathCheckTool = pPathCheckTool;
         prefsChanged = true;
     }
-    if (pathSoLinVst3 != t_pathSoLinVst3) {
-        pathSoLinVst3 = t_pathSoLinVst3;
+    if (hideBlacklisted != pHideBlacklisted) {
+        hideBlacklisted = pHideBlacklisted;
         prefsChanged = true;
     }
-    if (pathSoLinVst3X != t_pathSoLinVst3X) {
-        pathSoLinVst3X = t_pathSoLinVst3X;
+    if (bridgeDefaultVst2IsX != pBridgeDefaultVst2IsX) {
+        bridgeDefaultVst2IsX = pBridgeDefaultVst2IsX;
         prefsChanged = true;
     }
-    if (pathLinkFolder != t_pathLinkFolder) {
-        pathLinkFolder = t_pathLinkFolder;
-        prefsChanged = true;
-    }
-    if (pathCheckTool != t_pathCheckTool) {
-        pathCheckTool = t_pathCheckTool;
-        prefsChanged = true;
-    }
-    if (hideBlacklisted != t_hideBlacklisted) {
-        hideBlacklisted = t_hideBlacklisted;
-        prefsChanged = true;
-    }
-    if (bridgeDefaultVst2IsX != t_bridgeDefaultVst2IsX) {
-        bridgeDefaultVst2IsX = t_bridgeDefaultVst2IsX;
-        prefsChanged = true;
-    }
-    if (bridgeDefaultVst3IsX != t_bridgeDefaultVst3IsX) {
-        bridgeDefaultVst3IsX = t_bridgeDefaultVst3IsX;
+    if (bridgeDefaultVst3IsX != pBridgeDefaultVst3IsX) {
+        bridgeDefaultVst3IsX = pBridgeDefaultVst3IsX;
         prefsChanged = true;
     }
 
@@ -121,16 +127,12 @@ bool Preferences::bridgeEnabled(VstBridge bridgeType) const
     switch (bridgeType) {
         case VstBridge::LinVst:
             return enabledLinVst;
-        break;
         case VstBridge::LinVstX:
             return enabledLinVstX;
-        break;
         case VstBridge::LinVst3:
             return enabledLinVst3;
-        break;
         case VstBridge::LinVst3X:
             return enabledLinVst3X;
-        break;
     }
     return false;
 }
@@ -140,16 +142,12 @@ QString Preferences::getPathSoTmplBridge(VstBridge bridgeType) const
     switch (bridgeType) {
         case VstBridge::LinVst:
             return pathSoLinVst;
-        break;
         case VstBridge::LinVstX:
             return pathSoLinVstX;
-        break;
         case VstBridge::LinVst3:
             return pathSoLinVst3;
-        break;
         case VstBridge::LinVst3X:
             return pathSoLinVst3X;
-        break;
     }
     return "";
 }

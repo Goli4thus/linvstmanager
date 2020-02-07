@@ -3,6 +3,8 @@
 #ifndef ENUMS
 #define ENUMS
 
+#include <QMetaType>
+
 
 enum VstStatus {
     Enabled,     // VST is enabled via active softlink
@@ -22,6 +24,7 @@ enum VstBridge {
     LinVst3,
     LinVst3X
 };
+Q_DECLARE_METATYPE(VstBridge);
 
 enum VstType {
     VST2,

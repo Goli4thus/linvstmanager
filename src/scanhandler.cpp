@@ -11,10 +11,10 @@
 #include <QProcess>
 #include <QThread>
 #include "VstDllCheck/vstdllcheck.h"
-#include "pathhasher.h"
+#include "datahasher.h"
 
 
-ScanHandler::ScanHandler(const QList<VstBucket> &pVstBuckets,
+ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
                          QString pScanFolder,
                          QString pPathCheckTool,
                          bool pUseCheckTool,
@@ -84,7 +84,7 @@ void ScanHandler::slotPerformScan()
     /* Basically:
      * 1) Perform the iterative scan
      *    X filter based on VST type (.dll or .vst3)
-     *    X calculate path hash on the fly and check via QList::contains, if part of mVstBuckets
+     *    X calculate path hash on the fly and check via QVector::contains, if part of mVstBuckets
      *        X if so: skip
      *        X if not: add to mScanResults
      *    O (later: if ".dll", consider checking if really VST (see TestVst app))
@@ -93,16 +93,20 @@ void ScanHandler::slotPerformScan()
 
 //#define D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
 #ifndef D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
-    QList<ScanResult> scanResults;
+    QVector<ScanResult> scanResults;
     QByteArrayList existingPathHashes;
-    QByteArray hash;
+    QByteArray pathHash;
+    QByteArray soFileHash;
     VstType vstType;
     bool verified;
     bool scanCanceledByUser = false;
-    PathHasher pathHasher;
+    /* No shared instance with other object needed here,
+     * because no soTmplHash updates are being done.
+     */
+    DataHasher pathHasher;
 
     for (const auto &vstBucket : mVstBuckets) {
-        existingPathHashes.append(vstBucket.hash);
+        existingPathHashes.append(vstBucket.pathHash);
     }
 
     QDirIterator it(mScanFolder,
@@ -125,8 +129,8 @@ void ScanHandler::slotPerformScan()
         }
 
         // Skip findings that are already part of tracked VstBuckets
-        hash = pathHasher.calcFilepathHash(finding);
-        if (!existingPathHashes.contains(hash)) {
+        pathHash = pathHasher.calcFilepathHash(finding);
+        if (!existingPathHashes.contains(pathHash)) {
             qDebug() << "New finding: " << finding;
 
             QFileInfo fileType(finding);
@@ -155,7 +159,8 @@ void ScanHandler::slotPerformScan()
                                           finding,
                                           vstType,
                                           verified,
-                                          hash,
+                                          pathHash,
+                                          soFileHash, // empty for now
                                           false));
         }
     }

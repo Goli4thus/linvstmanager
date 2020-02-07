@@ -72,7 +72,7 @@ private slots:
     void slotCheckBoxLinVst3X(bool isChecked);
 
 signals:
-    void signalConfigDataChanged();
+    void signalConfigDataChanged(bool needsRefresh, QVector<VstBridge> changedBridges);
 };
 
 #endif // DIALOGPREFERENCES_H

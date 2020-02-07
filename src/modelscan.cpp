@@ -10,7 +10,7 @@
 #include <QByteArray>
 #include <QMetaType>
 
-ModelScan::ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent) : mVstBuckets(pVstBuckets)
+ModelScan::ModelScan(const QVector<VstBucket> *pVstBuckets, QObject *parent) : mVstBuckets(pVstBuckets)
 {
     this->setParent(parent);
 
@@ -177,14 +177,14 @@ void ModelScan::emptyModel()
     endRemoveRows();
 }
 
-void ModelScan::fillModel(QList<ScanResult> &scanResults)
+void ModelScan::fillModel(QVector<ScanResult> &scanResults)
 {
     beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount() + scanResults.size() - 1);
     mScanResults.append(scanResults);
     endInsertRows();
 }
 
-void ModelScan::slotScanFinished(bool wasCanceled, QList<ScanResult> scanResults)
+void ModelScan::slotScanFinished(bool wasCanceled, QVector<ScanResult> scanResults)
 {
     if (wasCanceled) {
         emit(signalScanCanceled());
@@ -206,9 +206,9 @@ bool ModelScan::isModelEmpty()
     return mScanResults.isEmpty();
 }
 
-QList<ScanResult> ModelScan::getScanSelection()
+QVector<ScanResult> ModelScan::getScanSelection()
 {
-    QList<ScanResult> scanSelection;
+    QVector<ScanResult> scanSelection;
     for (const auto &scanResult : mScanResults) {
         if (scanResult.selected) {
             scanSelection.append(scanResult);
@@ -218,14 +218,14 @@ QList<ScanResult> ModelScan::getScanSelection()
     return scanSelection;
 }
 
-void ModelScan::slotSelectEntry(const QList<int> &selectionIndices)
+void ModelScan::slotSelectEntry(const QVector<int> &selectionIndices)
 {
     for(int i = selectionIndices.size() - 1; i >= 0; i--) {
         mScanResults[selectionIndices.at(i)].selected = true;
     }
 }
 
-void ModelScan::slotUnselectEntry(const QList<int> &selectionIndices)
+void ModelScan::slotUnselectEntry(const QVector<int> &selectionIndices)
 {
     for(int i = selectionIndices.size() - 1; i >= 0; i--) {
         mScanResults[selectionIndices.at(i)].selected = false;

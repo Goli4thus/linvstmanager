@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->setWindowTitle("LinVstManager");
     this->setWindowIcon(QIcon(":/icons/linvstmanager.png"));
 
+    mDataHasher = new DataHasher();
     prf = new Preferences();
     cfg = new ConfigHandler();
     legacyConfigParser = new LegacyConfigParser();
@@ -25,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     configNeedsSaving = false;
 
     // Load config file
-    QList<VstBucket> tmpVstBuckets;
+    QVector<VstBucket> tmpVstBuckets;
     RvConfFile retVal = cfg->loadConfig(*prf, tmpVstBuckets);
     if (retVal == RvConfFile::NotExists) {
         QMessageBox::warning(this,
@@ -49,6 +50,21 @@ MainWindow::MainWindow(QWidget *parent)
                               "Therefore nothing could be restored.",
                               QMessageBox::Ok, QMessageBox::Ok);
     }
+
+    // Update soTmplHash values
+    QVector<VstBridge> bridgeTypes = {VstBridge::LinVst,
+                                      VstBridge::LinVstX,
+                                      VstBridge::LinVst3,
+                                      VstBridge::LinVst3X};
+    QVector<VstBridge> changedBridges;
+    QString soTmplPath;
+    for (const auto &bridge : bridgeTypes) {
+        soTmplPath = prf->getPathSoTmplBridge(bridge);
+        if (soTmplPath != "") {
+            changedBridges.append(bridge);
+        }
+    }
+    updateSoTmplHashes(changedBridges);
 
     mDialogPreferences = new DialogPreferences(prf);
 
@@ -91,7 +107,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->setCentralWidget(mSplitter);
 
 
-    mModelVstBuckets = new ModelVstBuckets(mTableview, tmpVstBuckets, prf);
+    mModelVstBuckets = new ModelVstBuckets(mTableview, tmpVstBuckets, prf, *mDataHasher);
     mSortFilter->setSourceModel(mModelVstBuckets);
     mTableview->setModel(mSortFilter);
 
@@ -109,7 +125,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mTableview->setShowGrid(false);
     mTableview->horizontalHeader()->setHighlightSections(false);
-    mTableview->horizontalHeader()->setStretchLastSection(true);
+    mTableview->horizontalHeader()->setStretchLastSection(false);
     mTableview->horizontalHeader()->setSectionsMovable(true);
     mTableview->horizontalHeader()->setDragEnabled(true);
     mTableview->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
@@ -119,6 +135,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(mModelVstBuckets, &ModelVstBuckets::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mModelVstBuckets, &ModelVstBuckets::signalFeedbackLogOutput, this, &MainWindow::slotFeedbackLogOutput);
+    connect(mModelVstBuckets, &ModelVstBuckets::signalFeedbackUpdateDone, this, &MainWindow::slotFeedbackUpdateDone);
     connect(mDialogPreferences, &DialogPreferences::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
 
@@ -134,6 +151,7 @@ MainWindow::~MainWindow()
 {
     delete prf;
     delete cfg;
+    delete mDataHasher;
     delete mLogOutput;
     delete mModelVstBuckets;
     delete mSortFilter;
@@ -278,7 +296,6 @@ void MainWindow::setupMenuBar()
     connect(actionFilter, &QAction::triggered, this, &MainWindow::slotFilterBar);
     connect(actionAbout, &QAction::triggered, this, &MainWindow::slotDialogAbout);
     connect(actionAboutQt, &QAction::triggered, this, &MainWindow::slotDialogAboutQt);
-    qDebug() << "setupMenuBar(): Done";
 
     setupMouseMenu(subMenuChangeBridge);
 }
@@ -382,11 +399,20 @@ void MainWindow::slotSave()
     }
 }
 
-void MainWindow::slotConfigDataChanged()
+void MainWindow::slotConfigDataChanged(bool needsRefresh, QVector<VstBridge> changedBridges)
 {
     this->setWindowTitle("* LinVstManager");
     configNeedsSaving = true;
-    mModelVstBuckets->refreshStatus();
+    // TODO: Does this refresh make sense in all cases?
+    if (needsRefresh) {
+        mModelVstBuckets->refreshStatus();
+    }
+    if (!changedBridges.isEmpty()) {
+        updateSoTmplHashes(changedBridges);
+        /* A refresh is needed here due to possible
+         * bridge version mismatch after bridge change. */
+        mModelVstBuckets->refreshStatus();
+    }
 }
 
 void MainWindow::slotPostSetupInfo()
@@ -429,6 +455,12 @@ void MainWindow::slotOrphanDetection()
 void MainWindow::slotFeedbackLogOutput(const QString &msg, bool isVerboseInfo = false)
 {
     mLogOutput->appendLog(msg, isVerboseInfo);
+}
+
+void MainWindow::slotFeedbackUpdateDone()
+{
+//    QMessageBox::information(this, "Update done", "Update for all VSTs is done.");
+    mLogOutput->appendLog("Update is done.");
 }
 
 void MainWindow::slotResizeMainUi()
@@ -483,8 +515,8 @@ void MainWindow::slotRemoveVst()
         if (retVal == QMessageBox::Yes) {
             enableViewUpdate(false);
             QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-            qDebug() << "indexList" << indexList;
-            QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+//            qDebug() << "indexList" << indexList;
+            QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
             mModelVstBuckets->removeVstBucket(indexOfVstBuckets);
             enableViewUpdate(true);
             slotResizeTableToContent();
@@ -499,8 +531,9 @@ void MainWindow::slotEnableVst()
         return;
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-        QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
+        // TODO: Consider moving this to a dedicated thread if it really takes that long for big amounts of VSTs
         mModelVstBuckets->enableVstBucket(indexOfVstBuckets);
         enableViewUpdate(true);
     }
@@ -513,7 +546,7 @@ void MainWindow::slotDisableVst()
         return;
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-        QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
         mModelVstBuckets->disableVstBucket(indexOfVstBuckets);
         enableViewUpdate(true);
@@ -527,7 +560,7 @@ void MainWindow::slotBlacklistVst()
         return;
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-        QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
         mModelVstBuckets->blacklistVstBucket(indexOfVstBuckets);
         enableViewUpdate(true);
@@ -541,7 +574,7 @@ void MainWindow::slotUnblacklistVst()
         return;
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-        QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
         mModelVstBuckets->unblacklistVstBucket(indexOfVstBuckets);
         enableViewUpdate(true);
@@ -550,6 +583,7 @@ void MainWindow::slotUnblacklistVst()
 
 void MainWindow::slotUpdate()
 {
+    mLogOutput->appendLog("Performing update...");
     enableViewUpdate(false);
     mModelVstBuckets->updateVsts();
     enableViewUpdate(true);
@@ -601,18 +635,18 @@ void MainWindow::slotHideBlacklisted()
     if (actionHideBlacklisted->isChecked()) {
         mSortFilter->setHideBlacklisted(true);
         if(prf->setHideBlacklisted(true)) {
-            slotConfigDataChanged();
+            slotConfigDataChanged(false);
         }
     } else {
         mSortFilter->setHideBlacklisted(false);
         if(prf->setHideBlacklisted(false)) {
-            slotConfigDataChanged();
+            slotConfigDataChanged(false);
         }
     }
     slotResizeTableToContent();
 }
 
-void MainWindow::slotAddScannedVst(QList<ScanResult> scanSelection)
+void MainWindow::slotAddScannedVst(QVector<ScanResult> scanSelection)
 {
     enableViewUpdate(false);
     mModelVstBuckets->addScanSelection(&scanSelection);
@@ -671,9 +705,9 @@ void MainWindow::changeBridge(VstBridge bridgeType)
         return;
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-        QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
-        QList<int> skippedIndices =  mModelVstBuckets->changeBridges(indexOfVstBuckets, bridgeType);
+        QVector<int> skippedIndices =  mModelVstBuckets->changeBridges(indexOfVstBuckets, bridgeType);
         enableViewUpdate(true);
 
         if (!skippedIndices.isEmpty()) {
@@ -692,9 +726,9 @@ void MainWindow::changeBridge(VstBridge bridgeType)
     }
 }
 
-QList<int> MainWindow::getSelectionOrigIdx(const QModelIndexList &indexList)
+QVector<int> MainWindow::getSelectionOrigIdx(const QModelIndexList &indexList)
 {
-    QList<int> indexOfVstBuckets;
+    QVector<int> indexOfVstBuckets;
     foreach (QModelIndex index, indexList) {
         QModelIndex originalIndex = mSortFilter->mapToSource(index);
         indexOfVstBuckets.append(originalIndex.row());
@@ -725,5 +759,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
         QApplication::quit();
     } else if ((retVal == QMessageBox::Cancel) || (retVal == QMessageBox::No)) {
         event->ignore();
+    }
+}
+
+void MainWindow::updateSoTmplHashes(const QVector<VstBridge> &changedBridges)
+{
+    QString soTmplPath;
+    for (const auto &bridge : changedBridges) {
+        soTmplPath = prf->getPathSoTmplBridge(bridge);
+        mDataHasher->updateHashSoTmplBridge(bridge, soTmplPath);
     }
 }

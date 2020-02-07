@@ -76,7 +76,7 @@ set(SOURCES
     src/mainwindow.cpp
     src/modelscan.cpp
     src/modelvstbuckets.cpp
-    src/pathhasher.cpp
+    src/datahasher.cpp
     src/preferences.cpp
     src/runguard.cpp
     src/scanhandler.cpp

@@ -75,7 +75,7 @@ void CustomProgressDialog::closeEvent(QCloseEvent *e)
     return QDialog::closeEvent(e);
 }
 
-void CustomProgressDialog::init(quint16 pScanAmount)
+void CustomProgressDialog::init(int pScanAmount)
 {
     mScanAmount = pScanAmount;
     mFoundSoFar = 0;

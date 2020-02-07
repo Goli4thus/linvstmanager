@@ -15,6 +15,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QVector>
 
 #include "logoutput.h"
 #include "modelvstbuckets.h"
@@ -25,6 +26,8 @@
 #include "scanresult.h"
 #include "customsortfilterproxymodel.h"
 #include "legacyconfigparser.h"
+#include "datahasher.h"
+#include "enums.h"
 
 
 class MainWindow : public QMainWindow
@@ -53,7 +56,7 @@ private:
     void repaintTableview();
     void enableViewUpdate(bool f_enable);
     void changeBridge(VstBridge bridgeType);
-    QList<int> getSelectionOrigIdx(const QModelIndexList &indexList);
+    QVector<int> getSelectionOrigIdx(const QModelIndexList &indexList);
     QMenu *mouseMenu;
     DialogPreferences *mDialogPreferences;
     DialogScan *mDialogScan;
@@ -65,6 +68,8 @@ private:
     bool configNeedsSaving;
     QAction *actionDebugInfo;
     QAction *actionHideBlacklisted;
+    DataHasher *mDataHasher;
+    void updateSoTmplHashes(const QVector<VstBridge> &changedBridges);
 
 private slots:
     void slotResizeMainUi();
@@ -83,7 +88,7 @@ private slots:
     void slotDebugInfo();
     void slotFilterBarTextChanged();
     void slotHideBlacklisted();
-    void slotAddScannedVst(QList<ScanResult> scanSelection);
+    void slotAddScannedVst(QVector<ScanResult> scanSelection);
     void slotImportLegacyConfig();
 
     void slotMouseRightClickOnVst(QPoint point);
@@ -94,10 +99,11 @@ private slots:
     void slotDialogAbout();
     void slotDialogAboutQt();
     void slotSave();
-    void slotConfigDataChanged();
+    void slotConfigDataChanged(bool needsRefresh = false, QVector<VstBridge> changedBridges = {});
     void slotPostSetupInfo();
     void slotOrphanDetection();
     void slotFeedbackLogOutput(const QString &msg, bool isVerboseInfo);
+    void slotFeedbackUpdateDone();
 };
 
 #endif // MAINWINDOW_H

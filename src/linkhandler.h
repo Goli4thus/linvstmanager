@@ -9,29 +9,28 @@
 #include <QStringList>
 #include <QMap>
 class Preferences;
-class PathHasher;
+class DataHasher;
 
 class LinkHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit LinkHandler(const Preferences &t_prf, QList<VstBucket>*pVstBuckets, QObject *parent = nullptr);
+    explicit LinkHandler(const Preferences &t_prf, QVector<VstBucket>*pVstBuckets, DataHasher &pDataHasher, QObject *parent = nullptr);
     ~LinkHandler();
-    RvLinkHandler refreshStatus(bool refreshSingle = false, int singleIndex = 0);
+    RvLinkHandler refreshStatus(bool refreshSingle = false, int singleIndex = 0, bool updateSoFileHash = false);
     RvLinkHandler updateVsts();
-    RvLinkHandler enableVst(int idx);
-    RvLinkHandler disableVst(int idx);
-    RvLinkHandler blacklistVst(int idx);
+    RvLinkHandler enableVst(const QVector<int> &indexOfVstBuckets);
+    RvLinkHandler disableVst(const QVector<int> &indexOfVstBuckets);
+    RvLinkHandler blacklistVst(const QVector<int> &indexOfVstBuckets);
     RvLinkHandler changeBridge(int idx, VstBridge newBridgeType);
     QStringList checkForOrphans();
     RvLinkHandler removeOrphans(const QStringList &filePathsOrphans);
 
 private:
     const Preferences &prf;
-    bool checkSoFileMatch(const QString &filePathA, const QString &filePathB);
-    QMap<VstType, int> mMapVstExtLen;
-    QList<VstBucket>*mVstBuckets;
-    PathHasher *pathHasher;
+    bool checkSoHashMatch(const QByteArray &soFileHash, const VstBridge vstBridge);
+    QVector<VstBucket>*mVstBuckets;
+    DataHasher &dataHasher;
 
 signals:
 

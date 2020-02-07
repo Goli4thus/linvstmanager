@@ -15,7 +15,7 @@ class ModelScan : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit ModelScan(const QList<VstBucket> *pVstBuckets, QObject *parent = nullptr);
+    explicit ModelScan(const QVector<VstBucket> *pVstBuckets, QObject *parent = nullptr);
     ~ModelScan() override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE ;
     int columnCount(const QModelIndex &parent = QModelIndex()) const Q_DECL_OVERRIDE;
@@ -24,19 +24,19 @@ public:
     bool mUpdateView;
     void triggerScan(const QString &scanFolder, const QString &pathCheckTool, bool useCheckTool);
     bool isModelEmpty();
-    QList<ScanResult> getScanSelection();
+    QVector<ScanResult> getScanSelection();
     void emptyModel();
 
 private:
-    const QList<VstBucket> *mVstBuckets;
-    QList<ScanResult> mScanResults;
-    void fillModel(QList<ScanResult> &scanResults);
+    const QVector<VstBucket> *mVstBuckets;
+    QVector<ScanResult> mScanResults;
+    void fillModel(QVector<ScanResult> &scanResults);
     ScanHandler *mScanHandler;
     QThread *mScanThread;
 
 signals:
     void signalTableOperationFinished();
-//    void signalPerformScan(QString scanFolder, QList<ScanResult> scanResults, QString pathCheckTool, bool useCheckTool);
+//    void signalPerformScan(QString scanFolder, QVector<ScanResult> scanResults, QString pathCheckTool, bool useCheckTool);
     void signalScanCanceled();
     void signalFoundVst3();
     void signalFoundVst2();
@@ -45,9 +45,9 @@ signals:
 
 public slots:
     void slotScanCancel();
-    void slotScanFinished(bool wasCanceled, QList<ScanResult> scanResults);
-    void slotSelectEntry(const QList<int> &selectionIndices);
-    void slotUnselectEntry(const QList<int> &selectionIndices);
+    void slotScanFinished(bool wasCanceled, QVector<ScanResult> scanResults);
+    void slotSelectEntry(const QVector<int> &selectionIndices);
+    void slotUnselectEntry(const QVector<int> &selectionIndices);
 };
 
 #endif // MODELSCAN_H

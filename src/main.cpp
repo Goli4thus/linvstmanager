@@ -55,7 +55,8 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context, con
 int main(int argc, char *argv[])
 {
     qInstallMessageHandler(customMessageHandler);
-    qRegisterMetaType<QList<ScanResult>>();
+    qRegisterMetaType<QVector<ScanResult>>();
+    qRegisterMetaType<QVector<VstBridge>>();
 
     RunGuard guard( "some_random_key" );
     if ( !guard.tryToRun() ) {

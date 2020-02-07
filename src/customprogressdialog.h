@@ -18,7 +18,7 @@ public:
     CustomProgressDialog();
     int exec() override;
     void closeEvent(QCloseEvent *e) override;
-    void init(quint16 pScanAmount);
+    void init(int pScanAmount);
 
 private:
     QVBoxLayout *mLayoutVMain;
@@ -30,11 +30,11 @@ private:
     QLabel *mLabelCounterVst3;
     QLabel *mLabelCounterDll;
     QPushButton *mButtonCancel;
-    quint16 mCntVst2;
-    quint16 mCntVst3;
-    quint16 mCntDll;
-    quint16 mScanAmount;
-    quint16 mFoundSoFar;
+    int mCntVst2;
+    int mCntVst3;
+    int mCntDll;
+    int mScanAmount;
+    int mFoundSoFar;
     void updateProgress();
 
 signals:

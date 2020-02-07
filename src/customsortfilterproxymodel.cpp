@@ -11,7 +11,7 @@ CustomSortFilterProxyModel::CustomSortFilterProxyModel(QObject *parent) : QSortF
 
 bool CustomSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    QList<QModelIndex> modelIndices;
+    QVector<QModelIndex> modelIndices;
     int retVal;
     QString strAllColumns;
 

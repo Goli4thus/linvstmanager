@@ -11,7 +11,8 @@ class VstBucket
 public:
     VstBucket(QString t_name,
               QString t_vstPath,
-              QByteArray t_hash,
+              QByteArray t_pathHash,
+              QByteArray t_soFileHash,
               VstStatus t_status,
               VstBridge t_bridge,
               VstType t_type,
@@ -19,7 +20,8 @@ public:
 
     QString name;
     QString vstPath;
-    QByteArray hash;
+    QByteArray pathHash;
+    QByteArray soFileHash;
     VstStatus status;
     VstBridge bridge;
     VstType vstType;

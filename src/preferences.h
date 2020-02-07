@@ -12,19 +12,20 @@ class Preferences
 public:
     Preferences();
 
-    bool updatePreferences(bool t_enabledLinVst,
-                           bool t_enabledLinVstX,
-                           bool t_enabledLinVst3,
-                           bool t_enabledLinVst3X,
-                           bool t_bridgeDefaultVst2IsX,
-                           bool t_bridgeDefaultVst3IsX,
-                           bool t_hideBlacklisted,
-                           const QString &t_pathSoLinVst,
-                           const QString &t_pathSoLinVstX,
-                           const QString &t_pathSoLinVst3,
-                           const QString &t_pathSoLinVst3X,
-                           const QString &t_pathLinkFolder,
-                           const QString &t_pathCheckTool);
+    bool updatePreferences(bool pEnabledLinVst,
+                           bool pEnabledLinVstX,
+                           bool pEnabledLinVst3,
+                           bool pEnabledLinVst3X,
+                           bool pBridgeDefaultVst2IsX,
+                           bool pBridgeDefaultVst3IsX,
+                           bool pHideBlacklisted,
+                           const QString &pPathSoLinVst,
+                           const QString &pPathSoLinVstX,
+                           const QString &pPathSoLinVst3,
+                           const QString &pPathSoLinVst3X,
+                           const QString &pPathLinkFolder,
+                           const QString &pPathCheckTool,
+                           QVector<VstBridge> &pChangedBridges);
 
     QString getPathLinkFolder() const;
     QString getPathCheckTool() const;

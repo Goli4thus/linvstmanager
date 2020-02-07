@@ -33,7 +33,7 @@
 #include "preferences.h"
 #include "customsortfilterproxymodel.h"
 
-DialogScan::DialogScan(Preferences *t_prf, const QList<VstBucket> *pVstBuckets) : mVstBuckets(pVstBuckets)
+DialogScan::DialogScan(Preferences *t_prf, const QVector<VstBucket> *pVstBuckets) : mVstBuckets(pVstBuckets)
 {
     this->setWindowIcon(QIcon(":/icons/linvstmanager.png"));
     prf = t_prf;
@@ -206,7 +206,7 @@ void DialogScan::setupUI()
     mLayoutVMain->addSpacing(5);
 
     mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckTool);
-    mLayoutHVerifyAndAmount->addSpacing(40);
+    mLayoutHVerifyAndAmount->addSpacing(30);
     mLayoutHVerifyAndAmount->addWidget(vLine0);
     mLayoutHVerifyAndAmount->addSpacing(20);
     mLayoutHVerifyAndAmount->addWidget(new QLabel("Scan folder contains: "));
@@ -229,7 +229,7 @@ void DialogScan::setupUI()
 
     this->setLayout(mLayoutVMain);
     setMinimumWidth(590);
-    resize(650, 600);
+    resize(680, 600);
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -275,7 +275,7 @@ void DialogScan::setupMouseMenu()
 
 void DialogScan::slotMouseRightClickOnEntry(QPoint point)
 {
-    Q_UNUSED(point);
+    Q_UNUSED(point)
     mouseMenu->exec(QCursor::pos());
 }
 
@@ -317,7 +317,7 @@ void DialogScan::slotSelectEntry()
         return;
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-        QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
         mModelScan->slotSelectEntry(indexOfVstBuckets);
         enableViewUpdate(true);
@@ -331,7 +331,7 @@ void DialogScan::slotUnselectEntry()
         return;
     } else {
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
-        QList<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
         mModelScan->slotUnselectEntry(indexOfVstBuckets);
         enableViewUpdate(true);
@@ -395,7 +395,7 @@ void DialogScan::slotCancel()
 
 void DialogScan::slotAdd()
 {
-    QList<ScanResult> scanSelection = mModelScan->getScanSelection();
+    QVector<ScanResult> scanSelection = mModelScan->getScanSelection();
 
     if (scanSelection.isEmpty()) {
         // No selection has been made. Therefore ignore it.
@@ -438,9 +438,9 @@ void DialogScan::repaintTableview()
     mTableview->viewport()->repaint();
 }
 
-QList<int> DialogScan::getSelectionOrigIdx(const QModelIndexList &indexList)
+QVector<int> DialogScan::getSelectionOrigIdx(const QModelIndexList &indexList)
 {
-    QList<int> indexOfScanResults;
+    QVector<int> indexOfScanResults;
     foreach (QModelIndex index, indexList) {
         QModelIndex originalIndex = mSortFilter->mapToSource(index);
         indexOfScanResults.append(originalIndex.row());
@@ -464,13 +464,13 @@ void DialogScan::getScanAmount(const QString &path, int &numDll, int &numVst3)
     process.start(cmd);
     process.waitForFinished();
     QString retStr(process.readAllStandardOutput());
-    numDll = retStr.toUInt();
+    numDll = retStr.toInt();
 
     cmd = (QStringList() << "bash -c \"find " << path << " -iname '*.vst3' | wc -l\"").join("");
     process.start(cmd);
     process.waitForFinished();
     retStr = process.readAllStandardOutput();
-    numVst3 = retStr.toUInt();
+    numVst3 = retStr.toInt();
 }
 
 void DialogScan::slotResizeTableToContent()

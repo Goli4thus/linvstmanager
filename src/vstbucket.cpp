@@ -4,7 +4,8 @@
 
 VstBucket::VstBucket(QString t_name,
                      QString t_vstPath,
-                     QByteArray t_hash,
+                     QByteArray t_pathHash,
+                     QByteArray t_soFileHash,
                      VstStatus t_status,
                      VstBridge t_bridge,
                      VstType t_type,
@@ -12,7 +13,8 @@ VstBucket::VstBucket(QString t_name,
 {
     name = std::move(t_name);
     vstPath = std::move(t_vstPath);
-    hash = std::move(t_hash);
+    pathHash = std::move(t_pathHash);
+    soFileHash = std::move(t_soFileHash);
     status = t_status;
     bridge = t_bridge;
     vstType = t_type;

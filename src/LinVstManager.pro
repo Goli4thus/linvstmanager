@@ -28,6 +28,7 @@ SOURCES += \
         confighandler.cpp \
         customprogressdialog.cpp \
         customsortfilterproxymodel.cpp \
+        datahasher.cpp \
         dialogpreferences.cpp \
         dialogscan.cpp \
         horizontalline.cpp \
@@ -39,7 +40,6 @@ SOURCES += \
         mainwindow.cpp \
         modelscan.cpp \
         modelvstbuckets.cpp \
-        pathhasher.cpp \
         preferences.cpp \
         runguard.cpp \
         scanhandler.cpp \
@@ -51,6 +51,7 @@ HEADERS += \
         confighandler.h \
         customprogressdialog.h \
         customsortfilterproxymodel.h \
+        datahasher.h \
         defines.h \
         dialogpreferences.h \
         dialogscan.h \
@@ -63,7 +64,6 @@ HEADERS += \
         mainwindow.h \
         modelscan.h \
         modelvstbuckets.h \
-        pathhasher.h \
         preferences.h \
         runguard.h \
         scanhandler.h \
