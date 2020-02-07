@@ -112,7 +112,24 @@ configure_file(
 
 
 install(TARGETS ${TARGET_NAME} RUNTIME DESTINATION bin)
-install(FILES src/resources/${TARGET_NAME}.png DESTINATION share/icons/hicolor/48x48/apps)
+install(FILES src/resources/${TARGET_NAME}.svg DESTINATION share/icons/hicolor/scalable/apps)
+install(FILES src/resources/${TARGET_NAME}_14.png DESTINATION share/icons/hicolor/14x14/apps)
+install(FILES src/resources/${TARGET_NAME}_16.png DESTINATION share/icons/hicolor/16x16/apps)
+install(FILES src/resources/${TARGET_NAME}_22.png DESTINATION share/icons/hicolor/22x22/apps)
+install(FILES src/resources/${TARGET_NAME}_24.png DESTINATION share/icons/hicolor/24x24/apps)
+install(FILES src/resources/${TARGET_NAME}_32.png DESTINATION share/icons/hicolor/32x32/apps)
+install(FILES src/resources/${TARGET_NAME}_36.png DESTINATION share/icons/hicolor/36x36/apps)
+install(FILES src/resources/${TARGET_NAME}_48.png DESTINATION share/icons/hicolor/48x48/apps)
+install(FILES src/resources/${TARGET_NAME}_64.png DESTINATION share/icons/hicolor/64x64/apps)
+install(FILES src/resources/${TARGET_NAME}_72.png DESTINATION share/icons/hicolor/72x72/apps)
+install(FILES src/resources/${TARGET_NAME}_96.png DESTINATION share/icons/hicolor/96x96/apps)
+install(FILES src/resources/${TARGET_NAME}_128.png DESTINATION share/icons/hicolor/128x128/apps)
+install(FILES src/resources/${TARGET_NAME}_160.png DESTINATION share/icons/hicolor/160x160/apps)
+install(FILES src/resources/${TARGET_NAME}_192.png DESTINATION share/icons/hicolor/192x192/apps)
+install(FILES src/resources/${TARGET_NAME}_256.png DESTINATION share/icons/hicolor/256x256/apps)
+install(FILES src/resources/${TARGET_NAME}_384.png DESTINATION share/icons/hicolor/384x384/apps)
+install(FILES src/resources/${TARGET_NAME}_512.png DESTINATION share/icons/hicolor/512x512/apps)
+install(FILES src/resources/${TARGET_NAME}_1024.png DESTINATION share/icons/hicolor/1024x1024/apps)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
         DESTINATION share/applications)

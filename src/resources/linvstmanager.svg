@@ -10,16 +10,16 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="44.567989mm"
-   height="44.567997mm"
-   viewBox="0 0 44.567989 44.567997"
+   width="34.567989mm"
+   height="34.567997mm"
+   viewBox="0 0 34.567989 34.567997"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 5da689c313, 2019-01-14"
    sodipodi:docname="linvstmanager.svg"
-   inkscape:export-filename="/home/goli/ws/inkscape/Icons/icon_LinVstManager/LinVstManager_V3.png"
-   inkscape:export-xdpi="33.619999"
-   inkscape:export-ydpi="33.619999">
+   inkscape:export-filename="./linvstmanager_256.png"
+   inkscape:export-xdpi="193.71001"
+   inkscape:export-ydpi="193.71001">
   <defs
      id="defs2">
     <linearGradient
@@ -106,29 +106,29 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284272"
-     inkscape:cx="1.4040903"
-     inkscape:cy="52.114157"
+     inkscape:zoom="2.56"
+     inkscape:cx="103.62522"
+     inkscape:cy="59.286688"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="2560"
-     inkscape:window-height="1387"
-     inkscape:window-x="0"
+     inkscape:window-width="1276"
+     inkscape:window-height="1385"
+     inkscape:window-x="1280"
      inkscape:window-y="28"
-     inkscape:window-maximized="1"
+     inkscape:window-maximized="0"
      inkscape:pagecheckerboard="true"
-     fit-margin-top="6"
-     fit-margin-left="6"
-     fit-margin-bottom="5"
-     fit-margin-right="5"
+     fit-margin-top="0.5"
+     fit-margin-left="0.5"
+     fit-margin-bottom="0.5"
+     fit-margin-right="0.5"
      showguides="false">
     <inkscape:grid
        type="xygrid"
        id="grid4602"
        dotted="false"
-       originx="-401.92963"
-       originy="-119.28542" />
+       originx="-407.42956"
+       originy="-123.78545" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -138,7 +138,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -146,7 +146,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-340.97249,-112.82048)">
+     transform="translate(-346.47249,-118.32048)">
     <g
        id="g2705"
        style="fill:#333333;fill-opacity:1;stroke:none;stroke-opacity:1"
