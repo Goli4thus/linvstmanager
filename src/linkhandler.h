@@ -16,7 +16,6 @@ class LinkHandler : public QObject
     Q_OBJECT
 public:
     explicit LinkHandler(const Preferences &t_prf, QVector<VstBucket>*pVstBuckets, DataHasher &pDataHasher, QObject *parent = nullptr);
-    ~LinkHandler();
     RvLinkHandler refreshStatus(bool refreshSingle = false, int singleIndex = 0, bool updateSoFileHash = false);
     RvLinkHandler updateVsts();
     RvLinkHandler enableVst(const QVector<int> &indexOfVstBuckets);

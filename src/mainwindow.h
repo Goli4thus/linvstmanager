@@ -99,7 +99,7 @@ private slots:
     void slotDialogAbout();
     void slotDialogAboutQt();
     void slotSave();
-    void slotConfigDataChanged(bool needsRefresh = false, QVector<VstBridge> changedBridges = {});
+    void slotConfigDataChanged(bool needsRefresh = false, const QVector<VstBridge> &changedBridges = {});
     void slotPostSetupInfo();
     void slotOrphanDetection();
     void slotFeedbackLogOutput(const QString &msg, bool isVerboseInfo);

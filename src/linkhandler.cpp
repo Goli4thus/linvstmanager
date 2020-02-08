@@ -17,10 +17,6 @@ LinkHandler::LinkHandler(const Preferences &t_prf, QVector<VstBucket> *pVstBucke
     mVstBuckets = pVstBuckets;
 }
 
-LinkHandler::~LinkHandler()
-{
-}
-
 RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bool updateSoFileHash)
 {
     QFileInfo fileInfoVst;
@@ -58,7 +54,7 @@ RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bo
                     continue;
                 } else {
                     if (fileInfoSo.exists()) {
-                        fileInfoLink.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
+                        fileInfoLink.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + vstBucket.linkSalt + ".so");
 
                         // Calculate soFileHash, if actually needed (i.e. after startup)
                         if (updateSoFileHash) {
@@ -162,7 +158,7 @@ RvLinkHandler LinkHandler::enableVst(const QVector<int> &indexOfVstBuckets)
                 filePathSoSrc = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
             }
 
-            filePathLinkDest = prf.getPathLinkFolder() + "/" + vstBucket.name + ".so";
+            filePathLinkDest = prf.getPathLinkFolder() + "/" + vstBucket.name + vstBucket.linkSalt + ".so";
 
             if (!QFile::link(filePathSoSrc, filePathLinkDest)) {
                 qDebug() << "(LH): enableVst(): making link failed (errno: " << strerror(errno) << ") (index: " << index << ")";
@@ -185,7 +181,7 @@ RvLinkHandler LinkHandler::disableVst(const QVector<int> &indexOfVstBuckets)
     for(const auto &index : indexOfVstBuckets) {
         auto &vstBucket = (*mVstBuckets)[index];
         if (vstBucket.status == VstStatus::Enabled) {
-            filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
+            filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + vstBucket.linkSalt + ".so");
 
             if (!filePathLinkDest.isSymLink()) {
                 qDebug() << "(LH): disableVst(): not a symlink";
@@ -220,7 +216,7 @@ RvLinkHandler LinkHandler::blacklistVst(const QVector<int> &indexOfVstBuckets)
                 filePathSoSrc = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
             }
 
-            filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
+            filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + vstBucket.linkSalt + ".so");
 
             if (filePathLinkDest.exists()) {
                 if (!filePathLinkDest.isSymLink()) {
