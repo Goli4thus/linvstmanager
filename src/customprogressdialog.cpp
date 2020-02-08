@@ -77,6 +77,11 @@ void CustomProgressDialog::closeEvent(QCloseEvent *e)
 
 void CustomProgressDialog::init(int pScanAmount)
 {
+    if (pScanAmount == 0) {
+        // Avoid later divion by zero (just for
+        // robustness; should actually come to this)
+        pScanAmount = 1;
+    }
     mScanAmount = pScanAmount;
     mFoundSoFar = 0;
     mLabelCounterVst2->setText("0");

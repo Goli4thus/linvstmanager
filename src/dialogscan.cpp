@@ -368,11 +368,19 @@ void DialogScan::slotSelectScanFolder()
 
 void DialogScan::slotScan()
 {
-    mModelScan->triggerScan(mLineEditScanFolder->text(), prf->getPathCheckTool(), mCheckBoxCheckTool->isChecked());
+    if ((mNumDll + mNumVst3) == 0) {
+        QMessageBox::information(this,
+                                 "Info",
+                                 "The selected scan folder contains no 'dll' or 'vst3' files.\n"
+                                 "Therefore no scan will be performed.\n\n"
+                                 "Try to select a different scan folder instead.");
+    } else {
+        mModelScan->triggerScan(mLineEditScanFolder->text(), prf->getPathCheckTool(), mCheckBoxCheckTool->isChecked());
 
-    // Start progressbar dialog based on actual scan volume
-    mProgressDialog->init(mNumDll + mNumVst3);
-    mProgressDialog->exec();
+        // Start progressbar dialog based on actual scan volume
+        mProgressDialog->init(mNumDll + mNumVst3);
+        mProgressDialog->exec();
+    }
 }
 
 void DialogScan::slotScanFinished(bool newFindings)
@@ -459,14 +467,17 @@ void DialogScan::reject()
 void DialogScan::getScanAmount(const QString &path, int &numDll, int &numVst3)
 {
     QProcess process;
+    QString pathSanitized = path;
 
-    QString cmd = (QStringList() << "bash -c \"find " << path << " -iname '*.dll' | wc -l\"").join("");
+    pathSanitized.replace(QString(" "), QString("\\ "));
+
+    QString cmd = (QStringList() << "bash -c \"find " << pathSanitized << " -iname '*.dll' -type f | wc -l\"").join("");
     process.start(cmd);
     process.waitForFinished();
     QString retStr(process.readAllStandardOutput());
     numDll = retStr.toInt();
 
-    cmd = (QStringList() << "bash -c \"find " << path << " -iname '*.vst3' | wc -l\"").join("");
+    cmd = (QStringList() << "bash -c \"find " << pathSanitized << " -iname '*.vst3' -type f | wc -l\"").join("");
     process.start(cmd);
     process.waitForFinished();
     retStr = process.readAllStandardOutput();

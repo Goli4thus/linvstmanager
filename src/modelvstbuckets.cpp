@@ -540,7 +540,7 @@ void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
     }
     endInsertRows();
 
-    emit(signalConfigDataChanged());
+    emit(signalConfigDataChanged(true));
 }
 
 QVector<int> ModelVstBuckets::changeBridges(const QVector<int> &indexOfVstBuckets, VstBridge reqBridgeType)
