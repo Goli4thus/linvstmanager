@@ -341,7 +341,6 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
         QString suffix = QFileInfo(filepath).suffix();
         QByteArray filepath_Hash = dataHasher.calcFilepathHash(filepath);
         QByteArray soFile_Hash = dataHasher.calcFilepathHash(filepath);
-        QString linkSalt = dataHasher.calcLinkSalt(filepath_Hash);
 
         // Check if VST dll is already part of model and skip if so
         bool newVstFound = true;
@@ -398,7 +397,6 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
                                          filepath,
                                          filepath_Hash,
                                          soFile_Hash,
-                                         linkSalt,
                                          VstStatus::NA,
                                          bridgeType,
                                          vstType,
@@ -535,7 +533,6 @@ void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
                                      i.vstPath,
                                      i.pathHash,
                                      i.soFileHash, // empty for now (no_so yet)
-                                     dataHasher.calcLinkSalt(i.pathHash),
                                      VstStatus::NA,
                                      bridgeType,
                                      i.vstType,
@@ -614,7 +611,6 @@ void ModelVstBuckets::slotUpdateHashes()
 {
     for (auto &vstBucket : mVstBuckets) {
         vstBucket.pathHash = dataHasher.calcFilepathHash(vstBucket.vstPath);
-        vstBucket.linkSalt = dataHasher.calcLinkSalt(vstBucket.pathHash);
     }
 }
 

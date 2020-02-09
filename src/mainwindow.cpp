@@ -399,7 +399,7 @@ void MainWindow::slotSave()
     }
 }
 
-void MainWindow::slotConfigDataChanged(bool needsRefresh, const QVector<VstBridge> &changedBridges)
+void MainWindow::slotConfigDataChanged(bool needsRefresh, QVector<VstBridge> changedBridges)
 {
     this->setWindowTitle("* LinVstManager");
     configNeedsSaving = true;
