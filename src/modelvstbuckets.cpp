@@ -411,7 +411,10 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
         }
     }
     //    qDebug() << "filepath_Hash: " << filepath_Hash;
-    emit(signalConfigDataChanged(true));
+
+    // Update soFileHash during refreshStatus
+    lh->refreshStatus(false, 0, true);
+    emit(signalConfigDataChanged());
 }
 
 void ModelVstBuckets::removeVstBucket(QVector<int>indexOfVstBuckets)
@@ -540,7 +543,9 @@ void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
     }
     endInsertRows();
 
-    emit(signalConfigDataChanged(true));
+    // Update soFileHash during refreshStatus
+    lh->refreshStatus(false, 0, true);
+    emit(signalConfigDataChanged());
 }
 
 QVector<int> ModelVstBuckets::changeBridges(const QVector<int> &indexOfVstBuckets, VstBridge reqBridgeType)

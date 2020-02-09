@@ -155,7 +155,7 @@ void ScanHandler::slotPerformScan()
                 verified = true;
                 emit (signalFoundVst3());
             }
-            // TODO: fix baseName problem here as well
+
             QString fileName = QFileInfo(finding).fileName();
             QString suffix = QFileInfo(finding).suffix();
             // subtrace suffix including period fro filename

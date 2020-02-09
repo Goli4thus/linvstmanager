@@ -403,14 +403,12 @@ void MainWindow::slotConfigDataChanged(bool needsRefresh, const QVector<VstBridg
 {
     this->setWindowTitle("* LinVstManager");
     configNeedsSaving = true;
-    // TODO: Does this refresh make sense in all cases?
-    if (needsRefresh) {
-        mModelVstBuckets->refreshStatus();
-    }
     if (!changedBridges.isEmpty()) {
         updateSoTmplHashes(changedBridges);
-        /* A refresh is needed here due to possible
+        /* A refresh is needed after this due to possible
          * bridge version mismatch after bridge change. */
+    }
+    if (needsRefresh) {
         mModelVstBuckets->refreshStatus();
     }
 }
@@ -533,7 +531,6 @@ void MainWindow::slotEnableVst()
         QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
         QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
         enableViewUpdate(false);
-        // TODO: Consider moving this to a dedicated thread if it really takes that long for big amounts of VSTs
         mModelVstBuckets->enableVstBucket(indexOfVstBuckets);
         enableViewUpdate(true);
     }
