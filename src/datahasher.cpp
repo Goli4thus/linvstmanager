@@ -40,24 +40,7 @@ QByteArray DataHasher::calcFiledataHash(const QString &filepath)
     return mHasher->result();
 }
 
-QString DataHasher::calcLinkSalt(const QByteArray &filePathHash)
-{
-    /* linkSalt:
-     * A suffix that is applied to a soLink to make it unique even
-     * if the original VST name isn't.
-     *
-     * Example:
-     *   - name: EQ.dll
-     *   - link: EQ_xxxxxxxx.so
-     *           (where x* is derived from its filePathHash;
-     *            more specific: the first 8 digits of the filePathHash's
-     *            hex represenation)
-     */
-    QString linkSalt = QString::fromStdString(filePathHash.toHex().toStdString());
-    return "_" + linkSalt.left(8); // 8 digits
-}
-
-void DataHasher::updateHashSoTmplBridge(const VstBridge bridgeType, const QString &bridgeTmplPath)
+void DataHasher::updateHashSoTmplBridge(const VstBridge bridgeType, const QString bridgeTmplPath)
 {
     mMapSoTmplHash.remove(bridgeType);
     mMapSoTmplHash.insert(bridgeType, calcFiledataHash(bridgeTmplPath));

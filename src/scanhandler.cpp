@@ -158,7 +158,7 @@ void ScanHandler::slotPerformScan()
 
             QString fileName = QFileInfo(finding).fileName();
             QString suffix = QFileInfo(finding).suffix();
-            // subtrace suffix including period fro filename
+            // subtract suffix including period from filename
             scanResults.append(ScanResult(fileName.chopped(suffix.size() + 1),
                                           finding,
                                           vstType,

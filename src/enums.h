@@ -11,8 +11,9 @@ enum VstStatus {
     Disabled,    // VST is disabled due to missing softlink
     Mismatch,    // Mismatch between linvst.so and *.so file associated with VST-dll
     No_So,       // VST-dll has no associated VST-so file
-    NotFound,    // VST-dll can't be found using the specified config path
     NoBridge,    // No suitable bridge has been enabled in preferences.
+    Conflict,    // VST with the same name already exists
+    NotFound,    // VST-dll can't be found using the specified config path
     Orphan,      // The so-file seems orphaned as it doesn't refer to an existing VST-dll
     NA,          // Initial state
     Blacklisted  // VST is blacklisted from being handled

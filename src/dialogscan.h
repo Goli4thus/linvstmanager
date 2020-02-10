@@ -14,7 +14,6 @@ class QHBoxLayout;
 class QLabel;
 class QLineEdit;
 class QSpacerItem;
-class QDialogButtonBox;
 class QTableView;
 class QComboBox;
 class QSortFilterProxyModel;

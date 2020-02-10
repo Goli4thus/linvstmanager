@@ -16,9 +16,7 @@ public:
     ~DataHasher();
     QByteArray calcFilepathHash(const QString &filepath);
     QByteArray calcFiledataHash(const QString &filepath);
-    QString calcLinkSalt(const QByteArray &filePathHash);
-
-    void updateHashSoTmplBridge(const VstBridge bridgeType, const QString &bridgeTmplPath);
+    void updateHashSoTmplBridge(const VstBridge bridgeType, const QString bridgeTmplPath);
     QByteArray getHashSoTmplBridge(const VstBridge bridgeType) const;
 
 private:

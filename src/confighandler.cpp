@@ -204,7 +204,6 @@ quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
                                 vstPath,
                                 hash, // being re-calculated later
                                 hash, // being re-calculated later
-                                "",
                                 status,
                                 bridge,
                                 vstType,
