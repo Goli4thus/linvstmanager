@@ -9,6 +9,7 @@
 #include "scanhandler.h"
 #include <QByteArray>
 #include <QMetaType>
+#include "colors.h"
 
 ModelScan::ModelScan(const QVector<VstBucket> *pVstBuckets, QObject *parent) : mVstBuckets(pVstBuckets)
 {
@@ -80,9 +81,9 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                 if (index.column() == nsDS::TableColumnPosType::Status) {
                     QColor color;
                     if (mScanResults.at(index.row()).selected) {
-                        color.setRgb(255, 216, 59);  // Blue
+                        color = Colors::getColorYellow();
                     } else {
-                        color.setRgb(220, 220, 220);  // light grey
+                        color = Colors::getColorLightGrey();
                     }
                     return color;
                 }

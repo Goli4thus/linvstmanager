@@ -48,6 +48,7 @@ SOURCES += \
         vstbucket.cpp
 
 HEADERS += \
+        colors.h \
         confighandler.h \
         customprogressdialog.h \
         customsortfilterproxymodel.h \

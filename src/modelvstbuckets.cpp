@@ -11,6 +11,7 @@
 #include "enums.h"
 #include "linkhandler.h"
 #include "scanresult.h"
+#include "colors.h"
 
 ModelVstBuckets::ModelVstBuckets(QObject *parent, QVector<VstBucket> &pVstBuckets, Preferences *pPrf, DataHasher &pDataHasher)
     : dataHasher(pDataHasher)
@@ -26,7 +27,7 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QVector<VstBucket> &pVstBucket
     }
 
     lh = new LinkHandler(*prf, &mVstBuckets, dataHasher);
-    lh->refreshStatus(false, 0, true);
+    lh->refreshStatus(false, 0, true, true);
 }
 
 ModelVstBuckets::~ModelVstBuckets()
@@ -65,31 +66,34 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                     }
                     case nsMW::TableColumnPosType::Status: {
                         switch (mVstBuckets.at(index.row()).status) {
-                            case Enabled: {
+                            case VstStatus::Enabled: {
                                 return QString("Enabled");
                             }
-                            case Disabled: {
+                            case VstStatus::Disabled: {
                                 return QString("Disabled");
                             }
-                            case Mismatch: {
+                            case VstStatus::Mismatch: {
                                 return QString("Mismatch");
                             }
-                            case No_So: {
+                            case VstStatus::No_So: {
                                 return QString("No_So");
                             }
-                            case NotFound: {
+                            case VstStatus::Conflict: {
+                                return QString("Conflict");
+                            }
+                            case VstStatus::NotFound: {
                                 return QString("NotFound");
                             }
-                            case Orphan: {
+                            case VstStatus::Orphan: {
                                 return QString("Orphan");
                             }
-                            case NoBridge: {
+                            case VstStatus::NoBridge: {
                                 return QString("NoBridge");
                             }
-                            case NA: {
+                            case VstStatus::NA: {
                                 return QString("NA");
                             }
-                            case Blacklisted: {
+                            case VstStatus::Blacklisted: {
                                 return QString("Blacklisted");
                             }
                         }
@@ -224,28 +228,31 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                     QColor color;
                     switch (mVstBuckets.at(index.row()).status) {
                     case VstStatus::Enabled:
-                        color.setRgb(87, 196, 25); // Green
+                        color = Colors::getColorGreen();
                         break;
                     case VstStatus::Disabled:
-                        color.setRgb(255, 212, 41); // Yellow
+                        color = Colors::getColorYellow();
                         break;
                     case VstStatus::Mismatch:
-                        color.setRgb(226, 85, 37);  // Red
+                        color = Colors::getColorRed();
                         break;
                     case VstStatus::No_So:
-                        color.setRgb(91, 160, 255);  // Blue
+                        color = Colors::getColorBlue();
+                        break;
+                    case VstStatus::Conflict:
+                        color = Colors::getColorRed();
                         break;
                     case VstStatus::NotFound:
-                        color.setRgb(182, 0, 231);  // Violette
+                        color = Colors::getColorViolette();
                         break;
                     case VstStatus::NoBridge:
-                        color.setRgb(226, 85, 37);  // Red
+                        color = Colors::getColorRed();
                         break;
                     case VstStatus::NA:
-                        color.setRgb(220, 220, 220);  // light grey
+                        color = Colors::getColorLightGrey();
                         break;
                     case VstStatus::Blacklisted:
-                        color.setRgb(51, 51, 51);  // Black
+                        color = Colors::getColorBlack();
                         break;
                     default:
                         break;
@@ -313,8 +320,9 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
                                "Disabled,    // VST is disabled due to missing softlink\n"
                                "Mismatch,    // Mismatch between linvst.so and *.so file associated with VST-dll\n"
                                "No_So,       // VST-dll has no associated VST-so file\n"
-                               "NotFound,    // VST-dll can't be found using the specified config path\n"
                                "NoBridge,    // No suitable bridge has been enabled in preferences.\n"
+                               "Conflict,    // VST with the same name already exists\n"
+                               "NotFound,    // VST-dll can't be found using the specified config path\n"
                                "Orphan,      // The so-file seems orphaned as it doesn't refer to an existing VST-dll\n"
                                "NA,          // Initial state\n"
                                "Blacklisted  // VST is blacklisted from being handled");
@@ -330,6 +338,13 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
 
 void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
 {
+    QString fileName;
+    QString suffix;
+    QByteArray filepath_Hash;
+    QByteArray soFile_Hash;
+    VstStatus initStatus;
+    QString vstName;
+
     // Clear 'newlyAdded' flags
     for (auto vstBucket : mVstBuckets) {
         vstBucket.newlyAdded = false;
@@ -337,26 +352,25 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
 
     // Start processing selection
     for (const auto &filepath : filepaths_VstDll) {
-        QString fileName = QFileInfo(filepath).fileName();
-        QString suffix = QFileInfo(filepath).suffix();
-        QByteArray filepath_Hash = dataHasher.calcFilepathHash(filepath);
-        QByteArray soFile_Hash = dataHasher.calcFilepathHash(filepath);
+        fileName = QFileInfo(filepath).fileName();
+        suffix = QFileInfo(filepath).suffix();
+        vstName = fileName.chopped(suffix.size() + 1);
+        filepath_Hash = dataHasher.calcFilepathHash(filepath);
+        soFile_Hash = dataHasher.calcFilepathHash(filepath);
+        initStatus = VstStatus::NA;
 
-        // Check if VST dll is already part of model and skip if so
         bool newVstFound = true;
-        for (const auto & vstBucket : mVstBuckets) {
+        for (const auto &vstBucket : mVstBuckets) {
+            // Check if VST is already part of model. Skip if so.
             if (vstBucket.pathHash.compare(filepath_Hash) == 0) {
-               newVstFound = false;
-               break;
+                newVstFound = false;
+                break;
             }
-            /* Q: Would skipping based on filename alone instead of full path be more robust?
-             * -->> Depends...
-             *    - If we assume that the same VST is installed in different folders,
-             *      then the hash would be different and both would be added as of now.
-             *    - Using a 'filename only' approach would fix this, but if two vendors create
-             *      a VST with the same name (i.e. EQ.dll), then only one would be added.
-             *      Whereas with a 'full path' approach both would.
-             */
+
+            // Check if name of VST already exists. Mark as "Conflict" if so.
+            if (vstBucket.name.compare(vstName) == 0) {
+                initStatus = VstStatus::Conflict;
+            }
         }
 
         if (newVstFound) {
@@ -393,11 +407,11 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
 
             beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount());
             // subtrace suffix including period fro filename
-            mVstBuckets.append(VstBucket(fileName.chopped(suffix.size() + 1),
+            mVstBuckets.append(VstBucket(vstName,
                                          filepath,
                                          filepath_Hash,
                                          soFile_Hash,
-                                         VstStatus::NA,
+                                         initStatus,
                                          bridgeType,
                                          vstType,
                                          true));
@@ -478,7 +492,7 @@ void ModelVstBuckets::unblacklistVstBucket(const QVector<int> &indexOfVstBuckets
     for(const auto &index : indexOfVstBuckets) {
         mVstBuckets[index].status = VstStatus::NA;
 
-        if (lh->refreshStatus(true, index) == RvLinkHandler::LH_OK) {
+        if (lh->refreshStatus(true, index, false, true) == RvLinkHandler::LH_OK) {
             emit(signalConfigDataChanged());
         } else {
             QString msg("(MVB): unblacklistVstBucket: not LH_OK for index: " + QString::number(index));
@@ -507,6 +521,7 @@ void ModelVstBuckets::refreshStatus()
 void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
 {
     VstBridge bridgeType;
+    VstStatus initStatus;
 
     // Clear 'newlyAdded' flags
     for (auto &vstBucket : mVstBuckets) {
@@ -529,11 +544,19 @@ void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
             }
         }
 
+        initStatus = VstStatus::NA;
+        for (const auto &vstBucket : mVstBuckets) {
+            // Check if name of VST already exists. Mark as "Conflict" if so.
+            if (vstBucket.name.compare(i.name) == 0) {
+                initStatus = VstStatus::Conflict;
+            }
+        }
+
         mVstBuckets.append(VstBucket(i.name,
                                      i.vstPath,
                                      i.pathHash,
                                      i.soFileHash, // empty for now (no_so yet)
-                                     VstStatus::NA,
+                                     initStatus,
                                      bridgeType,
                                      i.vstType,
                                      true));

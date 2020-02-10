@@ -21,7 +21,7 @@ LinkHandler::~LinkHandler()
 {
 }
 
-RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bool updateSoFileHash)
+RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bool updateSoFileHash, bool checkExistingForConflict)
 {
     QFileInfo fileInfoVst;
     QFileInfo fileInfoSo;
@@ -37,50 +37,58 @@ RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bo
         }
     }
 
+    if (checkExistingForConflict) {
+        updateConflicts();
+    }
+
     for(const auto &index : indexOfVstBuckets) {
         auto &vstBucket = (*mVstBuckets)[index];
         if (vstBucket.status == VstStatus::Blacklisted) {
             continue;
         } else {
             fileInfoVst.setFile(vstBucket.vstPath);
-
             if (fileInfoVst.exists()) {
-                QString filePathSo;
-                if (vstBucket.vstType == VstType::VST2) {
-                    filePathSo = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
-                } else { // VST3
-                    filePathSo = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
-                }
-                fileInfoSo.setFile(filePathSo);
-
-                if (!prf.bridgeEnabled(vstBucket.bridge)) {
-                    vstBucket.status = VstStatus::NoBridge;
+                if (vstBucket.status == VstStatus::Conflict) {
+                    // No need to continue if VST has a conflicting name currently.
                     continue;
                 } else {
-                    if (fileInfoSo.exists()) {
-                        fileInfoLink.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
+                    QString filePathSo;
+                    if (vstBucket.vstType == VstType::VST2) {
+                        filePathSo = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
+                    } else { // VST3
+                        filePathSo = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
+                    }
+                    fileInfoSo.setFile(filePathSo);
 
-                        // Calculate soFileHash, if actually needed (i.e. after startup)
-                        if (updateSoFileHash) {
-                            vstBucket.soFileHash = dataHasher.calcFiledataHash(filePathSo);
-                        }
+                    if (!prf.bridgeEnabled(vstBucket.bridge)) {
+                        vstBucket.status = VstStatus::NoBridge;
+                        continue;
+                    } else {
+                        if (fileInfoSo.exists()) {
+                            fileInfoLink.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
 
-                        filePathSoTmpl = prf.getPathSoTmplBridge(vstBucket.bridge);
+                            // Calculate soFileHash, if actually needed (i.e. after startup)
+                            if (updateSoFileHash) {
+                                vstBucket.soFileHash = dataHasher.calcFiledataHash(filePathSo);
+                            }
 
-                        if (checkSoHashMatch(vstBucket.soFileHash, vstBucket.bridge)) {
-                            // Qt docs re QFileInfo::exists():
-                            // "Note: If the file is a symlink that points to a non-existing file, false is returned."
-                            // -->> No problem in this case, as we already made sure the source so-file exists.
-                            if (fileInfoLink.exists()) {
-                                vstBucket.status = VstStatus::Enabled;
+                            filePathSoTmpl = prf.getPathSoTmplBridge(vstBucket.bridge);
+
+                            if (checkSoHashMatch(vstBucket.soFileHash, vstBucket.bridge)) {
+                                // Qt docs re QFileInfo::exists():
+                                // "Note: If the file is a symlink that points to a non-existing file, false is returned."
+                                // -->> No problem in this case, as we already made sure the source so-file exists.
+                                if (fileInfoLink.exists()) {
+                                    vstBucket.status = VstStatus::Enabled;
+                                } else {
+                                    vstBucket.status = VstStatus::Disabled;
+                                }
                             } else {
-                                vstBucket.status = VstStatus::Disabled;
+                                vstBucket.status = VstStatus::Mismatch;
                             }
                         } else {
-                            vstBucket.status = VstStatus::Mismatch;
+                            vstBucket.status = VstStatus::No_So;
                         }
-                    } else {
-                        vstBucket.status = VstStatus::No_So;
                     }
                 }
             } else {
@@ -375,5 +383,35 @@ bool LinkHandler::checkSoHashMatch(const QByteArray &soFileHash, const VstBridge
 {
     // Compare hash values of soFile and soTmplFile
     return soFileHash.compare(dataHasher.getHashSoTmplBridge(vstBridge)) == 0;
+}
+
+void LinkHandler::updateConflicts()
+{
+    /* Basically:
+     * 1) Make a list of all unique names.
+     * 2) Iterate over all vstBuckets and:
+     *      - claim a name if it is available
+     *      - mark as conflict if name not available
+     */
+    QVector<QString> uniqueNames;
+    for (const auto &vstBucketOfAll : *mVstBuckets) {
+        if (!uniqueNames.contains(vstBucketOfAll.name)) {
+            uniqueNames.append(vstBucketOfAll.name);
+        }
+    }
+
+    for (auto &vstBucket : *mVstBuckets) {
+        if (vstBucket.status != VstStatus::Blacklisted) {
+            // Check if name of VST is still available.
+            int index = uniqueNames.indexOf(vstBucket.name);
+            if (index != -1) {
+                // Still available. Claim it.
+                uniqueNames.remove(index);
+            } else {
+                // Already taken. Mark as "Conflict".
+                vstBucket.status = VstStatus::Conflict;
+            }
+        }
+    }
 }
 
