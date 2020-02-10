@@ -21,6 +21,7 @@ public:
     RvLinkHandler updateVsts();
     RvLinkHandler enableVst(const QVector<int> &indexOfVstBuckets);
     RvLinkHandler disableVst(const QVector<int> &indexOfVstBuckets);
+    RvLinkHandler renameVst(const int &indexOfVstBucket, const QString &nameNew);
     RvLinkHandler blacklistVst(const QVector<int> &indexOfVstBuckets);
     RvLinkHandler changeBridge(int idx, VstBridge newBridgeType);
     QStringList checkForOrphans();

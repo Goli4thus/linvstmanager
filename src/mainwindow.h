@@ -28,6 +28,7 @@
 #include "legacyconfigparser.h"
 #include "datahasher.h"
 #include "enums.h"
+#include "dialogrename.h"
 
 
 class MainWindow : public QMainWindow
@@ -60,6 +61,7 @@ private:
     QMenu *mouseMenu;
     DialogPreferences *mDialogPreferences;
     DialogScan *mDialogScan;
+    DialogRename *mDialogRename;
     Preferences *prf;
     ConfigHandler *cfg;
     LegacyConfigParser *legacyConfigParser;
@@ -96,6 +98,8 @@ private slots:
     void slotFilterBarClose();
     void slotDialogPreferences();
     void slotDialogScan();
+    void slotRenameVst();
+    void slotRenameAccepted(int indexNameConflict, QString nameNew);
     void slotDialogAbout();
     void slotDialogAboutQt();
     void slotSave();

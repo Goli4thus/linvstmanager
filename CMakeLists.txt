@@ -66,6 +66,7 @@ set(SOURCES
     src/customprogressdialog.cpp
     src/customsortfilterproxymodel.cpp
     src/dialogpreferences.cpp
+    src/dialogrename.cpp
     src/dialogscan.cpp
     src/horizontalline.cpp
     src/legacyconfigparser.cpp

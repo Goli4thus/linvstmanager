@@ -212,6 +212,26 @@ RvLinkHandler LinkHandler::disableVst(const QVector<int> &indexOfVstBuckets)
     return retVal;
 }
 
+RvLinkHandler LinkHandler::renameVst(const int &indexOfVstBucket, const QString &nameNew)
+{
+    // If the VST was enabled beforehand:
+    // -->> disable; rename; enable
+    if (mVstBuckets->at(indexOfVstBucket).status == VstStatus::Enabled) {
+        QVector<int> indexList;
+        indexList.append(indexOfVstBucket);
+
+        disableVst(indexList);
+        (*mVstBuckets)[indexOfVstBucket].name = nameNew;
+        enableVst(indexList);
+    } else {
+        (*mVstBuckets)[indexOfVstBucket].name = nameNew;
+    }
+
+    refreshStatus(true, indexOfVstBucket, false, true);
+
+    return RvLinkHandler::LH_OK;
+}
+
 RvLinkHandler LinkHandler::blacklistVst(const QVector<int> &indexOfVstBuckets)
 {
     RvLinkHandler retVal = RvLinkHandler::LH_OK;
@@ -407,6 +427,8 @@ void LinkHandler::updateConflicts()
             if (index != -1) {
                 // Still available. Claim it.
                 uniqueNames.remove(index);
+                // Reset status for later re-evaluation
+                vstBucket.status = VstStatus::NA;
             } else {
                 // Already taken. Mark as "Conflict".
                 vstBucket.status = VstStatus::Conflict;

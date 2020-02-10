@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mTableview->verticalHeader()->hide();
     mTableview->setSortingEnabled(true);
-    mSortFilter->sort(1, Qt::AscendingOrder);
+    mSortFilter->sort(2, Qt::AscendingOrder); // Initially sort by name
     mSortFilter->setDynamicSortFilter(true);
     mSortFilter->setFilterKeyColumn(-1); // -1: filter based on all columns
     mSortFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -132,12 +132,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupMenuBar();
     mDialogScan = new DialogScan(prf, mModelVstBuckets->getBufferVstBuckets());
+    mDialogRename = new DialogRename(*mModelVstBuckets->getBufferVstBuckets());
 
     connect(mModelVstBuckets, &ModelVstBuckets::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mModelVstBuckets, &ModelVstBuckets::signalFeedbackLogOutput, this, &MainWindow::slotFeedbackLogOutput);
     connect(mModelVstBuckets, &ModelVstBuckets::signalFeedbackUpdateDone, this, &MainWindow::slotFeedbackUpdateDone);
     connect(mDialogPreferences, &DialogPreferences::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
+    connect(mDialogRename, &DialogRename::signalRenameAccept, this, &MainWindow::slotRenameAccepted);
+    connect(mDialogRename, &DialogRename::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
 
     mLogOutput->appendLog("Setup done.");
 
@@ -181,6 +184,7 @@ void MainWindow::setupMenuBar()
     auto *actionUnblacklist = new QAction(tr("Un&blacklist"), this);
     auto *actionAddVst = new QAction(tr("&Add VST"), this);
     auto *actionRemoveVst = new QAction(tr("&Remove VST"), this);
+    auto *actionRenameVst = new QAction(tr("Re&name VST"), this);
     auto *actionScan = new QAction(tr("&Scan"), this);
 
     // subMenu: Change bridge
@@ -224,6 +228,7 @@ void MainWindow::setupMenuBar()
     actionUnblacklist->setShortcut(QKeySequence("Shift+B"));
     actionAddVst->setShortcut(QKeySequence("A"));
     actionRemoveVst->setShortcut(QKeySequence("Shift+R"));
+    actionRenameVst->setShortcut(QKeySequence("Alt+Shift+R"));
     actionResizeTableToContent->setShortcut(QKeySequence("Alt+R"));
     actionFilter->setShortcut(QKeySequence("Ctrl+F"));
     actionScan->setShortcut(QKeySequence("Alt+S"));
@@ -256,6 +261,8 @@ void MainWindow::setupMenuBar()
     menuEdit->addAction(actionAddVst);
     menuEdit->addAction(actionRemoveVst);
     menuEdit->addSeparator();
+    menuEdit->addAction(actionRenameVst);
+    menuEdit->addSeparator();
     menuEdit->addAction(actionScan);
 
     menuView->addAction(actionFilter);
@@ -276,6 +283,7 @@ void MainWindow::setupMenuBar()
     connect(actionResizeTableToContent, &QAction::triggered, this, &MainWindow::slotResizeTableToContent);
     connect(actionAddVst, &QAction::triggered, this, &MainWindow::slotAddVst);
     connect(actionRemoveVst, &QAction::triggered, this, &MainWindow::slotRemoveVst);
+    connect(actionRenameVst, &QAction::triggered, this, &MainWindow::slotRenameVst);
 
     connect(actionEnable, &QAction::triggered, this, &MainWindow::slotEnableVst);
     connect(actionDisable, &QAction::triggered, this, &MainWindow::slotDisableVst);
@@ -307,14 +315,18 @@ void MainWindow::setupMouseMenu(QMenu *subMenuChangeBridge)
     mouseMenu = new QMenu(mTableview);
     auto *mouseEnable = new QAction("Enable", this);
     auto *mouseDisable = new QAction("Disable", this);
+    auto *mouseRename = new QAction("Rename", this);
     mouseMenu->addAction(mouseEnable);
     mouseMenu->addAction(mouseDisable);
     mouseMenu->addSeparator();
     mouseMenu->addMenu(subMenuChangeBridge);
+    mouseMenu->addSeparator();
+    mouseMenu->addAction(mouseRename);
 
     connect(mTableview, &QTableView::customContextMenuRequested, this, &MainWindow::slotMouseRightClickOnVst);
     connect(mouseEnable, &QAction::triggered, this, &MainWindow::slotEnableVst);
     connect(mouseDisable, &QAction::triggered, this, &MainWindow::slotDisableVst);
+    connect(mouseRename, &QAction::triggered, this, &MainWindow::slotRenameVst);
 }
 
 void MainWindow::slotMouseRightClickOnVst(QPoint point)
@@ -348,6 +360,28 @@ void MainWindow::slotDialogPreferences()
 void MainWindow::slotDialogScan()
 {
     mDialogScan->exec();
+}
+
+void MainWindow::slotRenameVst()
+{
+    if (mTableview->selectionModel()->selectedRows().isEmpty()) {
+        // No selection has been made. Therefore ignore it.
+        return;
+    } else {
+        QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+
+        // Take the first entry and ignore the rest (rename is done one at a time)
+        mDialogRename->init(indexOfVstBuckets.first());
+        mDialogRename->exec();
+    }
+}
+
+void MainWindow::slotRenameAccepted(int indexNameConflict, QString nameNew)
+{
+    enableViewUpdate(false);
+    mModelVstBuckets->renameVstBucket(indexNameConflict, nameNew);
+    enableViewUpdate(true);
 }
 
 void MainWindow::slotDialogAbout()

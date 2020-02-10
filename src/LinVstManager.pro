@@ -30,6 +30,7 @@ SOURCES += \
         customsortfilterproxymodel.cpp \
         datahasher.cpp \
         dialogpreferences.cpp \
+        dialogrename.cpp \
         dialogscan.cpp \
         horizontalline.cpp \
         legacyconfigparser.cpp \
@@ -55,6 +56,7 @@ HEADERS += \
         datahasher.h \
         defines.h \
         dialogpreferences.h \
+        dialogrename.h \
         dialogscan.h \
         enums.h \
         horizontalline.h \

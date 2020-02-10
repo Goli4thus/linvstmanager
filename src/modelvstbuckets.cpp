@@ -454,6 +454,11 @@ void ModelVstBuckets::removeVstBucket(QVector<int>indexOfVstBuckets)
     emit(signalConfigDataChanged());
 }
 
+void ModelVstBuckets::renameVstBucket(const int &indexOfVstBucket, const QString &nameNew)
+{
+    lh->renameVst(indexOfVstBucket, nameNew);
+}
+
 void ModelVstBuckets::enableVstBucket(const QVector<int> &indexOfVstBuckets)
 {
     if (lh->enableVst(indexOfVstBuckets) == RvLinkHandler::LH_OK) {
