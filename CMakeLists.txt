@@ -82,6 +82,8 @@ set(SOURCES
     src/runguard.cpp
     src/scanhandler.cpp
     src/scanresult.cpp
+    src/sidebar.cpp
+    src/statisticline.cpp
     src/verticalline.cpp
     src/vstbucket.cpp
 )

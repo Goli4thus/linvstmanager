@@ -33,7 +33,6 @@ DialogRename::DialogRename(const QVector<VstBucket> &pVstBuckets)
     mLabelNew->setFixedWidth(90);
     mLineEditNameConflict->setReadOnly(true);
     mLineEditNameConflict->setMinimumWidth(130);
-    mLineEditNameConflict->setStyleSheet("color: red");
     mLineEditNameNew->setMinimumWidth(130);
 
     mLayoutHNameConflict->addWidget(mLabelConflict);
@@ -54,8 +53,9 @@ DialogRename::DialogRename(const QVector<VstBucket> &pVstBuckets)
     this->setLayout(mLayoutVMain);
 
 
-    connect(mButtonAccept, &QPushButton::pressed, this, &DialogRename::slotbuttonAccept);
+    connect(mButtonAccept, &QPushButton::pressed, this, &DialogRename::slotButtonAccept);
     connect(mButtonCancel, &QPushButton::pressed, this, &DialogRename::slotButtonCancel);
+    connect(mLineEditNameNew, &QLineEdit::textChanged, this, &DialogRename::slotTextChanged);
 }
 
 void DialogRename::init(int indexNameConflict)
@@ -65,24 +65,26 @@ void DialogRename::init(int indexNameConflict)
 
     // pre-fill lineEdits
     if (mVstBuckets.at(mIndexNameOld).status == VstStatus::Conflict) {
-        // VST can't be in conflict with themselves.
         mLineEditNameConflict->setText(nameOld);
         mLineEditNameConflict->setEnabled(true);
+        mLineEditNameNew->setStyleSheet("color: red");
     } else {
+        // VST can't be in conflict with itself. It's a simple rename.
         mLineEditNameConflict->setText("");
         mLineEditNameConflict->setEnabled(false);
     }
     mLineEditNameNew->setText(nameOld);
+    mLineEditNameNew->setFocus();
 }
 
 void DialogRename::keyPressEvent(QKeyEvent *event)
 {
     if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
-        slotbuttonAccept();
+        slotButtonAccept();
     QDialog::keyPressEvent(event);
 }
 
-void DialogRename::slotbuttonAccept()
+void DialogRename::slotButtonAccept()
 {
     bool alreadyExists = false;
     QString nameConflict;
@@ -97,7 +99,6 @@ void DialogRename::slotbuttonAccept()
     }
 
     if (alreadyExists) {
-        // TODO: add details on other VST (path + name)
         QMessageBox msgBox(this);
         msgBox.setIcon(QMessageBox::Information);
         msgBox.setWindowTitle("Name already taken");
@@ -123,3 +124,12 @@ void DialogRename::slotButtonCancel()
     this->close();
 }
 
+void DialogRename::slotTextChanged()
+{
+    // TODO: Color new name lineedit text red whenever it matches the current conflicting name
+    if (mLineEditNameNew->text() == mLineEditNameConflict->text()) {
+        mLineEditNameNew->setStyleSheet("color: red");
+    } else {
+        mLineEditNameNew->setStyleSheet("");
+    }
+}

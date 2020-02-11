@@ -29,6 +29,7 @@
 #include "datahasher.h"
 #include "enums.h"
 #include "dialogrename.h"
+#include "sidebar.h"
 
 
 class MainWindow : public QMainWindow
@@ -41,7 +42,8 @@ public:
 
 private:
     LogOutput *mLogOutput;
-    QSplitter *mSplitter;
+    QSplitter *mSplitterVert;
+    QSplitter *mSplitterHori;
     QTableView *mTableview;
     CustomSortFilterProxyModel *mSortFilter;
     QVBoxLayout *mLayoutTop;
@@ -72,6 +74,7 @@ private:
     QAction *actionHideBlacklisted;
     DataHasher *mDataHasher;
     void updateSoTmplHashes(const QVector<VstBridge> &changedBridges);
+    SideBar *mSideBar;
 
 private slots:
     void slotResizeMainUi();
@@ -95,6 +98,7 @@ private slots:
 
     void slotMouseRightClickOnVst(QPoint point);
     void slotFilterBar();
+    void slotFilterBarApplyFilter(VstStatus status);
     void slotFilterBarClose();
     void slotDialogPreferences();
     void slotDialogScan();
@@ -108,6 +112,7 @@ private slots:
     void slotOrphanDetection();
     void slotFeedbackLogOutput(const QString &msg, bool isVerboseInfo);
     void slotFeedbackUpdateDone();
+    void slotTableSelectionChanged();
 };
 
 #endif // MAINWINDOW_H

@@ -36,8 +36,9 @@ private:
     int mIndexNameOld;
 
 private slots:
-    void slotbuttonAccept();
+    void slotButtonAccept();
     void slotButtonCancel();
+    void slotTextChanged();
 
 signals:
     void signalRenameAccept(int index, QString nameNew);

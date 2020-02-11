@@ -49,6 +49,7 @@ LineEditBridge::LineEditBridge(QString t_name, QWidget *parent) : QWidget(parent
     mLayoutHBridge->addWidget(mLabelBridge);
     mLayoutHBridge->addWidget(mLineEditBridge);
     mLayoutHBridge->addWidget(mPushButtonBridge);
+    // Make spacing between elements tighter
     mLayoutHBridge->setSpacing(2);
     mLayoutHBridge->setMargin(0);
     this->adjustSize();
