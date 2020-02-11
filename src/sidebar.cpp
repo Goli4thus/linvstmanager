@@ -1,10 +1,13 @@
+// This file is part of LinVstManager.
+
 #include "sidebar.h"
 #include "statisticline.h"
 #include <QVBoxLayout>
 #include <QLabel>
 #include "colors.h"
 
-SideBar::SideBar(QWidget *parent) : QWidget(parent)
+SideBar::SideBar(const QVector<VstBucket> &pVstBuckets, QWidget *parent)
+    : QWidget(parent), mVstBuckets(pVstBuckets)
 {
     this->setParent(parent);
 
@@ -26,8 +29,6 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
     mLayoutVMain->addWidget(mStatsLineNoBridge);
     mLayoutVMain->addWidget(mStatsLineConflict);
     mLayoutVMain->addWidget(mStatsLineNotFound);
-    mLayoutVMain->addWidget(mStatsLineOrphan);
-    mLayoutVMain->addWidget(mStatsLineNA);
     mLayoutVMain->addWidget(mStatsLineBlacklisted);
     mLayoutVMain->addStretch();
     mLayoutVMain->addWidget(mLabelSelection);
@@ -44,9 +45,31 @@ SideBar::SideBar(QWidget *parent) : QWidget(parent)
     connect(mStatsLineBlacklisted, &StatisticLine::signalFilerRequest, this, &SideBar::signalFilerRequest);
 }
 
-void SideBar::slotUpdateCounts(const QVector<int> &count)
+void SideBar::slotUpdateCounts()
 {
-//    mLineEditCount->setText(QString::number(count));
+    /* Basic idea:
+     * There are 10 possible status.
+     * Iterate over all VstBuckets and sum up number of each one.
+     * (Enabled, Disabled,  Mismatch, No_So, NoBridge,
+     *  Conflict, NotFound, Orphan, NA, Blacklisted)
+     * Due to 'Orphan' and 'NA' being internal states, they aren't
+     * part of sidebar.
+     */
+    int stats[10] = {0};
+    for (const auto &vstBucket : mVstBuckets) {
+        // Use status enum as array index
+        stats[vstBucket.status]++;
+    }
+
+    // Update UI
+    mStatsLineEnabled->setCount(stats[VstStatus::Enabled]);
+    mStatsLineDisabled->setCount(stats[VstStatus::Disabled]);
+    mStatsLineMismatch->setCount(stats[VstStatus::Mismatch]);
+    mStatsLineNo_So->setCount(stats[VstStatus::No_So]);
+    mStatsLineNoBridge->setCount(stats[VstStatus::NoBridge]);
+    mStatsLineConflict->setCount(stats[VstStatus::Conflict]);
+    mStatsLineNotFound->setCount(stats[VstStatus::NotFound]);
+    mStatsLineBlacklisted->setCount(stats[VstStatus::Blacklisted]);
 }
 
 void SideBar::slotUpdateSelection(const int &numSel, const int &numAll)

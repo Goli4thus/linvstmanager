@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #include "statisticline.h"
 #include <QLabel>
 #include <QLineEdit>
@@ -61,4 +63,9 @@ void StatisticLine::slotSetActive(const bool &setActive)
 void StatisticLine::slotButtonFilterPressed()
 {
     emit(signalFilerRequest(mVstStatus));
+}
+
+void StatisticLine::setCount(int count)
+{
+    mLineEditCount->setText(QString::number(count));
 }

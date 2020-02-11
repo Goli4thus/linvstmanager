@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef STATISTICLINE_H
 #define STATISTICLINE_H
 
@@ -18,12 +20,13 @@ public:
                   const QString &pLabelText,
                   const QColor &pButtonColor,
                   QWidget *parent = nullptr);
-    QLineEdit *mLineEditCount;
+    void setCount(int count);
 
 private:
     QHBoxLayout *mLayoutH;
     QPushButton *mButtonFilter;
     QLabel *mLabel;
+    QLineEdit *mLineEditCount;
     const VstStatus mVstStatus;
     const QString mLabelText;
 

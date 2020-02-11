@@ -105,16 +105,6 @@ MainWindow::MainWindow(QWidget *parent)
     mWidgetTop->setLayout(mLayoutTop);
 
 
-    mSideBar = new SideBar();
-    mSideBar->setFixedWidth(160);
-    mSplitterHori->setHandleWidth(1);
-    mSplitterHori->addWidget(mWidgetTop);
-    mSplitterHori->addWidget(mSideBar);
-    mSplitterVert->addWidget(mSplitterHori);
-    mSplitterVert->addWidget(mLogOutput);
-    this->setCentralWidget(mSplitterVert);
-
-
     mModelVstBuckets = new ModelVstBuckets(mTableview, tmpVstBuckets, prf, *mDataHasher);
     mSortFilter->setSourceModel(mModelVstBuckets);
     mTableview->setModel(mSortFilter);
@@ -138,6 +128,17 @@ MainWindow::MainWindow(QWidget *parent)
     mTableview->horizontalHeader()->setDragEnabled(true);
     mTableview->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
 
+
+    mSideBar = new SideBar(*(mModelVstBuckets->getBufferVstBuckets()), this);
+    mSideBar->setFixedWidth(160);
+    mSplitterHori->setHandleWidth(1);
+    mSplitterHori->addWidget(mWidgetTop);
+    mSplitterHori->addWidget(mSideBar);
+    mSplitterVert->addWidget(mSplitterHori);
+    mSplitterVert->addWidget(mLogOutput);
+    this->setCentralWidget(mSplitterVert);
+
+
     setupMenuBar();
     mDialogScan = new DialogScan(prf, mModelVstBuckets->getBufferVstBuckets());
     mDialogRename = new DialogRename(*mModelVstBuckets->getBufferVstBuckets());
@@ -154,6 +155,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mTableview->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::slotTableSelectionChanged);
 
     mSideBar->slotUpdateSelection(0, mModelVstBuckets->getSizeVstBuckets());
+    mSideBar->slotUpdateCounts();
 
     mLogOutput->appendLog("Setup done.");
 
@@ -469,6 +471,9 @@ void MainWindow::slotConfigDataChanged(bool needsRefresh, QVector<VstBridge> cha
     if (needsRefresh) {
         mModelVstBuckets->refreshStatus();
     }
+
+    // TODO: Trigger statistics refresh here
+    mSideBar->slotUpdateCounts();
 }
 
 void MainWindow::slotPostSetupInfo()

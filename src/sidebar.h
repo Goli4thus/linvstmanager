@@ -1,3 +1,5 @@
+// This file is part of LinVstManager.
+
 #ifndef SIDEBAR_H
 #define SIDEBAR_H
 
@@ -6,12 +8,13 @@ class StatisticLine;
 class QVBoxLayout;
 class QLabel;
 #include "enums.h"
+#include "vstbucket.h"
 
 class SideBar : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SideBar(QWidget *parent = nullptr);
+    explicit SideBar(const QVector<VstBucket> &pVstBuckets, QWidget *parent = nullptr);
 
 private:
     QVBoxLayout *mLayoutVMain;
@@ -26,9 +29,10 @@ private:
     StatisticLine *mStatsLineNA;
     StatisticLine *mStatsLineBlacklisted;
     QLabel *mLabelSelection;
+    const QVector<VstBucket> &mVstBuckets;
 
 public slots:
-    void slotUpdateCounts(const QVector<int> &count);
+    void slotUpdateCounts();
     void slotUpdateSelection(const int &numSel, const int &numAll);
 
 signals:

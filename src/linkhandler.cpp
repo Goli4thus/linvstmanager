@@ -428,7 +428,7 @@ void LinkHandler::updateConflicts()
                 // Still available. Claim it.
                 uniqueNames.remove(index);
                 // Reset status for later re-evaluation
-                vstBucket.status = VstStatus::NA;
+//                vstBucket.status = VstStatus::NA;
             } else {
                 // Already taken. Mark as "Conflict".
                 vstBucket.status = VstStatus::Conflict;
