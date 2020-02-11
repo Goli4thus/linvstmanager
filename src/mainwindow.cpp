@@ -11,6 +11,7 @@
 #include "defines.h"
 #include <QPixmap>
 #include "config.h"
+#include "datastore.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -69,7 +70,8 @@ MainWindow::MainWindow(QWidget *parent)
     mDialogPreferences = new DialogPreferences(prf);
 
     // Allocate starting from parent to children
-    mSplitter = new QSplitter(Qt::Vertical, this);
+    mSplitterVert = new QSplitter(Qt::Vertical, this);
+    mSplitterHori = new QSplitter(Qt::Horizontal, this);
     mWidgetTop = new QWidget();
     mLayoutTop = new QVBoxLayout();
     mTableview = new QTableView(this);
@@ -102,9 +104,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     mWidgetTop->setLayout(mLayoutTop);
 
-    mSplitter->addWidget(mWidgetTop);
-    mSplitter->addWidget(mLogOutput);
-    this->setCentralWidget(mSplitter);
+
+    mSideBar = new SideBar();
+    mSideBar->setFixedWidth(160);
+    mSplitterHori->setHandleWidth(1);
+    mSplitterHori->addWidget(mWidgetTop);
+    mSplitterHori->addWidget(mSideBar);
+    mSplitterVert->addWidget(mSplitterHori);
+    mSplitterVert->addWidget(mLogOutput);
+    this->setCentralWidget(mSplitterVert);
 
 
     mModelVstBuckets = new ModelVstBuckets(mTableview, tmpVstBuckets, prf, *mDataHasher);
@@ -141,6 +149,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
     connect(mDialogRename, &DialogRename::signalRenameAccept, this, &MainWindow::slotRenameAccepted);
     connect(mDialogRename, &DialogRename::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
+
+    connect(mSideBar, &SideBar::signalFilerRequest, this, &MainWindow::slotFilterBarApplyFilter);
+    connect(mTableview->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::slotTableSelectionChanged);
+
+    mSideBar->slotUpdateSelection(0, mModelVstBuckets->getSizeVstBuckets());
 
     mLogOutput->appendLog("Setup done.");
 
@@ -339,6 +352,7 @@ void MainWindow::slotFilterBarClose()
 {
     mFilterBar->hide();
     mFilterBarLineEdit->clear();
+    slotResizeTableToContent();
 }
 
 void MainWindow::slotFilterBar()
@@ -349,7 +363,17 @@ void MainWindow::slotFilterBar()
     } else {
         mFilterBar->hide();
         mFilterBarLineEdit->clear();
+        slotResizeTableToContent();
     }
+}
+
+void MainWindow::slotFilterBarApplyFilter(VstStatus status)
+{
+    if (mFilterBar->isHidden()) {
+        mFilterBar->show();
+    }
+    mFilterBarLineEdit->setText(DataStore::getStatusStr(status));
+    slotResizeTableToContent();
 }
 
 void MainWindow::slotDialogPreferences()
@@ -495,11 +519,17 @@ void MainWindow::slotFeedbackUpdateDone()
     mLogOutput->appendLog("Update is done.");
 }
 
+void MainWindow::slotTableSelectionChanged()
+{
+    QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
+    mSideBar->slotUpdateSelection(indexList.count(), mModelVstBuckets->getSizeVstBuckets());
+}
+
 void MainWindow::slotResizeMainUi()
 {
 //    mLogOutput->resize(mLogOutput->height(), 200);
-    int size = mSplitter->height();
-    mSplitter->setSizes(QList<int>() << static_cast<int>(size * 0.70) << static_cast<int>(size * 0.05) << static_cast<int>(size * 0.25));
+    int size = mSplitterVert->height();
+    mSplitterVert->setSizes(QList<int>() << static_cast<int>(size * 0.70) << static_cast<int>(size * 0.05) << static_cast<int>(size * 0.25));
 }
 
 void MainWindow::slotResizeTableToContent()

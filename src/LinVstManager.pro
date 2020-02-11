@@ -45,6 +45,8 @@ SOURCES += \
         runguard.cpp \
         scanhandler.cpp \
         scanresult.cpp \
+        sidebar.cpp \
+        statisticline.cpp \
         verticalline.cpp \
         vstbucket.cpp
 
@@ -54,6 +56,7 @@ HEADERS += \
         customprogressdialog.h \
         customsortfilterproxymodel.h \
         datahasher.h \
+        datastore.h \
         defines.h \
         dialogpreferences.h \
         dialogrename.h \
@@ -71,6 +74,8 @@ HEADERS += \
         runguard.h \
         scanhandler.h \
         scanresult.h \
+        sidebar.h \
+        statisticline.h \
         verticalline.h \
         vstbucket.h
 

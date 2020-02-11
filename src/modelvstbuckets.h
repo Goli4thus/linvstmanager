@@ -38,6 +38,7 @@ public:
     QStringList checkForOrphans();
     bool removeOrphans(const QStringList &filePathsOrphans);
     QVector<VstBucket> *getBufferVstBuckets();
+    int getSizeVstBuckets();
 
 private:
     Preferences *prf;

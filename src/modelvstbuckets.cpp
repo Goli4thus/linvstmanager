@@ -12,6 +12,7 @@
 #include "linkhandler.h"
 #include "scanresult.h"
 #include "colors.h"
+#include "datastore.h"
 
 ModelVstBuckets::ModelVstBuckets(QObject *parent, QVector<VstBucket> &pVstBuckets, Preferences *pPrf, DataHasher &pDataHasher)
     : dataHasher(pDataHasher)
@@ -62,41 +63,9 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         } else {
                             return QString(" ");
                         }
-
                     }
                     case nsMW::TableColumnPosType::Status: {
-                        switch (mVstBuckets.at(index.row()).status) {
-                            case VstStatus::Enabled: {
-                                return QString("Enabled");
-                            }
-                            case VstStatus::Disabled: {
-                                return QString("Disabled");
-                            }
-                            case VstStatus::Mismatch: {
-                                return QString("Mismatch");
-                            }
-                            case VstStatus::No_So: {
-                                return QString("No_So");
-                            }
-                            case VstStatus::Conflict: {
-                                return QString("Conflict");
-                            }
-                            case VstStatus::NotFound: {
-                                return QString("NotFound");
-                            }
-                            case VstStatus::Orphan: {
-                                return QString("Orphan");
-                            }
-                            case VstStatus::NoBridge: {
-                                return QString("NoBridge");
-                            }
-                            case VstStatus::NA: {
-                                return QString("NA");
-                            }
-                            case VstStatus::Blacklisted: {
-                                return QString("Blacklisted");
-                            }
-                        }
+                        return DataStore::getStatusStr(mVstBuckets.at(index.row()).status);
                     }
                     break;
                     case nsMW::TableColumnPosType::Type: {
@@ -633,6 +602,11 @@ bool ModelVstBuckets::removeOrphans(const QStringList &filePathsOrphans)
 QVector<VstBucket> *ModelVstBuckets::getBufferVstBuckets()
 {
     return &mVstBuckets;
+}
+
+int ModelVstBuckets::getSizeVstBuckets()
+{
+    return mVstBuckets.size();
 }
 
 void ModelVstBuckets::slotUpdateHashes()

@@ -18,6 +18,7 @@ enum VstStatus {
     NA,          // Initial state
     Blacklisted  // VST is blacklisted from being handled
 };
+Q_DECLARE_METATYPE(VstStatus);
 
 enum VstBridge {
     LinVst,
