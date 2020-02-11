@@ -17,6 +17,7 @@ public:
               VstBridge t_bridge,
               VstType t_type,
               bool t_newlyAdded);
+    VstBucket();
 
     QString name;
     QString vstPath;

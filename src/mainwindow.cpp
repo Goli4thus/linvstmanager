@@ -408,6 +408,7 @@ void MainWindow::slotRenameAccepted(int indexNameConflict, QString nameNew)
     enableViewUpdate(false);
     mModelVstBuckets->renameVstBucket(indexNameConflict, nameNew);
     enableViewUpdate(true);
+    slotResizeTableToContent();
 }
 
 void MainWindow::slotDialogAbout()

@@ -16,6 +16,7 @@ DialogRename::DialogRename(const QVector<VstBucket> &pVstBuckets)
     : mVstBuckets(pVstBuckets)
 {
     this->setWindowTitle("Rename VST");
+    this->setWindowIcon(QIcon(":/icons/linvstmanager_72.png"));
 
     mLayoutVMain = new QVBoxLayout(this);
     mLayoutHNameConflict = new QHBoxLayout();

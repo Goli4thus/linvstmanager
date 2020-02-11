@@ -25,6 +25,7 @@
 #include "runguard.h"
 #include <QDebug>
 #include "scanresult.h"
+#include "vstbucket.h"
 
 void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {

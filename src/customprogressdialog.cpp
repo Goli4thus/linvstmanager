@@ -11,6 +11,7 @@
 CustomProgressDialog::CustomProgressDialog()
 {
     this->setWindowTitle("Scan");
+    this->setWindowIcon(QIcon(":/icons/linvstmanager_72.png"));
     mCntVst2 = 0;
     mCntVst3 = 0;
     mCntDll = 0;

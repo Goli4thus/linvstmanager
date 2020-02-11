@@ -6,6 +6,7 @@
 #include <QObject>
 #include "enums.h"
 #include <QMap>
+#include <QVector>
 #include "scanresult.h"
 #include "vstbucket.h"
 

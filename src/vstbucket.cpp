@@ -20,3 +20,15 @@ VstBucket::VstBucket(QString t_name,
     vstType = t_type;
     newlyAdded = t_newlyAdded;
 }
+
+VstBucket::VstBucket()
+{
+    name = "tmp";
+    vstPath = "tmpPath";
+    pathHash = QByteArray();
+    soFileHash = QByteArray();
+    status = VstStatus::NA;
+    bridge = VstBridge::LinVst;
+    vstType = VstType::VST2;
+    newlyAdded = false;
+}
