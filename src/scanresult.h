@@ -11,13 +11,21 @@
 class ScanResult
 {
 public:
-    ScanResult(QString t_name, QString t_vstPath, VstType t_vstType, bool t_verified, QByteArray t_pathHash, QByteArray t_soFileHash, bool t_selected);
+    ScanResult(QString pName,
+               QString pVstPath,
+               VstType pVstType,
+               BitType pBitType,
+               bool pVerified,
+               QByteArray pPathHash,
+               QByteArray pSoFileHash,
+               bool pSelected);
     ScanResult() = default;
     ~ScanResult() = default;
     ScanResult(const ScanResult &) = default;
     QString name;
     QString vstPath;
     VstType vstType;
+    BitType bitType;
     bool verified;
     QByteArray pathHash;
     QByteArray soFileHash;

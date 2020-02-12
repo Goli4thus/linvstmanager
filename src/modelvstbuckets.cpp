@@ -47,8 +47,8 @@ int ModelVstBuckets::columnCount(const QModelIndex &parent) const
     Q_UNUSED(parent)
 
     // Columns:
-    // | New | Status | Name | Type | Bridge | Path | Index |
-    return 7;
+    // | New | Status | Name | Type | BitType | Bridge | Path | Index |
+    return 8;
 }
 
 QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
@@ -68,13 +68,27 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                         return DataStore::getStatusStr(mVstBuckets.at(index.row()).status);
                     }
                     break;
-                    case nsMW::TableColumnPosType::Type: {
+                    case nsMW::TableColumnPosType::VstType: {
                         switch (mVstBuckets.at(index.row()).vstType) {
                             case VstType::VST2: {
                                 return QString("VST2");
                             }
                             case VstType::VST3: {
                                 return QString("VST3");
+                            }
+                        }
+                    }
+                    break;
+                    case nsMW::TableColumnPosType::BitType: {
+                        switch (mVstBuckets.at(index.row()).bitType) {
+                            case BitType::Bits64: {
+                                return QString("64");
+                            }
+                            case BitType::Bits32: {
+                                return QString("32");
+                            }
+                            case BitType::BitsNA: {
+                                return QString("NA");
                             }
                         }
                     }
@@ -263,8 +277,10 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
                     return QString("Bridge");
                 case nsMW::TableColumnPosType::Name:
                     return QString("Name");
-                case nsMW::TableColumnPosType::Type:
+                case nsMW::TableColumnPosType::VstType:
                     return QString("Type");
+                case nsMW::TableColumnPosType::BitType:
+                    return QString("Bits");
                 case nsMW::TableColumnPosType::Path:
                     return QString("Path");
                 case nsMW::TableColumnPosType::Index:
@@ -375,7 +391,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
              */
 
             beginInsertRows(QModelIndex(), this->rowCount(), this->rowCount());
-            // subtrace suffix including period fro filename
+            // subtrace suffix including period from filename
             mVstBuckets.append(VstBucket(vstName,
                                          filepath,
                                          filepath_Hash,
@@ -383,6 +399,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
                                          initStatus,
                                          bridgeType,
                                          vstType,
+                                         BitType::BitsNA,
                                          true));
             endInsertRows();
         }
@@ -533,6 +550,7 @@ void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
                                      initStatus,
                                      bridgeType,
                                      i.vstType,
+                                     i.bitType,
                                      true));
     }
     endInsertRows();

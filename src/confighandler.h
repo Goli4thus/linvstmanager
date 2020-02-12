@@ -30,9 +30,11 @@ private:
     QStringList prefPathNames;
     QMap<VstBridge, QString> mapBridgeStr;
     QMap<VstStatus, QString> mapStatusStr;
-    QMap<VstType, QString> mapTypeStr;
+    QMap<VstType, QString> mapVstTypeStr;
+    QMap<BitType, QString> mapBitTypeStr;
     QString mConfigVersionLatest;
     QStringList mConfigVersionHistory;
+    QString mConfigVersionLoaded;
 
 signals:
     void configSaveDone(bool f_ErrorOnOpeningFile);

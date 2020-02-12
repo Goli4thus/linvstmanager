@@ -101,9 +101,8 @@ void ScanHandler::slotPerformScan()
     QByteArray pathHash;
     QByteArray soFileHash;
     VstType vstType;
+    BitType bitType;
     bool verified;
-    bool found64bitVst;
-    bool found32bitVst;
     bool scanCanceledByUser = false;
     /* No shared instance with other object needed here,
      * because no soTmplHash updates are being done.
@@ -143,31 +142,30 @@ void ScanHandler::slotPerformScan()
                     || (fileType.suffix() == "Dll")
                     || (fileType.suffix() == "DLL")) {
 
-                found64bitVst = false;
-                found32bitVst = false;
+                bitType = BitType::BitsNA;
                 verified = false;
 
                 if (mUseCheckTool64) {
                     if (checkDll(mPathCheckTool64, finding)) {
-                        found64bitVst = true;
+                        bitType = BitType::Bits64;
                     }
                     verified = true;
                 }
 
-                if (!found64bitVst && mUseCheckTool32) {
+                if ((bitType == BitType::BitsNA) && mUseCheckTool32) {
                     if (checkDll(mPathCheckTool32, finding)) {
-                        found32bitVst = true;
+                        bitType = BitType::Bits32;
                     }
                     verified = true;
                 }
 
-                if ( (   (mUseCheckTool64 && !found64bitVst)
-                      && (mUseCheckTool32 && !found32bitVst))
+                if ( (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
+                      && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
                      ||
                      (   (!mUseCheckTool64)
-                      && (mUseCheckTool32 && !found32bitVst))
+                      && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
                      ||
-                     (   (mUseCheckTool64 && !found64bitVst)
+                     (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
                       && (!mUseCheckTool32)) ) {
                     // Neither a verified 64 bit, nor a verified 32 bit VST; therefore skip.
                     emit (signalFoundDll());
@@ -188,6 +186,7 @@ void ScanHandler::slotPerformScan()
             scanResults.append(ScanResult(fileName.chopped(suffix.size() + 1),
                                           finding,
                                           vstType,
+                                          bitType,
                                           verified,
                                           pathHash,
                                           soFileHash, // empty for now

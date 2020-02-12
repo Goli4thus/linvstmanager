@@ -63,8 +63,12 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
     mapStatusStr.insert(VstStatus::NA,          "NA");
     mapStatusStr.insert(VstStatus::Blacklisted, "Blacklisted");
 
-    mapTypeStr.insert(VstType::VST2, "VST2");
-    mapTypeStr.insert(VstType::VST3, "VST3");
+    mapVstTypeStr.insert(VstType::VST2, "VST2");
+    mapVstTypeStr.insert(VstType::VST3, "VST3");
+
+    mapBitTypeStr.insert(BitType::Bits64, "64");
+    mapBitTypeStr.insert(BitType::Bits32, "32");
+    mapBitTypeStr.insert(BitType::BitsNA, "NA");
 }
 
 ConfigHandler::~ConfigHandler()
@@ -104,7 +108,8 @@ void ConfigHandler::writeVstBuckets(const QVector<VstBucket> &vstBuckets)
 
         xmlWriter->writeTextElement("status", mapStatusStr.value(vstBucket.status));
         xmlWriter->writeTextElement("bridge", mapBridgeStr.value(vstBucket.bridge));
-        xmlWriter->writeTextElement("vstType", mapTypeStr.value(vstBucket.vstType));
+        xmlWriter->writeTextElement("vstType", mapVstTypeStr.value(vstBucket.vstType));
+        xmlWriter->writeTextElement("bitType", mapBitTypeStr.value(vstBucket.bitType));
 
         xmlWriter->writeEndElement();
     }
@@ -186,6 +191,7 @@ quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
     VstStatus status;
     VstBridge bridge;
     VstType vstType;
+    BitType bitType;
     QString temp;
 
     xmlReader->readNextStartElement();
@@ -221,9 +227,21 @@ quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
     xmlReader->readNextStartElement();
     if (xmlReader->name() == "vstType") {
         temp = xmlReader->readElementText();
-        vstType = mapTypeStr.key(temp);
+        vstType = mapVstTypeStr.key(temp);
     } else {
         return false;
+    }
+
+    if (mConfigVersionLoaded != "1.0") {
+        xmlReader->readNextStartElement();
+        if (xmlReader->name() == "bitType") {
+            temp = xmlReader->readElementText();
+            bitType = mapBitTypeStr.key(temp);
+        } else {
+            return false;
+        }
+    } else {
+        bitType = BitType::BitsNA;
     }
 
     vstBuckets.append(VstBucket(name,
@@ -233,6 +251,7 @@ quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
                                 status,
                                 bridge,
                                 vstType,
+                                bitType,
                                 false));
 
     // Skip the closing element (returns false)
@@ -316,13 +335,13 @@ RvConfFile ConfigHandler::loadConfig(Preferences &prf, QVector<VstBucket> &vstBu
 
     if (xmlReader->readNextStartElement()) {
         if (xmlReader->name() == "linvstmanagerconfig") {
-            QString configVersion = xmlReader->attributes().value("version").toString();
+            mConfigVersionLoaded = xmlReader->attributes().value("version").toString();
 
             // Check if config version is known
-            if (mConfigVersionHistory.contains(configVersion)) {
+            if (mConfigVersionHistory.contains(mConfigVersionLoaded)) {
                 while (xmlReader->readNextStartElement()) {
                     if (xmlReader->name() == "Preferences") {
-                        if (!readPreferences(prf, configVersion)) {
+                        if (!readPreferences(prf, mConfigVersionLoaded)) {
                             return RvConfFile::ParsingError;
                         }
                     } else if (xmlReader->name() == "VstBuckets") {

@@ -33,15 +33,22 @@ enum VstType {
     VST3
 };
 
+enum BitType {
+    Bits64,
+    Bits32,
+    BitsNA
+};
+
 namespace nsMainWindow {
     enum TableColumnPosType {
         NewlyAdded = 0,
         Status = 1,
         Name = 2,
-        Type = 3,
-        Bridge = 4,
-        Path = 5,
-        Index = 6
+        VstType = 3,
+        BitType = 4,
+        Bridge = 5,
+        Path = 6,
+        Index = 7
     };
 }
 namespace nsMW = nsMainWindow;
@@ -50,9 +57,10 @@ namespace nsDialogScan {
     enum TableColumnPosType {
         Status = 0,
         Name = 1,
-        Type = 2,
-        Path = 3,
-        Index = 4
+        VstType = 2,
+        BitType = 3,
+        Path = 4,
+        Index = 5
     };
 }
 namespace nsDS = nsDialogScan;

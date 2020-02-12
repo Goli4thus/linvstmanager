@@ -189,7 +189,7 @@ void DialogPreferences::setupUI()
     mLayoutVMain->addWidget(new QLabel("Hint: The following things need to be set for full functionality:\n"
                                        "                - one or more bridges (mandatory)\n"
                                        "                - the link folder (mandatory)\n"
-                                       "                - the 'VstDllCheck' utility (optional: used during VST scanning)"));
+                                       "                - the 'VstDllCheck*' utilities (optional: used during VST scanning)"));
     mLayoutVMain->addSpacing(10);
     mLayoutVMain->addWidget(line2);
     mLayoutVMain->addSpacing(10);

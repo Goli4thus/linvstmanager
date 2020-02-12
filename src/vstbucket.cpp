@@ -2,23 +2,25 @@
 
 #include "vstbucket.h"
 
-VstBucket::VstBucket(QString t_name,
-                     QString t_vstPath,
-                     QByteArray t_pathHash,
-                     QByteArray t_soFileHash,
-                     VstStatus t_status,
-                     VstBridge t_bridge,
-                     VstType t_type,
-                     bool t_newlyAdded)
+VstBucket::VstBucket(QString pName,
+                     QString pVstPath,
+                     QByteArray pPathHash,
+                     QByteArray pSoFileHash,
+                     VstStatus pStatus,
+                     VstBridge pBridge,
+                     VstType pType,
+                     BitType pBitType,
+                     bool pNewlyAdded)
 {
-    name = std::move(t_name);
-    vstPath = std::move(t_vstPath);
-    pathHash = std::move(t_pathHash);
-    soFileHash = std::move(t_soFileHash);
-    status = t_status;
-    bridge = t_bridge;
-    vstType = t_type;
-    newlyAdded = t_newlyAdded;
+    name = std::move(pName);
+    vstPath = std::move(pVstPath);
+    pathHash = std::move(pPathHash);
+    soFileHash = std::move(pSoFileHash);
+    status = pStatus;
+    bridge = pBridge;
+    vstType = pType;
+    bitType = pBitType;
+    newlyAdded = pNewlyAdded;
 }
 
 VstBucket::VstBucket()
@@ -30,5 +32,6 @@ VstBucket::VstBucket()
     status = VstStatus::NA;
     bridge = VstBridge::LinVst;
     vstType = VstType::VST2;
+    bitType = BitType::BitsNA;
     newlyAdded = false;
 }

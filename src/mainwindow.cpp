@@ -558,7 +558,8 @@ void MainWindow::slotResizeTableToContent()
     mTableview->setColumnWidth(nsMW::TableColumnPosType::NewlyAdded, 30);
     mTableview->setColumnWidth(nsMW::TableColumnPosType::Status, 91);
     mTableview->setColumnWidth(nsMW::TableColumnPosType::Name, mTableview->columnWidth(nsMW::TableColumnPosType::Name) + 10);
-    mTableview->setColumnWidth(nsMW::TableColumnPosType::Type, 45);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::VstType, 45);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::BitType, 35);
     mTableview->setColumnWidth(nsMW::TableColumnPosType::Bridge, 65);
     mTableview->setColumnWidth(nsMW::TableColumnPosType::Path, mTableview->columnWidth(nsMW::TableColumnPosType::Path) + 10);
     mTableview->setColumnWidth(nsMW::TableColumnPosType::Index, 20);

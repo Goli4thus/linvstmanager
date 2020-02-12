@@ -33,8 +33,8 @@ int ModelScan::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     // Columns:
-    // | Selected | Name | Type | Path | (Index) |
-    return 4;
+    // | Selected | Name | Type | Bits | Path | (Index) |
+    return 5;
 }
 
 QVariant ModelScan::data(const QModelIndex &index, int role) const
@@ -53,7 +53,7 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                     case nsDS::TableColumnPosType::Name: {
                         return mScanResults.at(index.row()).name;
                     }
-                    case nsDS::TableColumnPosType::Type: {
+                    case nsDS::TableColumnPosType::VstType: {
                         switch (mScanResults.at(index.row()).vstType) {
                             case VstType::VST2: {
                                 if (mScanResults.at(index.row()).verified) {
@@ -64,6 +64,20 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                             }
                             case VstType::VST3: {
                                 return QString("VST3");
+                            }
+                        }
+                    }
+                    break;
+                    case nsDS::TableColumnPosType::BitType: {
+                        switch (mScanResults.at(index.row()).bitType) {
+                            case BitType::Bits64: {
+                                return QString("64");
+                            }
+                            case BitType::Bits32: {
+                                return QString("32");
+                            }
+                            case BitType::BitsNA: {
+                                return QString("NA");
                             }
                         }
                     }
@@ -93,7 +107,7 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                 if (index.column() == nsDS::TableColumnPosType::Status) {
                     return QString("-S-\t: Selected\n"
                                    "---\t: Unselected\n");
-                } else if (index.column() == nsDS::TableColumnPosType::Type) {
+                } else if (index.column() == nsDS::TableColumnPosType::VstType) {
                     return QString("VST2 (?)\t: Unverified dll-file\n");
                 }
             }
@@ -109,15 +123,17 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
             if (orientation == Qt::Horizontal) {
                 switch (section)
                 {
-                case 0:
+                case nsDS::TableColumnPosType::Status:
                     return QString("S");
-                case 1:
+                case nsDS::TableColumnPosType::Name:
                     return QString("Name");
-                case 2:
+                case nsDS::TableColumnPosType::VstType:
                     return QString("Type");
-                case 3:
+                case nsDS::TableColumnPosType::BitType:
+                    return QString("Bits");
+                case nsDS::TableColumnPosType::Path:
                     return QString("Path");
-                case 4:
+                case nsDS::TableColumnPosType::Index:
                     return QString("Index");
                 }
             }
@@ -135,7 +151,7 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
             if (section == nsDS::TableColumnPosType::Status) {
                 return QString("-S-\t: Selected\n"
                                "---\t: Unselected\n");
-            } else if (section == nsDS::TableColumnPosType::Type) {
+            } else if (section == nsDS::TableColumnPosType::VstType) {
                 return QString("VST2 (?)\t: Unverified dll-file\n");
             }
         }
