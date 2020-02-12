@@ -338,10 +338,16 @@ QStringList LinkHandler::checkForOrphans()
     linkFolder.setFilter(QDir::AllEntries | QDir::System);
     QStringList strListSoFiles = linkFolder.entryList();
 
+    // Contruct "*.so"-softlink names of all currently tracked VSTs
+    QStringList trackedSoftlinkNames;
+    for (const auto &vstBucket : *mVstBuckets) {
+        trackedSoftlinkNames.append(vstBucket.name + ".so");
+    }
+
     QFileInfo fileInfo;
     for (int i=0; i < strListSoFiles.size(); i++) {
         fileInfo.setFile(linkFolder.path() + "/" + strListSoFiles.at(i));
-        // Qt docs: "Note: If the file is a symlink that points to a non-existing file, false is returned."
+        // Qt docs: "Note: If the file is a softlink that points to a non-existing file, false is returned."
         // -->> Exactly what we want.
         bool isOrphan = false;
         if (!fileInfo.exists()) {
@@ -354,23 +360,12 @@ QStringList LinkHandler::checkForOrphans()
              * in order to avoid confusing situations. (i.e. DAW loading a potentially
              * version mismatching VST that actually isn't showing up in LinVstManager) */
 
-            // Contruct "*.so"-paths of all currently tracked VSTs
-            QStringList targetSoPaths;
-            for (const auto &vstBucket : *mVstBuckets) {
-                if (vstBucket.vstType == VstType::VST2) {
-                    // Chop extension "dll"
-                    targetSoPaths.append(vstBucket.vstPath.chopped(3) + "so");
-                } else { // VST3
-                    // Chop extension "vst3"
-                    targetSoPaths.append(vstBucket.vstPath.chopped(4) + "so");
-                }
-            }
-
-            // Check if the current softlink points to any one of them
+            /* Clean up purely on if the currently looked at link folder softlnk
+             * is part of the list of internal "VST name + '.so' ending" entries. */
             isOrphan = true;
-            QString softlinkTarget = fileInfo.symLinkTarget();
-            for (int i=0; i < targetSoPaths.size(); i++) {
-                if (targetSoPaths.at(i) == softlinkTarget) {
+            QString softlinkName = fileInfo.fileName();
+            for (int i=0; i < trackedSoftlinkNames.size(); i++) {
+                if (trackedSoftlinkNames.at(i) == softlinkName) {
                     // Softlink actually refers to tracked VST. Therefore no orphan
                     isOrphan = false;
                     break;
