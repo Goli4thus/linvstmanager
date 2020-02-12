@@ -84,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSortFilter = new CustomSortFilterProxyModel(mTableview);
     mLogOutput = new LogOutput;
 
-    mFilterBar = new QWidget();
+    mFilterBar = new QWidget(this);
     mFilterBarLayout = new QHBoxLayout();
     mFilterBarLabel = new QLabel("Filter:");
     mFilterBarLineEdit = new QLineEdit(this);

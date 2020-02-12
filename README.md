@@ -1,5 +1,5 @@
 # LinVstManager
-![linvstmanager](https://github.com/Goli4thus/linvstmanager/blob/master/src/resources/linvstmanager.png)
+![linvstmanager](https://github.com/Goli4thus/linvstmanager/blob/master/src/resources/linvstmanager_72.png)
 
 LinVstManager is a companion application that allows managing VSTs
 in conjunction with various VST bridges created by [osxmidi](https://github.com/osxmidi/LinVst).
@@ -55,23 +55,33 @@ If you've already managed to build [LinVst](https://github.com/osxmidi/LinVst), 
 - Qt5 for the graphical _LinVstManager_ application
 
 ## Building the source
-Nevertheless, here are some distributions I've tested installing _LinVstManager_ on after a fresh install (using Qemu):
+Nevertheless, here are some distributions and the needed packages:
 
 1. Install required packages based on your distribution:
   * **Manjaro**:
     ```
-    sudo pacman -S cmake make gcc git wine qt5-base
+    sudo pacman -S cmake make gcc git wine qt5-base gcc-multilib
     ```
 
   * **Fedora 31**:
     ```
-    sudo dnf install cmake make gcc gcc-c++ git wine wine-devel qt5-devel
+    sudo dnf install cmake make gcc gcc-c++ git wine wine-devel wine-devel.i686 qt5-devel
     ```
+    <!-- Maybe the following as well: libstdc++.i686 -->
 
   * **Ubuntu 19.10**:
     ```
     sudo apt install cmake make gcc git libwine-development-dev qt5-default
+    
+    sudo dpkg --add-architecture i386
+    
+    sudo apt-get install libc6-dev-i386
+
+    sudo apt-get install gcc-multilib g++-multilib
+
+    sudo apt-get install libwine-development-dev:i386
     ```
+    <!-- Regarding the 32 things: only copy/paste from LinVst README atm. -->
 2. Clone this repository
   ```
   git clone https://github.com/goli4thus/linvstmanager
@@ -131,6 +141,25 @@ Furthermore there are three counters indicating in realtime what is being found.
 
 Hint: Once a scan is done and the results are shown in the dialog's table, the entries can be filtered the same way as in the main table. Entries need to be selected (see right click menu) before they can be added. This allows to make a sub-selection of what was found (or just Ctrl-a, select, add).
 
+#### Scan verification
+Compared to simply adding VSTs via the respective menu actions, scanning can actually make use of a verification feature.
+This requires that the within _LinVstManager_ included utilities _VstDllCheck64.exe" and _VstDllCheck32.exe_ have been set up in _Preferences.
+
+In general, _*.vst3_ files are not being verified, as they are obviously VST files.
+
+Here's what will happen depending on the "verify" selections you make within the scan dialog.
+
+##### No verification method selected
+All encountered _*.dll_ files will be considered a match and be shown in the results table.
+
+##### One verification selected
+Only encountered _*.dll_ files that pass the "64 bit VST" test (or "32 bit test" depending on selection) will be shown in the results table.
+The opposite type will not be checked and therefore be ignored.
+
+##### Both verification methods selected
+All encountered _*.dll_ files that pass at least one of the two tests will be shown in the results table.
+
+
 ### Once VSTs are added,...
 ... their status will be _No *.so_ initially.
 
@@ -149,7 +178,37 @@ Select all VSTs you want to change to another bridge and use _Edit -> Change bri
 A tip in general:
 There are lots of tooltips spread across labels, text fields, table headers, etc.
 Just hover your mouse over things that don't quite make sense and chances are there is some additional information.
-    
+
+### Resolving naming conflicts
+VSTs are being identified by their absolute path.
+This means that if two different VSTs are named the same (i.e. "EQ.dll"), they both can be added to _LinVstManager_. Consequently this results in a naming conflict, indicated by status _Conflict_.
+This can be resolved by using the _rename_ feature:
+
+![Rename](https://github.com/Goli4thus/images/blob/master/images_linvstmanager/Rename.png)
+
+#### Wait, are you really renaming my VST?
+Well, not exactly.
+The renaming affects the name shown within _LinVstManager_.
+Apart from within the application, this name is used as the basis for creating the softlinks inside the _link folder_.
+
+For example:
+Let's say we have two VSTs by two different vendors, both named "EQ".
+One of them will show up as a conflict once added to _LinVstManager_.
+This conflict can be resolved by renaming the indicated VST. Let's say to "EQ_VendorX".
+Once both of these VSTs are being _Enabled_, the _link folder_ will contain two softlinks:
+
+- EQ.so
+- EQ_VendorX.so
+
+If you are pointing your DAW to scan the _link folder_, both VSTs will be picked up.
+
+But depending on your DAW, the result will be different.
+Some DAWs (i.e. Reaper) don't care what the filename of a VST is. The name (and vendor) shown in the FX browser are actually derived from what is set _within_ the VST itself.
+
+Other DAWs in contrast do actually care about the filename and will display "EQ" and "EQ_VendorX" in their FX browser.
+
+Overall this won't affect functionality of a VST, but might actually allow you to elegantly resolve naming conflicts without having to alter the naming of _*.dll_ or _*.vst3_ files.
+
 ## Further notes
 ### VST states
 
@@ -179,6 +238,7 @@ As opposed to [linvstmanage-cli](https://github.com/Goli4thus/linvstmanage), the
     
     
 ### Further usability features
+#### Filter bar
 Apart from familiar table sorting features one can use _View -> Filter_ to open up a search bar. This search consideres all columns and is regex based (case insensitive).
 
 Hint: Imagine all columns of a row being combined to one long string with rows being separated by one space character (cause that's how it's implemented).
@@ -191,6 +251,11 @@ This means you can perform searches like:
 | vst2.*linvst3                  | Matches rows that contain "vst2" AND "linvst3" with anything in between in that order. |
 | (?=.*linvst )(?=.*blacklisted) | Matches rows that contain "linvst " and "blacklisted" in any order.                    |
     
+#### Sidebar
+The sidebar on the right handside of the main window shows the amount of VSTs per status.
+Furthermore the colored rectangles are actuall buttons and once clicked on will setup the filter bar to filter for the respective status (same effect as if entered manually in filter bar).
+
+Hint: Clicking the same button again will cancel the filter.
 
 ### Further usecases
 #### Updating or trying out different versions of a bridge

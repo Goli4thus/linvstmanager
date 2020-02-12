@@ -176,6 +176,7 @@ void ScanHandler::slotPerformScan()
                 emit (signalFoundVst2());
             } else {  // ".vst3"
                 vstType = VstType::VST3;
+                bitType = BitType::BitsNA;
                 verified = true;
                 emit (signalFoundVst3());
             }
