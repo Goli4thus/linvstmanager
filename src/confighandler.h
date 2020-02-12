@@ -23,13 +23,16 @@ private:
     QXmlStreamReader *xmlReader;
     void writePreferences(const Preferences &prf);
     void writeVstBuckets(const QVector<VstBucket> &vstBuckets);
-    quint8 readPreferences(Preferences &prf);
+    quint8 readPreferences(Preferences &prf, QString configVersion);
     quint8 readVstBucket(QVector<VstBucket> &vstBuckets);
     QStringList prefBoolNames;
+    QStringList prefPathNames_V1_0;
     QStringList prefPathNames;
     QMap<VstBridge, QString> mapBridgeStr;
     QMap<VstStatus, QString> mapStatusStr;
     QMap<VstType, QString> mapTypeStr;
+    QString mConfigVersionLatest;
+    QStringList mConfigVersionHistory;
 
 signals:
     void configSaveDone(bool f_ErrorOnOpeningFile);

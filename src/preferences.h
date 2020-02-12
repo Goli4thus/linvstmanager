@@ -24,12 +24,15 @@ public:
                            const QString &pPathSoLinVst3,
                            const QString &pPathSoLinVst3X,
                            const QString &pPathLinkFolder,
-                           const QString &pPathCheckTool,
+                           const QString &pPathCheckTool64,
+                           const QString &pPathCheckTool32,
                            QVector<VstBridge> &pChangedBridges);
 
     QString getPathLinkFolder() const;
-    QString getPathCheckTool() const;
-    bool checkToolEnabled() const;
+    QString getPathCheckTool64() const;
+    QString getPathCheckTool32() const;
+    bool checkTool64Enabled() const;
+    bool checkTool32Enabled() const;
     bool getBridgeDefaultVst2IsX() const;
     bool getBridgeDefaultVst3IsX() const;
     bool getHideBlacklisted() const;
@@ -50,7 +53,8 @@ private:
     QString pathSoLinVst3;
     QString pathSoLinVst3X;
     QString pathLinkFolder;
-    QString pathCheckTool;
+    QString pathCheckTool64;
+    QString pathCheckTool32;
 };
 
 #endif // PREFERENCES_H

@@ -50,12 +50,20 @@ DialogScan::DialogScan(Preferences *t_prf, const QVector<VstBucket> *pVstBuckets
 int DialogScan::exec()
 {
     // Update checkbox re CheckTool
-    if (prf->checkToolEnabled()) {
-        mCheckBoxCheckTool->setEnabled(true);
-        mCheckBoxCheckTool->setChecked(true);
+    if (prf->checkTool64Enabled()) {
+        mCheckBoxCheckTool64->setEnabled(true);
+        mCheckBoxCheckTool64->setChecked(true);
     } else {
-        mCheckBoxCheckTool->setEnabled(false);
-        mCheckBoxCheckTool->setChecked(false);
+        mCheckBoxCheckTool64->setEnabled(false);
+        mCheckBoxCheckTool64->setChecked(false);
+    }
+
+    if (prf->checkTool32Enabled()) {
+        mCheckBoxCheckTool32->setEnabled(true);
+        mCheckBoxCheckTool32->setChecked(true);
+    } else {
+        mCheckBoxCheckTool32->setEnabled(false);
+        mCheckBoxCheckTool32->setChecked(false);
     }
 
     return QDialog::exec();
@@ -82,7 +90,7 @@ void DialogScan::setupUI()
                             "(i.e. navigate into the desired wine-prefix where the VSTs are)\n"
                             "\n"
                             "Try not to scan starting from the base of a wine prefix. There are A LOT of dll files\n"
-                            "located in a wine prefix and the scan will take lots of time to complete, if it has to\n"
+                            "located in a wine prefix and the scan will take a long time to complete, if it has to\n"
                             "check every single dll file (using the \"Verify\" option below).\n"
                             "\n"
                             "The \"Scan folder contains:\" section will show the amount of *.dll and *.vst3 files\n"
@@ -131,8 +139,10 @@ void DialogScan::setupUI()
     mLayoutHScanFolder->addWidget(mPushButtonSelectFolder);
     mPushButtonScan->setEnabled(false);
 
-    mCheckBoxCheckTool = new QCheckBox("Verify dll-files for being actual VST files.");
-    mCheckBoxCheckTool->setToolTip("Requires 'VstDllCheck.exe' being setup in preferences.");
+    mCheckBoxCheckTool64 = new QCheckBox("Verify 64 bit dll-files.");
+    mCheckBoxCheckTool64->setToolTip("Requires 'VstDllCheck64.exe' being setup in preferences.");
+    mCheckBoxCheckTool32 = new QCheckBox("Verify 32 bit dll-files.");
+    mCheckBoxCheckTool32->setToolTip("Requires 'VstDllCheck32.exe' being setup in preferences.");
 
     // ============================
     // === Second row: listview ===
@@ -205,7 +215,8 @@ void DialogScan::setupUI()
     mLayoutVMain->addLayout(mLayoutHScanFolder);
     mLayoutVMain->addSpacing(5);
 
-    mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckTool);
+    mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckTool64);
+    mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckTool32);
     mLayoutHVerifyAndAmount->addSpacing(30);
     mLayoutHVerifyAndAmount->addWidget(vLine0);
     mLayoutHVerifyAndAmount->addSpacing(20);
@@ -375,7 +386,11 @@ void DialogScan::slotScan()
                                  "Therefore no scan will be performed.\n\n"
                                  "Try to select a different scan folder instead.");
     } else {
-        mModelScan->triggerScan(mLineEditScanFolder->text(), prf->getPathCheckTool(), mCheckBoxCheckTool->isChecked());
+        mModelScan->triggerScan(mLineEditScanFolder->text(),
+                                prf->getPathCheckTool64(),
+                                mCheckBoxCheckTool64->isChecked(),
+                                prf->getPathCheckTool32(),
+                                mCheckBoxCheckTool32->isChecked());
 
         // Start progressbar dialog based on actual scan volume
         mProgressDialog->init(mNumDll + mNumVst3);

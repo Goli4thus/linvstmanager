@@ -127,7 +127,7 @@ void DialogRename::slotButtonCancel()
 
 void DialogRename::slotTextChanged()
 {
-    // TODO: Color new name lineedit text red whenever it matches the current conflicting name
+    // Color new name lineedit text red whenever it matches the current conflicting name
     if (mLineEditNameNew->text() == mLineEditNameConflict->text()) {
         mLineEditNameNew->setStyleSheet("color: red");
     } else {

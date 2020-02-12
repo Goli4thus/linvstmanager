@@ -16,15 +16,18 @@
 
 ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
                          QString pScanFolder,
-                         QString pPathCheckTool,
-                         bool pUseCheckTool,
+                         QString pPathCheckTool64,
+                         bool pUseCheckTool64,
+                         QString pPathCheckTool32, bool pUseCheckTool32,
                          QObject *parent)
 {
     Q_UNUSED(parent)
     mVstBuckets = pVstBuckets;
     mScanFolder = std::move(pScanFolder);
-    mPathCheckTool = std::move(pPathCheckTool);
-    mUseCheckTool = pUseCheckTool;
+    mPathCheckTool64 = std::move(pPathCheckTool64);
+    mUseCheckTool64 = pUseCheckTool64;
+    mPathCheckTool32 = std::move(pPathCheckTool32);
+    mUseCheckTool32 = pUseCheckTool32;
 
     mapVstExtension.insert(VstType::VST2, "*.dll");
     mapVstExtension.insert(VstType::VST3, "*.vst3");
@@ -99,6 +102,8 @@ void ScanHandler::slotPerformScan()
     QByteArray soFileHash;
     VstType vstType;
     bool verified;
+    bool found64bitVst;
+    bool found32bitVst;
     bool scanCanceledByUser = false;
     /* No shared instance with other object needed here,
      * because no soTmplHash updates are being done.
@@ -138,16 +143,37 @@ void ScanHandler::slotPerformScan()
                     || (fileType.suffix() == "Dll")
                     || (fileType.suffix() == "DLL")) {
 
-                if (mUseCheckTool) {
-                    if (!checkDll(mPathCheckTool, finding)) {
-                        // Not a VST; therefore skip.
-                        emit (signalFoundDll());
-                        continue;
+                found64bitVst = false;
+                found32bitVst = false;
+                verified = false;
+
+                if (mUseCheckTool64) {
+                    if (checkDll(mPathCheckTool64, finding)) {
+                        found64bitVst = true;
                     }
                     verified = true;
-                } else {
-                    verified = false;
                 }
+
+                if (!found64bitVst && mUseCheckTool32) {
+                    if (checkDll(mPathCheckTool32, finding)) {
+                        found32bitVst = true;
+                    }
+                    verified = true;
+                }
+
+                if ( (   (mUseCheckTool64 && !found64bitVst)
+                      && (mUseCheckTool32 && !found32bitVst))
+                     ||
+                     (   (!mUseCheckTool64)
+                      && (mUseCheckTool32 && !found32bitVst))
+                     ||
+                     (   (mUseCheckTool64 && !found64bitVst)
+                      && (!mUseCheckTool32)) ) {
+                    // Neither a verified 64 bit, nor a verified 32 bit VST; therefore skip.
+                    emit (signalFoundDll());
+                    continue;
+                }
+
                 vstType = VstType::VST2;
                 emit (signalFoundVst2());
             } else {  // ".vst3"

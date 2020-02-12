@@ -64,7 +64,8 @@ enum RvConfFile {
     ErrorLoad,
     ErrorWriteDir,
     ErrorWriteFile,
-    ParsingError
+    ParsingError,
+    VersionError
 };
 
 // Return values re link handler

@@ -50,6 +50,12 @@ MainWindow::MainWindow(QWidget *parent)
                               "There was a problem with loading the config file.\n"
                               "Therefore nothing could be restored.",
                               QMessageBox::Ok, QMessageBox::Ok);
+    } else if (retVal == RvConfFile::VersionError) {
+        QMessageBox::critical(this,
+                              "LinVstManager: Version error during config load",
+                              "There was a problem with loading the config file.\n"
+                              "Therefore nothing could be restored.",
+                              QMessageBox::Ok, QMessageBox::Ok);
     }
 
     // Update soTmplHash values
@@ -479,7 +485,6 @@ void MainWindow::slotConfigDataChanged(bool needsRefresh, QVector<VstBridge> cha
         mModelVstBuckets->refreshStatus();
     }
 
-    // TODO: Trigger statistics refresh here
     mSideBar->slotUpdateCounts();
 }
 

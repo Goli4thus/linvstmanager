@@ -17,7 +17,8 @@ Preferences::Preferences()
     pathSoLinVst3 = "";
     pathSoLinVst3X = "";
     pathLinkFolder = "";
-    pathCheckTool = "";
+    pathCheckTool64 = "";
+    pathCheckTool32 = "";
 }
 
 bool Preferences::updatePreferences(bool pEnabledLinVst,
@@ -32,7 +33,8 @@ bool Preferences::updatePreferences(bool pEnabledLinVst,
                                     const QString &pPathSoLinVst3,
                                     const QString &pPathSoLinVst3X,
                                     const QString &pPathLinkFolder,
-                                    const QString &pPathCheckTool,
+                                    const QString &pPathCheckTool64,
+                                    const QString &pPathCheckTool32,
                                     QVector<VstBridge> &pChangedBridges)
 {
     bool prefsChanged = false;
@@ -77,8 +79,12 @@ bool Preferences::updatePreferences(bool pEnabledLinVst,
         pathLinkFolder = pPathLinkFolder;
         prefsChanged = true;
     }
-    if (pathCheckTool != pPathCheckTool) {
-        pathCheckTool = pPathCheckTool;
+    if (pathCheckTool64 != pPathCheckTool64) {
+        pathCheckTool64 = pPathCheckTool64;
+        prefsChanged = true;
+    }
+    if (pathCheckTool32 != pPathCheckTool32) {
+        pathCheckTool32 = pPathCheckTool32;
         prefsChanged = true;
     }
     if (hideBlacklisted != pHideBlacklisted) {
@@ -102,14 +108,24 @@ QString Preferences::getPathLinkFolder() const
     return pathLinkFolder;
 }
 
-QString Preferences::getPathCheckTool() const
+QString Preferences::getPathCheckTool64() const
 {
-    return pathCheckTool;
+    return pathCheckTool64;
 }
 
-bool Preferences::checkToolEnabled() const
+QString Preferences::getPathCheckTool32() const
 {
-    return !(pathCheckTool.isEmpty());
+    return pathCheckTool32;
+}
+
+bool Preferences::checkTool64Enabled() const
+{
+    return !(pathCheckTool64.isEmpty());
+}
+
+bool Preferences::checkTool32Enabled() const
+{
+    return !(pathCheckTool32.isEmpty());
 }
 
 bool Preferences::getBridgeDefaultVst2IsX() const

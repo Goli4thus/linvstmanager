@@ -144,13 +144,17 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void ModelScan::triggerScan(const QString &scanFolder, const QString &pathCheckTool, bool useCheckTool)
+void ModelScan::triggerScan(const QString &scanFolder,
+                            const QString &pathCheckTool64,
+                            bool useCheckTool64,
+                            const QString &pathCheckTool32,
+                            bool useCheckTool32)
 {
     emptyModel();
 
     /* Move ScanHandler to dedicated thread to circumvent
      * obvious UI lock-up during long scans. */
-    mScanHandler = new ScanHandler(*mVstBuckets, scanFolder, pathCheckTool, useCheckTool);
+    mScanHandler = new ScanHandler(*mVstBuckets, scanFolder, pathCheckTool64, useCheckTool64, pathCheckTool32, useCheckTool32);
     mScanThread = new QThread(this);
     mScanHandler->moveToThread(mScanThread);
 

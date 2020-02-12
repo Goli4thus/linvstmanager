@@ -22,7 +22,11 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const Q_DECL_OVERRIDE;
     bool mUpdateView;
-    void triggerScan(const QString &scanFolder, const QString &pathCheckTool, bool useCheckTool);
+    void triggerScan(const QString &scanFolder,
+                     const QString &pathCheckTool64,
+                     bool useCheckTool64,
+                     const QString &pathCheckTool32,
+                     bool useCheckTool32);
     bool isModelEmpty();
     QVector<ScanResult> getScanSelection();
     void emptyModel();

@@ -16,15 +16,19 @@ class ScanHandler : public QObject
 public:
     explicit ScanHandler(const QVector<VstBucket> &pVstBuckets,
                          QString pScanFolder,
-                         QString pPathCheckTool,
-                         bool pUseCheckTool,
+                         QString pPathCheckTool64,
+                         bool pUseCheckTool64,
+                         QString pPathCheckTool32,
+                         bool pUseCheckTool32,
                          QObject *parent = nullptr);
 
 private:
     QVector<VstBucket> mVstBuckets;
     QString mScanFolder;
-    QString mPathCheckTool;
-    bool mUseCheckTool;
+    QString mPathCheckTool64;
+    QString mPathCheckTool32;
+    bool mUseCheckTool64;
+    bool mUseCheckTool32;
     QMap<VstType, QString> mapVstExtension;
     bool checkDll(QString &pathCheckTool, const QString &findingAbsPath);
 

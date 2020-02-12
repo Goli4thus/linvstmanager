@@ -18,6 +18,9 @@
 
 ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
 {
+    mConfigVersionLatest = "1.1";
+    mConfigVersionHistory << "1.0" << "1.1";
+
     xmlReader = new QXmlStreamReader();
     xmlWriter = new QXmlStreamWriter();
     xmlWriter->setAutoFormatting(true);
@@ -30,12 +33,20 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
                   << "f_bridgeDefaultVst3IsX"
                   << "f_hideBlacklisted";
 
+    prefPathNames_V1_0 << "pathSoLinVst"
+                       << "pathSoLinVstX"
+                       << "pathSoLinVst3"
+                       << "pathSoLinVst3X"
+                       << "pathLinkFolder"
+                       << "pathCheckTool";
+
     prefPathNames << "pathSoLinVst"
                   << "pathSoLinVstX"
                   << "pathSoLinVst3"
                   << "pathSoLinVst3X"
                   << "pathLinkFolder"
-                  << "pathCheckTool";
+                  << "pathCheckTool64"
+                  << "pathCheckTool32";
 
     mapBridgeStr.insert(VstBridge::LinVst,   "LinVst");
     mapBridgeStr.insert(VstBridge::LinVstX,  "LinVstX");
@@ -79,7 +90,8 @@ void ConfigHandler::writePreferences(const Preferences &prf)
     xmlWriter->writeTextElement(prefPathNames.at(3), prf.getPathSoTmplBridge(VstBridge::LinVst3X));
 
     xmlWriter->writeTextElement(prefPathNames.at(4), prf.getPathLinkFolder());
-    xmlWriter->writeTextElement(prefPathNames.at(5), prf.getPathCheckTool());
+    xmlWriter->writeTextElement(prefPathNames.at(5), prf.getPathCheckTool64());
+    xmlWriter->writeTextElement(prefPathNames.at(6), prf.getPathCheckTool32());
 }
 
 void ConfigHandler::writeVstBuckets(const QVector<VstBucket> &vstBuckets)
@@ -98,7 +110,7 @@ void ConfigHandler::writeVstBuckets(const QVector<VstBucket> &vstBuckets)
     }
 }
 
-quint8 ConfigHandler::readPreferences(Preferences &prf)
+quint8 ConfigHandler::readPreferences(Preferences &prf, QString configVersion)
 {
     // Read 4 boolean values
     QVector<bool> boolValues;
@@ -119,14 +131,27 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
         }
     }
 
-    // Read 6 string values
     QStringList pathValues;
-    for (int i = 0; i < prefPathNames.size(); i++) {
-        xmlReader->readNextStartElement();
-        if (xmlReader->name() == prefPathNames.at(i)) {
-            pathValues.append(xmlReader->readElementText());
-        } else {
-            return false;
+    if (configVersion == "1.0") {
+        // Read 6 string values (version 1.0 format)
+        for (int i = 0; i < prefPathNames_V1_0.size(); i++) {
+            xmlReader->readNextStartElement();
+            if (xmlReader->name() == prefPathNames_V1_0.at(i)) {
+                pathValues.append(xmlReader->readElementText());
+            } else {
+                return false;
+            }
+        }
+        pathValues.append("");
+    } else {
+        // Read 7 string values
+        for (int i = 0; i < prefPathNames.size(); i++) {
+            xmlReader->readNextStartElement();
+            if (xmlReader->name() == prefPathNames.at(i)) {
+                pathValues.append(xmlReader->readElementText());
+            } else {
+                return false;
+            }
         }
     }
 
@@ -144,6 +169,7 @@ quint8 ConfigHandler::readPreferences(Preferences &prf)
                           pathValues.at(3),
                           pathValues.at(4),
                           pathValues.at(5),
+                          pathValues.at(6),
                           emptyList);
 
     // Skip the closing element (returns false)
@@ -243,7 +269,7 @@ RvConfFile ConfigHandler::saveConfig(const Preferences &prf, const QVector<VstBu
     xmlWriter->writeStartDocument();
     xmlWriter->writeDTD("<!DOCTYPE linvstmanagerconfig>");
     xmlWriter->writeStartElement("linvstmanagerconfig");
-    xmlWriter->writeAttribute("version", "1.0");
+    xmlWriter->writeAttribute("version", mConfigVersionLatest);
 
     // ===========
     // Preferences
@@ -289,26 +315,32 @@ RvConfFile ConfigHandler::loadConfig(Preferences &prf, QVector<VstBucket> &vstBu
     xmlReader->setDevice(&configFile);
 
     if (xmlReader->readNextStartElement()) {
-        if (xmlReader->name() == "linvstmanagerconfig"
-                && xmlReader->attributes().value("version") == "1.0") {
-            while (xmlReader->readNextStartElement()) {
-                if (xmlReader->name() == "Preferences") {
-                    if (!readPreferences(prf)) {
-                        return RvConfFile::ParsingError;
-                    }
-                } else if (xmlReader->name() == "VstBuckets") {
-                    while (xmlReader->readNextStartElement()) {
-                        if (xmlReader->name() == "VstBucketEntry") {
-                            if (!readVstBucket(vstBuckets)) {
-                                return RvConfFile::ParsingError;
+        if (xmlReader->name() == "linvstmanagerconfig") {
+            QString configVersion = xmlReader->attributes().value("version").toString();
+
+            // Check if config version is known
+            if (mConfigVersionHistory.contains(configVersion)) {
+                while (xmlReader->readNextStartElement()) {
+                    if (xmlReader->name() == "Preferences") {
+                        if (!readPreferences(prf, configVersion)) {
+                            return RvConfFile::ParsingError;
+                        }
+                    } else if (xmlReader->name() == "VstBuckets") {
+                        while (xmlReader->readNextStartElement()) {
+                            if (xmlReader->name() == "VstBucketEntry") {
+                                if (!readVstBucket(vstBuckets)) {
+                                    return RvConfFile::ParsingError;
+                                }
                             }
                         }
-                    }
 
-                    xmlReader->skipCurrentElement(); // Skip closing element
-                } else {
-                    qDebug() << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Should not happen. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+                        xmlReader->skipCurrentElement(); // Skip closing element
+                    } else {
+                        qDebug() << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Should not happen. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+                    }
                 }
+            } else {
+                return RvConfFile::VersionError;
             }
         } else {
             return RvConfFile::ParsingError;

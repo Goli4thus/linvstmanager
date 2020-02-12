@@ -51,7 +51,8 @@ private:
     QPushButton *mPushButtonFilter;
     QPushButton *mPushButtonCancel;
     QPushButton *mPushButtonAdd;
-    QCheckBox *mCheckBoxCheckTool;
+    QCheckBox *mCheckBoxCheckTool64;
+    QCheckBox *mCheckBoxCheckTool32;
     QTableView *mTableview;
     QWidget *mFilterBar;
     QHBoxLayout *mFilterBarLayout;
