@@ -38,7 +38,7 @@ RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bo
     }
 
     if (checkExistingForConflict) {
-        updateConflicts();
+        updateConflicts(refreshSingle, singleIndex);
     }
 
     for(const auto &index : indexOfVstBuckets) {
@@ -405,7 +405,7 @@ bool LinkHandler::checkSoHashMatch(const QByteArray &soFileHash, const VstBridge
     return soFileHash.compare(dataHasher.getHashSoTmplBridge(vstBridge)) == 0;
 }
 
-void LinkHandler::updateConflicts()
+void LinkHandler::updateConflicts(bool refreshSingle, int singleIndex)
 {
     /* Basically:
      * 1) Make a list of all unique names.
@@ -420,7 +420,8 @@ void LinkHandler::updateConflicts()
         }
     }
 
-    for (auto &vstBucket : *mVstBuckets) {
+    for (int i=0; i < mVstBuckets->size(); i++) {
+        auto &vstBucket = (*mVstBuckets)[i];
         if (vstBucket.status != VstStatus::Blacklisted) {
             // Check if name of VST is still available.
             int index = uniqueNames.indexOf(vstBucket.name);
@@ -428,7 +429,9 @@ void LinkHandler::updateConflicts()
                 // Still available. Claim it.
                 uniqueNames.remove(index);
                 // Reset status for later re-evaluation
-//                vstBucket.status = VstStatus::NA;
+                if (refreshSingle && (i == singleIndex)) {
+                    vstBucket.status = VstStatus::NA;
+                }
             } else {
                 // Already taken. Mark as "Conflict".
                 vstBucket.status = VstStatus::Conflict;

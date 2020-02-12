@@ -32,7 +32,7 @@ private:
     bool checkSoHashMatch(const QByteArray &soFileHash, const VstBridge vstBridge);
     QVector<VstBucket>*mVstBuckets;
     DataHasher &dataHasher;
-    void updateConflicts();
+    void updateConflicts(bool refreshSingle, int singleIndex);
 
 signals:
 
