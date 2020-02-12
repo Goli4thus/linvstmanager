@@ -142,8 +142,13 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
 ################################################################
 ###### Triggering make based build of VstDllCheck utility ######
 ################################################################
-add_custom_target(TargetVstDllCheck ALL make
+add_custom_target(TargetVstDllCheck64 ALL make -f Makefile64
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/VstDllCheck
-    COMMENT "Building VstDllCheck utility..."
+    COMMENT "Building VstDllCheck64.exe utility..."
+)
+
+add_custom_target(TargetVstDllCheck32 ALL make -f Makefile32
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/VstDllCheck
+    COMMENT "Building VstDllCheck32.exe utility..."
 )
 

@@ -35,6 +35,9 @@ typedef intptr_t VstIntPtr;
 #define VESTIGECALLBACK __cdecl
 #include "vestige.h"
 
+// Compile switches:
+//#define D_CHECK_FOR_EDITOR
+
 typedef AEffect *(VESTIGECALLBACK *VstEntry)(audioMasterCallback audioMaster);
 
 using namespace std;
@@ -117,6 +120,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdline, int cmds
         return D_CHECK_FAILED_NO_PROCESSREPLACING;
     }
 
+#ifdef D_CHECK_FOR_EDITOR
     if(m_plugin->flags & effFlagsHasEditor) {
         if(libHandle) {
             FreeLibrary(libHandle);	    
@@ -128,5 +132,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdline, int cmds
         }
         return D_CHECK_FAILED_NO_EDITOR;
     }
+#else
+    return D_CHECK_PASSED;
+#endif
 }
 
