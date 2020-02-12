@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSortFilter->setDynamicSortFilter(true);
     mSortFilter->setFilterKeyColumn(-1); // -1: filter based on all columns
     mSortFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
-//    connect(mFilterBarLineEdit, &QLineEdit::textChanged, mSortFilter, &QSortFilterProxyModel::setFilterFixedString);
+    mSortFilter->setSortCaseSensitivity(Qt::CaseInsensitive);
     connect(mFilterBarLineEdit, &QLineEdit::textChanged, this, &MainWindow::slotFilterBarTextChanged);
 
 
