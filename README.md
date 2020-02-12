@@ -166,7 +166,7 @@ All encountered _*.dll_ files that pass at least one of the two tests will be sh
 Performing an _update_ will create accompaning VST-so files for each VST.dll.
 This results in the status of all VSTs becoming _Disabled_.
 
-After that the VSTs can be _Enabled_, which creates symlinks within the _link folder_ referencing the previously created VST-so files.
+After that the VSTs can be _Enabled_, which creates softlinks within the _link folder_ referencing the previously created VST-so files.
 
 This central _link folder_ can be scanned by whatever DAW you are using.
 
@@ -218,8 +218,9 @@ Overall this won't affect functionality of a VST, but might actually allow you t
 | Disabled    | VST is disabled due to missing softlink                                    |
 | Mismatch    | Mismatch between linvst.so template and *.so file associated with VST file |
 | No *.so     | VST-dll has no accompaning VST-so file next to it                          |
-| Notfound    | VST-dll can't be found using the specified path                            |
 | NoBridge    | No suitable bridge has been enabled in preferences.                        |
+| Conflict    | VST with the same name already exists                                      |
+| Notfound    | VST-dll can't be found using the specified path                            |
 | Orphan      | The so-file seems orphaned as it doesn't refer to an existing VST-dll      |
 | Blacklisted | VST is blacklisted from being handled                                      |
 
@@ -246,7 +247,7 @@ This means you can perform searches like:
 
 | Search                         | Effect                                                                                 |
 | ------------------------------ | -------------------------------------------------------------------------------------  |
-| eq                             | Matches rows containing. "EQ"                                                          |
+| eq                             | Matches rows containing "EQ"                                                           |
 | eq&#124;comp                   | Matches rows containing "EQ" OR "Comp".                                                |
 | vst2.*linvst3                  | Matches rows that contain "vst2" AND "linvst3" with anything in between in that order. |
 | (?=.*linvst )(?=.*blacklisted) | Matches rows that contain "linvst " and "blacklisted" in any order.                    |
