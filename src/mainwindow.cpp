@@ -371,10 +371,16 @@ void MainWindow::slotFilterBar()
 
 void MainWindow::slotFilterBarApplyFilter(VstStatus status)
 {
-    if (mFilterBar->isHidden()) {
-        mFilterBar->show();
+    if (mFilterBarLineEdit->text() == DataStore::getStatusStr(status)) {
+        mFilterBar->hide();
+        mFilterBarLineEdit->clear();
+    } else {
+        if (mFilterBar->isHidden()) {
+            mFilterBar->show();
+        }
+        mFilterBarLineEdit->setText(DataStore::getStatusStr(status));
     }
-    mFilterBarLineEdit->setText(DataStore::getStatusStr(status));
+
     slotResizeTableToContent();
 }
 
