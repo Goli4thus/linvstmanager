@@ -26,10 +26,12 @@ public:
                      const QString &pathCheckTool64,
                      bool useCheckTool64,
                      const QString &pathCheckTool32,
-                     bool useCheckTool32);
+                     bool useCheckTool32,
+                     bool useCheckBasic);
     bool isModelEmpty();
     QVector<ScanResult> getScanSelection();
     void emptyModel();
+    int getNumModelEntries();
 
 private:
     const QVector<VstBucket> *mVstBuckets;

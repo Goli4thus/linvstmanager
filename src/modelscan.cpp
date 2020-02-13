@@ -164,13 +164,20 @@ void ModelScan::triggerScan(const QString &scanFolder,
                             const QString &pathCheckTool64,
                             bool useCheckTool64,
                             const QString &pathCheckTool32,
-                            bool useCheckTool32)
+                            bool useCheckTool32,
+                            bool useCheckBasic)
 {
     emptyModel();
 
     /* Move ScanHandler to dedicated thread to circumvent
      * obvious UI lock-up during long scans. */
-    mScanHandler = new ScanHandler(*mVstBuckets, scanFolder, pathCheckTool64, useCheckTool64, pathCheckTool32, useCheckTool32);
+    mScanHandler = new ScanHandler(*mVstBuckets,
+                                   scanFolder,
+                                   pathCheckTool64,
+                                   useCheckTool64,
+                                   pathCheckTool32,
+                                   useCheckTool32,
+                                   useCheckBasic);
     mScanThread = new QThread(this);
     mScanHandler->moveToThread(mScanThread);
 
@@ -196,6 +203,11 @@ void ModelScan::emptyModel()
     beginRemoveRows(QModelIndex(), 0, mScanResults.size() - 1);
     mScanResults.clear();
     endRemoveRows();
+}
+
+int ModelScan::getNumModelEntries()
+{
+    return mScanResults.size();
 }
 
 void ModelScan::fillModel(QVector<ScanResult> &scanResults)

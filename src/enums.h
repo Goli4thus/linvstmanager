@@ -30,7 +30,8 @@ Q_DECLARE_METATYPE(VstBridge);
 
 enum VstType {
     VST2,
-    VST3
+    VST3,
+    NoVST
 };
 
 enum BitType {

@@ -18,7 +18,9 @@ ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
                          QString pScanFolder,
                          QString pPathCheckTool64,
                          bool pUseCheckTool64,
-                         QString pPathCheckTool32, bool pUseCheckTool32,
+                         QString pPathCheckTool32,
+                         bool pUseCheckTool32,
+                         bool pUseCheckBasic,
                          QObject *parent)
 {
     Q_UNUSED(parent)
@@ -28,9 +30,63 @@ ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
     mUseCheckTool64 = pUseCheckTool64;
     mPathCheckTool32 = std::move(pPathCheckTool32);
     mUseCheckTool32 = pUseCheckTool32;
+    mUseCheckBasic = pUseCheckBasic;
 
     mapVstExtension.insert(VstType::VST2, "*.dll");
     mapVstExtension.insert(VstType::VST3, "*.vst3");
+}
+
+void ScanHandler::verifyDll(bool &verified,
+                            VstType &vstType,
+                            BitType &bitType,
+                            const QString &finding)
+{
+    verified = false;
+    vstType = VstType::VST2;
+    bitType = BitType::BitsNA;
+
+    if (mUseCheckBasic) {
+        if (checkDllBasic(finding)) {
+            verified = true;
+            emit (signalFoundVst2());
+        } else {
+            vstType = VstType::NoVST;
+            emit (signalFoundDll());
+        }
+    } else {
+        if (mUseCheckTool64) {
+            if (checkDll(mPathCheckTool64, finding)) {
+                bitType = BitType::Bits64;
+            }
+            verified = true;
+        }
+
+        if ((bitType == BitType::BitsNA) && mUseCheckTool32) {
+            if (checkDll(mPathCheckTool32, finding)) {
+                bitType = BitType::Bits32;
+            }
+            verified = true;
+        }
+
+        if ( (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
+                 && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
+             ||
+             (   (!mUseCheckTool64)
+                 && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
+             ||
+             (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
+                 && (!mUseCheckTool32)) ) {
+            /* Neither a verified 64 bit, nor a verified 32 bit VST
+             * (despite verification being active); therefore skip. */
+            vstType = VstType::NoVST;
+            emit (signalFoundDll());
+        } else {
+            /* Found a VST. Either due to successful verification or
+             * no verification being active (indicated by 'verified'
+             * not being set). */
+            emit (signalFoundVst2());
+        }
+    }
 }
 
 bool ScanHandler::checkDll(QString &pathCheckTool, const QString &findingAbsPath)
@@ -79,6 +135,32 @@ bool ScanHandler::checkDll(QString &pathCheckTool, const QString &findingAbsPath
         break;
     }
 
+    return retVal;
+}
+
+bool ScanHandler::checkDllBasic(const QString &findingAbsPath)
+{
+    bool retVal;
+    QProcess process;
+    QString pathSanitized = findingAbsPath;
+
+    pathSanitized.replace(QString(" "), QString("\\ "));
+
+    QString cmd = (QStringList() << "bash -c \"strings " << pathSanitized << " | grep --no-ignore-case ^VSTPluginMain$\"").join("");
+    process.start(cmd);
+    process.waitForFinished();
+    QString retStr1(process.readAllStandardOutput());
+
+    cmd = (QStringList() << "bash -c \"strings " << pathSanitized << " | grep --no-ignore-case ^VstP$\"").join("");
+    process.start(cmd);
+    process.waitForFinished();
+    QString retStr2(process.readAllStandardOutput());
+
+    if ((retStr1 == "VSTPluginMain\n") || (retStr2 == "VstP\n")) {
+        retVal = true;
+    } else {
+        retVal = false;
+    }
     return retVal;
 }
 
@@ -141,39 +223,10 @@ void ScanHandler::slotPerformScan()
             if ((fileType.suffix() == "dll")
                     || (fileType.suffix() == "Dll")
                     || (fileType.suffix() == "DLL")) {
-
-                bitType = BitType::BitsNA;
-                verified = false;
-
-                if (mUseCheckTool64) {
-                    if (checkDll(mPathCheckTool64, finding)) {
-                        bitType = BitType::Bits64;
-                    }
-                    verified = true;
-                }
-
-                if ((bitType == BitType::BitsNA) && mUseCheckTool32) {
-                    if (checkDll(mPathCheckTool32, finding)) {
-                        bitType = BitType::Bits32;
-                    }
-                    verified = true;
-                }
-
-                if ( (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
-                      && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
-                     ||
-                     (   (!mUseCheckTool64)
-                      && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
-                     ||
-                     (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
-                      && (!mUseCheckTool32)) ) {
-                    // Neither a verified 64 bit, nor a verified 32 bit VST; therefore skip.
-                    emit (signalFoundDll());
+                verifyDll(verified, vstType, bitType, finding);
+                if (vstType == VstType::NoVST) {
                     continue;
                 }
-
-                vstType = VstType::VST2;
-                emit (signalFoundVst2());
             } else {  // ".vst3"
                 vstType = VstType::VST3;
                 bitType = BitType::BitsNA;

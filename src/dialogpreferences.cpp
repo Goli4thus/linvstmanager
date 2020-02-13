@@ -143,10 +143,11 @@ void DialogPreferences::setupUI()
     // ===========
     // = General =
     // ===========
+    int labelWidth = 117;
     // link folder
     mLineEditLinkFolder->setReadOnly(true);
     mLineEditLinkFolder->setToolTip("Specify the folder that shall contain all the bridged *.so files.");
-    labelLinkFolder->setMinimumWidth(110);
+    labelLinkFolder->setMinimumWidth(labelWidth);
     labelLinkFolder->setToolTip("Specify the folder that shall contain all the bridged *.so files.");
     mLayoutHLinkFolder->addWidget(labelLinkFolder);
     mLayoutHLinkFolder->addWidget(mLineEditLinkFolder);
@@ -157,7 +158,7 @@ void DialogPreferences::setupUI()
                              "Hint: Should be located in {repo-folder}/src/VstDllCheck/");
     mLineEditCheckTool64->setReadOnly(true);
     mLineEditCheckTool64->setToolTip(toolTipCheckTool64);
-    labelCheckTool64->setMinimumWidth(110);
+    labelCheckTool64->setMinimumWidth(labelWidth);
     labelCheckTool64->setToolTip(toolTipCheckTool64);
     mLayoutHCheckTool64->addWidget(labelCheckTool64);
     mLayoutHCheckTool64->addWidget(mLineEditCheckTool64);
@@ -167,7 +168,7 @@ void DialogPreferences::setupUI()
                              "Hint: Should be located in {repo-folder}/src/VstDllCheck/");
     mLineEditCheckTool32->setReadOnly(true);
     mLineEditCheckTool32->setToolTip(toolTipCheckTool32);
-    labelCheckTool32->setMinimumWidth(110);
+    labelCheckTool32->setMinimumWidth(labelWidth);
     labelCheckTool32->setToolTip(toolTipCheckTool32);
     mLayoutHCheckTool32->addWidget(labelCheckTool32);
     mLayoutHCheckTool32->addWidget(mLineEditCheckTool32);

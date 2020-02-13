@@ -66,6 +66,10 @@ int DialogScan::exec()
         mCheckBoxCheckTool32->setChecked(false);
     }
 
+    mCheckBoxCheckBasic->setChecked(false);
+
+    mLabelSelected->setText(QString("  Sel.:    0  /  x"));
+
     return QDialog::exec();
 }
 
@@ -76,6 +80,10 @@ void DialogScan::setupUI()
     // Allocate starting from parent to children
     mLayoutVMain = new QVBoxLayout();
     mLayoutHScanFolder = new QHBoxLayout();
+    mLayoutHVerify = new QHBoxLayout();
+    mLayoutVVerify = new QVBoxLayout();
+    mLayoutVAmount = new QVBoxLayout();
+    mLayoutHAmount = new QHBoxLayout();
     mLayoutHVerifyAndAmount = new QHBoxLayout();
     mLayoutHListView = new QHBoxLayout();
     mLayoutVListViewLeft = new QVBoxLayout();
@@ -110,6 +118,7 @@ void DialogScan::setupUI()
 
     mPushButtonScan = new QPushButton("Scan");
     mPushButtonFilter = new QPushButton("Filter");
+    mLabelSelected = new QLabel();
     auto *hLine0 = new HorizontalLine();
     mPushButtonCancel = new QPushButton("Cancel");
     mPushButtonAdd = new QPushButton("Add");
@@ -143,6 +152,7 @@ void DialogScan::setupUI()
     mCheckBoxCheckTool64->setToolTip("Requires 'VstDllCheck64.exe' being setup in preferences.");
     mCheckBoxCheckTool32 = new QCheckBox("Verify 32 bit dll-files.");
     mCheckBoxCheckTool32->setToolTip("Requires 'VstDllCheck32.exe' being setup in preferences.");
+    mCheckBoxCheckBasic = new QCheckBox("Verify dll-files using 'basic check' only.");
 
     // ============================
     // === Second row: listview ===
@@ -195,6 +205,7 @@ void DialogScan::setupUI()
     mLayoutVListViewRight->addWidget(hLine0);
     mLayoutVListViewRight->addWidget(mPushButtonFilter);
     mLayoutVListViewRight->addStretch();
+    mLayoutVListViewRight->addWidget(mLabelSelected);
 
 //    mLayoutHListView->setAlignment(Qt::AlignTop);
     mLayoutHListView->addLayout(mLayoutVListViewLeft);
@@ -215,17 +226,23 @@ void DialogScan::setupUI()
     mLayoutVMain->addLayout(mLayoutHScanFolder);
     mLayoutVMain->addSpacing(5);
 
-    mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckTool64);
-    mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckTool32);
+    mLayoutHVerify->addWidget(mCheckBoxCheckTool64);
+    mLayoutHVerify->addWidget(mCheckBoxCheckTool32);
+    mLayoutVVerify->addLayout(mLayoutHVerify);
+    mLayoutVVerify->addWidget(mCheckBoxCheckBasic);
+    mLayoutHVerifyAndAmount->addLayout(mLayoutVVerify);
     mLayoutHVerifyAndAmount->addSpacing(30);
     mLayoutHVerifyAndAmount->addWidget(vLine0);
     mLayoutHVerifyAndAmount->addSpacing(20);
-    mLayoutHVerifyAndAmount->addWidget(new QLabel("Scan folder contains: "));
-    mLayoutHVerifyAndAmount->addWidget(new QLabel("*.dll: "));
-    mLayoutHVerifyAndAmount->addWidget(mLineEditAmountDll);
-    mLayoutHVerifyAndAmount->addSpacing(10);
-    mLayoutHVerifyAndAmount->addWidget(new QLabel("*.vst3: "));
-    mLayoutHVerifyAndAmount->addWidget(mLineEditAmountVst3);
+    mLayoutHAmount->addWidget(new QLabel("Scan folder contains: "));
+    mLayoutHAmount->addWidget(new QLabel("*.dll: "));
+    mLayoutHAmount->addWidget(mLineEditAmountDll);
+    mLayoutHAmount->addSpacing(10);
+    mLayoutHAmount->addWidget(new QLabel("*.vst3: "));
+    mLayoutHAmount->addWidget(mLineEditAmountVst3);
+    mLayoutVAmount->addLayout(mLayoutHAmount);
+    mLayoutVAmount->addSpacing(20);
+    mLayoutHVerifyAndAmount->addLayout(mLayoutVAmount);
     mLayoutHVerifyAndAmount->addStretch();
     mLayoutVMain->addLayout(mLayoutHVerifyAndAmount);
 
@@ -254,6 +271,10 @@ void DialogScan::setupUI()
     connect(shortcutSelect, &QShortcut::activated, this, &DialogScan::slotSelectEntry);
     connect(shortcutUnselect, &QShortcut::activated, this, &DialogScan::slotUnselectEntry);
     connect(shortcutFilter, &QShortcut::activated, this, &DialogScan::slotFilterBar);
+    connect(mCheckBoxCheckTool64, &QCheckBox::clicked, this, &DialogScan::slotCheckBoxCheckCheckTool64);
+    connect(mCheckBoxCheckTool32, &QCheckBox::clicked, this, &DialogScan::slotCheckBoxCheckCheckTool32);
+    connect(mCheckBoxCheckBasic, &QCheckBox::clicked, this, &DialogScan::slotCheckBoxCheckBasicClicked);
+    connect(mTableview->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DialogScan::slotTableSelectionChanged);
 
     setupMouseMenu();
 
@@ -390,7 +411,8 @@ void DialogScan::slotScan()
                                 prf->getPathCheckTool64(),
                                 mCheckBoxCheckTool64->isChecked(),
                                 prf->getPathCheckTool32(),
-                                mCheckBoxCheckTool32->isChecked());
+                                mCheckBoxCheckTool32->isChecked(),
+                                mCheckBoxCheckBasic->isChecked());
 
         // Start progressbar dialog based on actual scan volume
         mProgressDialog->init(mNumDll + mNumVst3);
@@ -406,6 +428,8 @@ void DialogScan::slotScanFinished(bool newFindings)
         QMessageBox::information(this, "No findings",
                                        "Nothing new could be found during the scan.");
     }
+
+    mLabelSelected->setText(QString("  Sel.:    %1  /  %2").arg(0).arg(mModelScan->getNumModelEntries()));
 
     // Close progress dialog
     mProgressDialog->close();
@@ -441,6 +465,28 @@ void DialogScan::slotScanCanceled()
 {
     QMessageBox::information(this, "Scan canceled",
                              "The scan has been canceled.");
+}
+
+void DialogScan::slotCheckBoxCheckCheckTool64()
+{
+    if (mCheckBoxCheckTool64->isChecked() && mCheckBoxCheckBasic->isChecked()) {
+        mCheckBoxCheckBasic->setChecked(false);
+    }
+}
+
+void DialogScan::slotCheckBoxCheckCheckTool32()
+{
+    if (mCheckBoxCheckTool32->isChecked() && mCheckBoxCheckBasic->isChecked()) {
+        mCheckBoxCheckBasic->setChecked(false);
+    }
+}
+
+void DialogScan::slotCheckBoxCheckBasicClicked()
+{
+    if (mCheckBoxCheckBasic->isChecked()) {
+        mCheckBoxCheckTool64->setChecked(false);
+        mCheckBoxCheckTool32->setChecked(false);
+    }
 }
 
 void DialogScan::enableViewUpdate(bool enable)
@@ -519,4 +565,10 @@ void DialogScan::slotResizeTableToContent()
         mTableview->setColumnWidth(3, mTableview->columnWidth(3) + 10); // Path
         mTableview->setColumnWidth(4, 20);  // Index
     }
+}
+
+void DialogScan::slotTableSelectionChanged()
+{
+    QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
+    mLabelSelected->setText(QString("  Sel.:     %1  /  %2").arg(indexList.count()).arg(mModelScan->getNumModelEntries()));
 }

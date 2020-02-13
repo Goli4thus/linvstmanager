@@ -71,7 +71,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR cmdline, int cmds
     }
 
     if(args[1] == NULL) {
-        printf("Usage: testvst_minimal.exe path_to_vst_dll\n");	
+        printf("Usage: VstDllCheck64.exe path_to_vst_dll\n");	
         exit(0);
     }	
 

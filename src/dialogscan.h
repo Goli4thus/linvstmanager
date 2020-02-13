@@ -36,6 +36,10 @@ private:
     const QVector<VstBucket> *mVstBuckets;
     QVBoxLayout *mLayoutVMain;
     QHBoxLayout *mLayoutHScanFolder;
+    QHBoxLayout *mLayoutHVerify;
+    QVBoxLayout *mLayoutVVerify;
+    QVBoxLayout *mLayoutVAmount;
+    QHBoxLayout *mLayoutHAmount;
     QHBoxLayout *mLayoutHVerifyAndAmount;
     QHBoxLayout *mLayoutHListView;
     QVBoxLayout *mLayoutVListViewLeft;
@@ -53,6 +57,7 @@ private:
     QPushButton *mPushButtonAdd;
     QCheckBox *mCheckBoxCheckTool64;
     QCheckBox *mCheckBoxCheckTool32;
+    QCheckBox *mCheckBoxCheckBasic;
     QTableView *mTableview;
     QWidget *mFilterBar;
     QHBoxLayout *mFilterBarLayout;
@@ -73,6 +78,7 @@ private:
     QShortcut *shortcutFilter;
     CustomProgressDialog *mProgressDialog;
     Preferences *prf;
+    QLabel *mLabelSelected;
     void setupMouseMenu();
     void enableViewUpdate(bool enable);
     void repaintTableview();
@@ -88,6 +94,9 @@ private slots:
     void slotAdd();
     void slotScanCancel();
     void slotScanCanceled();
+    void slotCheckBoxCheckCheckTool64();
+    void slotCheckBoxCheckCheckTool32();
+    void slotCheckBoxCheckBasicClicked();
 
     void slotMouseRightClickOnEntry(QPoint point);
     void slotFilterBarClose();
@@ -97,6 +106,7 @@ private slots:
     void slotUnselectEntry();
     void slotFilterBarOpen();
     void slotResizeTableToContent();
+    void slotTableSelectionChanged();
 signals:
     void signalScanSelection(QVector<ScanResult> scanSelection);
 };
