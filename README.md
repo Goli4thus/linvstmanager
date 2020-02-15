@@ -60,7 +60,7 @@ Nevertheless, here are some distributions and the needed packages:
 1. Install required packages based on your distribution:
   * **Manjaro**:
     ```
-    sudo pacman -S cmake make gcc git wine qt5-base gcc-multilib
+    sudo pacman -S cmake make gcc git wine qt5-base
     ```
 
   * **Fedora 31**:
