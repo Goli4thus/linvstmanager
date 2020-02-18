@@ -2,7 +2,7 @@
 
 #include "linkhandler.h"
 #include "preferences.h"
-#include <qdebug.h>
+#include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -10,6 +10,7 @@
 #include <QStringList>
 #include "datahasher.h"
 #include <QElapsedTimer>
+#include "scanhandler.h"
 
 LinkHandler::LinkHandler(const Preferences &t_prf, QVector<VstBucket> *pVstBuckets, DataHasher &pDataHasher, QObject *parent)
     : QObject(parent), prf(t_prf), dataHasher(pDataHasher)
@@ -392,6 +393,21 @@ RvLinkHandler LinkHandler::removeOrphans(const QStringList &filePathsOrphans)
     }
 
     return retVal;
+}
+
+ArchType LinkHandler::checkArch(const QString &findingAbsPath)
+{
+    return ScanHandler::checkArch(findingAbsPath);
+}
+
+void LinkHandler::updateArch()
+{
+    for (auto &vstBucket : *mVstBuckets) {
+        // Only update architecture information for the VSTs that haven't it yet.
+        if (vstBucket.archType == ArchType::ArchNA) {
+            vstBucket.archType = checkArch(vstBucket.vstPath);
+        }
+    }
 }
 
 bool LinkHandler::checkSoHashMatch(const QByteArray &soFileHash, const VstBridge vstBridge)

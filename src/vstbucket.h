@@ -16,7 +16,7 @@ public:
               VstStatus pStatus,
               VstBridge pBridge,
               VstType pType,
-              BitType pBitType,
+              ArchType pBitType,
               bool pNewlyAdded);
     VstBucket();
 
@@ -27,7 +27,7 @@ public:
     VstStatus status;
     VstBridge bridge;
     VstType vstType;
-    BitType bitType;
+    ArchType archType;
     bool newlyAdded;
 };
 

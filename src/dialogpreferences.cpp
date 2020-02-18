@@ -44,8 +44,6 @@ DialogPreferences::DialogPreferences(Preferences *t_prf)
     mMapBridgeIdx->insert(VstBridge::LinVst3, 0);
     mMapBridgeIdx->insert(VstBridge::LinVst3X, 1);
 
-    lastDirCheckTool = QDir::homePath();
-
     setupUI();
     fillPreferences();
 }
@@ -70,8 +68,6 @@ void DialogPreferences::setupUI()
     mLayoutVDefaultsVst3 = new QVBoxLayout();
     mLayoutVGeneral = new QVBoxLayout();
     mLayoutHLinkFolder = new QHBoxLayout();
-    mLayoutHCheckTool64 = new QHBoxLayout();
-    mLayoutHCheckTool32 = new QHBoxLayout();
 
     mLineEditLinVst = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVst), this);
     mLineEditLinVstX = new LineEditBridge(mMapBridgeStr->value(VstBridge::LinVstX), this);
@@ -89,12 +85,6 @@ void DialogPreferences::setupUI()
     labelLinkFolder = new QLabel("Link folder:");
     mLineEditLinkFolder = new QLineEdit();
     mPushButtonLinkFolder = new QPushButton("Select");
-    labelCheckTool64 = new QLabel("'VstDllCheck64.exe':");
-    labelCheckTool32 = new QLabel("'VstDllCheck32.exe':");
-    mLineEditCheckTool64 = new QLineEdit();
-    mLineEditCheckTool32 = new QLineEdit();
-    mPushButtonCheckTool64 = new QPushButton("Select");
-    mPushButtonCheckTool32 = new QPushButton("Select");
     mButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                       QDialogButtonBox::Cancel);
     auto *line1 = new HorizontalLine();
@@ -143,40 +133,16 @@ void DialogPreferences::setupUI()
     // ===========
     // = General =
     // ===========
-    int labelWidth = 117;
     // link folder
     mLineEditLinkFolder->setReadOnly(true);
     mLineEditLinkFolder->setToolTip("Specify the folder that shall contain all the bridged *.so files.");
-    labelLinkFolder->setMinimumWidth(labelWidth);
     labelLinkFolder->setToolTip("Specify the folder that shall contain all the bridged *.so files.");
     mLayoutHLinkFolder->addWidget(labelLinkFolder);
     mLayoutHLinkFolder->addWidget(mLineEditLinkFolder);
     mLayoutHLinkFolder->addWidget(mPushButtonLinkFolder);
 
-    // CheckTool
-    QString toolTipCheckTool64("Locate the \'VstDllCheck64.exe\" utility.\n"
-                             "Hint: Should be located in {repo-folder}/src/VstDllCheck/");
-    mLineEditCheckTool64->setReadOnly(true);
-    mLineEditCheckTool64->setToolTip(toolTipCheckTool64);
-    labelCheckTool64->setMinimumWidth(labelWidth);
-    labelCheckTool64->setToolTip(toolTipCheckTool64);
-    mLayoutHCheckTool64->addWidget(labelCheckTool64);
-    mLayoutHCheckTool64->addWidget(mLineEditCheckTool64);
-    mLayoutHCheckTool64->addWidget(mPushButtonCheckTool64);
-
-    QString toolTipCheckTool32("Locate the \'VstDllCheck32.exe\" utility.\n"
-                             "Hint: Should be located in {repo-folder}/src/VstDllCheck/");
-    mLineEditCheckTool32->setReadOnly(true);
-    mLineEditCheckTool32->setToolTip(toolTipCheckTool32);
-    labelCheckTool32->setMinimumWidth(labelWidth);
-    labelCheckTool32->setToolTip(toolTipCheckTool32);
-    mLayoutHCheckTool32->addWidget(labelCheckTool32);
-    mLayoutHCheckTool32->addWidget(mLineEditCheckTool32);
-    mLayoutHCheckTool32->addWidget(mPushButtonCheckTool32);
 
     mLayoutVGeneral->addLayout(mLayoutHLinkFolder);
-    mLayoutVGeneral->addLayout(mLayoutHCheckTool64);
-    mLayoutVGeneral->addLayout(mLayoutHCheckTool32);
 
     mGroupBoxGeneral->setLayout(mLayoutVGeneral);
 
@@ -189,8 +155,7 @@ void DialogPreferences::setupUI()
     mLayoutVMain->addSpacing(10);
     mLayoutVMain->addWidget(new QLabel("Hint: The following things need to be set for full functionality:\n"
                                        "                - one or more bridges (mandatory)\n"
-                                       "                - the link folder (mandatory)\n"
-                                       "                - the 'VstDllCheck*' utilities (optional: used during VST scanning)"));
+                                       "                - the link folder (mandatory)\n"));
     mLayoutVMain->addSpacing(10);
     mLayoutVMain->addWidget(line2);
     mLayoutVMain->addSpacing(10);
@@ -204,8 +169,6 @@ void DialogPreferences::setupUI()
 //    resize(500, 400);
 
     connect(mPushButtonLinkFolder, &QPushButton::pressed, this, &DialogPreferences::slotButtonSelectLinkFolder);
-    connect(mPushButtonCheckTool64, &QPushButton::pressed, this, &DialogPreferences::slotButtonSelectCheckTool64);
-    connect(mPushButtonCheckTool32, &QPushButton::pressed, this, &DialogPreferences::slotButtonSelectCheckTool32);
     connect(mButtonBox->button(QDialogButtonBox::Cancel), &QPushButton::pressed, this, &DialogPreferences::slotButtonCancel);
     connect(mButtonBox->button(QDialogButtonBox::Ok), &QPushButton::pressed, this, &DialogPreferences::slotButtonOk);
 
@@ -248,8 +211,6 @@ void DialogPreferences::fillPreferences()
 
     // General
     mLineEditLinkFolder->setText(prf->getPathLinkFolder());
-    mLineEditCheckTool64->setText(prf->getPathCheckTool64());
-    mLineEditCheckTool32->setText(prf->getPathCheckTool32());
 }
 
 void DialogPreferences::slotButtonSelectLinkFolder()
@@ -267,33 +228,6 @@ void DialogPreferences::slotButtonSelectLinkFolder()
         mLineEditLinkFolder->setText(path_linkFolder);
     }
 }
-
-void DialogPreferences::slotButtonSelectCheckTool64()
-{
-    if (mLineEditCheckTool64->text() != "") {
-        lastDirCheckTool = QFileInfo(mLineEditCheckTool64->text()).path();
-    }
-
-    QString path_checkTool64 = QFileDialog::getOpenFileName(this,
-                                         "Locate the \'VstDllCheck64.exe\" utility.",
-                                         lastDirCheckTool, "(VstDllCheck64.exe)");
-    if (!path_checkTool64.isEmpty()) {
-        mLineEditCheckTool64->setText(path_checkTool64);
-    }
-}
-
-void DialogPreferences::slotButtonSelectCheckTool32()
-{
-    if (mLineEditCheckTool32->text() != "") {
-        lastDirCheckTool = QFileInfo(mLineEditCheckTool32->text()).path();
-    }
-
-    QString path_checkTool32 = QFileDialog::getOpenFileName(this,
-                                         "Locate the \'VstDllCheck32.exe\" utility.",
-                                         lastDirCheckTool, "(VstDllCheck32.exe)");
-    if (!path_checkTool32.isEmpty()) {
-        mLineEditCheckTool32->setText(path_checkTool32);
-    }}
 
 void DialogPreferences::slotButtonCancel()
 {
@@ -325,8 +259,6 @@ void DialogPreferences::slotButtonOk()
                                               mLineEditLinVst3->getPath(),
                                               mLineEditLinVst3X->getPath(),
                                               mLineEditLinkFolder->text(),
-                                              mLineEditCheckTool64->text(),
-                                              mLineEditCheckTool32->text(),
                                               changedBridges);
         if (prefsChanged) {
             emit(signalConfigDataChanged(true, changedBridges));

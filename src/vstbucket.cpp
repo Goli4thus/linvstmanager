@@ -9,7 +9,7 @@ VstBucket::VstBucket(QString pName,
                      VstStatus pStatus,
                      VstBridge pBridge,
                      VstType pType,
-                     BitType pBitType,
+                     ArchType pBitType,
                      bool pNewlyAdded)
 {
     name = std::move(pName);
@@ -19,7 +19,7 @@ VstBucket::VstBucket(QString pName,
     status = pStatus;
     bridge = pBridge;
     vstType = pType;
-    bitType = pBitType;
+    archType = pBitType;
     newlyAdded = pNewlyAdded;
 }
 
@@ -32,6 +32,6 @@ VstBucket::VstBucket()
     status = VstStatus::NA;
     bridge = VstBridge::LinVst;
     vstType = VstType::VST2;
-    bitType = BitType::BitsNA;
+    archType = ArchType::ArchNA;
     newlyAdded = false;
 }

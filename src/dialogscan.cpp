@@ -49,25 +49,7 @@ DialogScan::DialogScan(Preferences *t_prf, const QVector<VstBucket> *pVstBuckets
 
 int DialogScan::exec()
 {
-    // Update checkbox re CheckTool
-    if (prf->checkTool64Enabled()) {
-        mCheckBoxCheckTool64->setEnabled(true);
-        mCheckBoxCheckTool64->setChecked(true);
-    } else {
-        mCheckBoxCheckTool64->setEnabled(false);
-        mCheckBoxCheckTool64->setChecked(false);
-    }
-
-    if (prf->checkTool32Enabled()) {
-        mCheckBoxCheckTool32->setEnabled(true);
-        mCheckBoxCheckTool32->setChecked(true);
-    } else {
-        mCheckBoxCheckTool32->setEnabled(false);
-        mCheckBoxCheckTool32->setChecked(false);
-    }
-
-    mCheckBoxCheckBasic->setChecked(false);
-
+    mCheckBoxCheckBasic->setChecked(true);
     mLabelSelected->setText(QString("  Sel.:    0  /  x"));
 
     return QDialog::exec();
@@ -80,9 +62,6 @@ void DialogScan::setupUI()
     // Allocate starting from parent to children
     mLayoutVMain = new QVBoxLayout();
     mLayoutHScanFolder = new QHBoxLayout();
-    mLayoutHVerify = new QHBoxLayout();
-    mLayoutVVerify = new QVBoxLayout();
-    mLayoutVAmount = new QVBoxLayout();
     mLayoutHAmount = new QHBoxLayout();
     mLayoutHVerifyAndAmount = new QHBoxLayout();
     mLayoutHListView = new QHBoxLayout();
@@ -106,7 +85,7 @@ void DialogScan::setupUI()
     auto *hLineTop = new HorizontalLine();
     mLabelScanFolder = new QLabel("Scan folder:");
     mLineEditScanFolder = new QLineEdit();
-    mPushButtonSelectFolder = new QPushButton("Select");
+    mPushButtonSelectFolder = new QPushButton(tr("&Select"));
     mTableview = new QTableView(this);
     mSortFilter = new CustomSortFilterProxyModel(mTableview);
     mModelScan = new ModelScan(mVstBuckets);
@@ -116,7 +95,7 @@ void DialogScan::setupUI()
     mFilterBarCloseButton = new QPushButton("X");
     mFilterBarLabel = new QLabel("Filter:");
 
-    mPushButtonScan = new QPushButton("Scan");
+    mPushButtonScan = new QPushButton(("Sc&an"));
     mPushButtonFilter = new QPushButton("Filter");
     mLabelSelected = new QLabel();
     auto *hLine0 = new HorizontalLine();
@@ -148,11 +127,7 @@ void DialogScan::setupUI()
     mLayoutHScanFolder->addWidget(mPushButtonSelectFolder);
     mPushButtonScan->setEnabled(false);
 
-    mCheckBoxCheckTool64 = new QCheckBox("Verify 64 bit dll-files.");
-    mCheckBoxCheckTool64->setToolTip("Requires 'VstDllCheck64.exe' being setup in preferences.");
-    mCheckBoxCheckTool32 = new QCheckBox("Verify 32 bit dll-files.");
-    mCheckBoxCheckTool32->setToolTip("Requires 'VstDllCheck32.exe' being setup in preferences.");
-    mCheckBoxCheckBasic = new QCheckBox("Verify dll-files using 'basic check' only.");
+    mCheckBoxCheckBasic = new QCheckBox(tr("&Verify dll-files."));
 
     // ============================
     // === Second row: listview ===
@@ -172,7 +147,7 @@ void DialogScan::setupUI()
     mTableview->setSelectionBehavior(QAbstractItemView::SelectRows);
     mTableview->setShowGrid(false);
     mTableview->horizontalHeader()->setHighlightSections(false);
-    mTableview->horizontalHeader()->setStretchLastSection(true);
+    mTableview->horizontalHeader()->setStretchLastSection(false);
     mTableview->horizontalHeader()->setSectionsMovable(true);
     mTableview->horizontalHeader()->setDragEnabled(true);
     mTableview->horizontalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
@@ -226,12 +201,8 @@ void DialogScan::setupUI()
     mLayoutVMain->addLayout(mLayoutHScanFolder);
     mLayoutVMain->addSpacing(5);
 
-    mLayoutHVerify->addWidget(mCheckBoxCheckTool64);
-    mLayoutHVerify->addWidget(mCheckBoxCheckTool32);
-    mLayoutVVerify->addLayout(mLayoutHVerify);
-    mLayoutVVerify->addWidget(mCheckBoxCheckBasic);
-    mLayoutHVerifyAndAmount->addLayout(mLayoutVVerify);
-    mLayoutHVerifyAndAmount->addSpacing(30);
+    mLayoutHVerifyAndAmount->addWidget(mCheckBoxCheckBasic);
+    mLayoutHVerifyAndAmount->addSpacing(20);
     mLayoutHVerifyAndAmount->addWidget(vLine0);
     mLayoutHVerifyAndAmount->addSpacing(20);
     mLayoutHAmount->addWidget(new QLabel("Scan folder contains: "));
@@ -240,9 +211,8 @@ void DialogScan::setupUI()
     mLayoutHAmount->addSpacing(10);
     mLayoutHAmount->addWidget(new QLabel("*.vst3: "));
     mLayoutHAmount->addWidget(mLineEditAmountVst3);
-    mLayoutVAmount->addLayout(mLayoutHAmount);
-    mLayoutVAmount->addSpacing(20);
-    mLayoutHVerifyAndAmount->addLayout(mLayoutVAmount);
+    mLayoutHAmount->addStretch();
+    mLayoutHVerifyAndAmount->addLayout(mLayoutHAmount);
     mLayoutHVerifyAndAmount->addStretch();
     mLayoutVMain->addLayout(mLayoutHVerifyAndAmount);
 
@@ -268,12 +238,11 @@ void DialogScan::setupUI()
     shortcutSelect = new QShortcut(QKeySequence("S"), this);
     shortcutUnselect = new QShortcut(QKeySequence("D"), this);
     shortcutFilter = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this);
+    shortcutResize = new QShortcut(QKeySequence(Qt::ALT + Qt::Key_R), this);
     connect(shortcutSelect, &QShortcut::activated, this, &DialogScan::slotSelectEntry);
     connect(shortcutUnselect, &QShortcut::activated, this, &DialogScan::slotUnselectEntry);
     connect(shortcutFilter, &QShortcut::activated, this, &DialogScan::slotFilterBar);
-    connect(mCheckBoxCheckTool64, &QCheckBox::clicked, this, &DialogScan::slotCheckBoxCheckCheckTool64);
-    connect(mCheckBoxCheckTool32, &QCheckBox::clicked, this, &DialogScan::slotCheckBoxCheckCheckTool32);
-    connect(mCheckBoxCheckBasic, &QCheckBox::clicked, this, &DialogScan::slotCheckBoxCheckBasicClicked);
+    connect(shortcutResize, &QShortcut::activated, this, &DialogScan::slotResizeTableToContent);
     connect(mTableview->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DialogScan::slotTableSelectionChanged);
 
     setupMouseMenu();
@@ -292,8 +261,12 @@ void DialogScan::setupMouseMenu()
     actionUnselect = new QAction("Unselect", this);
     actionResize = new QAction("Resize", this);
 
+    /* Setting shortcuts for mouse menu in addition to the shortcuts
+     * defined in setupUI() is only for getting them to show in the mouse menu.
+     * The shortcuts won't actually work if only present in mouse menu. */
     actionSelect->setShortcut(QKeySequence("S"));
     actionUnselect->setShortcut(QKeySequence("D"));
+    actionResize->setShortcut(QKeySequence(Qt::ALT + Qt::Key_R));
     mouseMenu->addAction(actionSelect);
     mouseMenu->addAction(actionUnselect);
     mouseMenu->addSeparator();
@@ -321,6 +294,7 @@ void DialogScan::slotFilterBarClose()
 {
     mFilterBar->hide();
     mFilterBarLineEdit->clear();
+    slotResizeTableToContent();
 }
 
 void DialogScan::slotFilterBar()
@@ -331,6 +305,7 @@ void DialogScan::slotFilterBar()
     } else {
         mFilterBar->hide();
         mFilterBarLineEdit->clear();
+        slotResizeTableToContent();
     }
 }
 
@@ -340,6 +315,7 @@ void DialogScan::slotFilterBarTextChanged()
                    Qt::CaseInsensitive,
                    QRegExp::RegExp);
     mSortFilter->setFilterRegExp(regExp);
+    slotResizeTableToContent();
 }
 
 void DialogScan::slotSelectEntry()
@@ -408,10 +384,6 @@ void DialogScan::slotScan()
                                  "Try to select a different scan folder instead.");
     } else {
         mModelScan->triggerScan(mLineEditScanFolder->text(),
-                                prf->getPathCheckTool64(),
-                                mCheckBoxCheckTool64->isChecked(),
-                                prf->getPathCheckTool32(),
-                                mCheckBoxCheckTool32->isChecked(),
                                 mCheckBoxCheckBasic->isChecked());
 
         // Start progressbar dialog based on actual scan volume
@@ -467,27 +439,6 @@ void DialogScan::slotScanCanceled()
                              "The scan has been canceled.");
 }
 
-void DialogScan::slotCheckBoxCheckCheckTool64()
-{
-    if (mCheckBoxCheckTool64->isChecked() && mCheckBoxCheckBasic->isChecked()) {
-        mCheckBoxCheckBasic->setChecked(false);
-    }
-}
-
-void DialogScan::slotCheckBoxCheckCheckTool32()
-{
-    if (mCheckBoxCheckTool32->isChecked() && mCheckBoxCheckBasic->isChecked()) {
-        mCheckBoxCheckBasic->setChecked(false);
-    }
-}
-
-void DialogScan::slotCheckBoxCheckBasicClicked()
-{
-    if (mCheckBoxCheckBasic->isChecked()) {
-        mCheckBoxCheckTool64->setChecked(false);
-        mCheckBoxCheckTool32->setChecked(false);
-    }
-}
 
 void DialogScan::enableViewUpdate(bool enable)
 {
@@ -552,18 +503,22 @@ void DialogScan::slotResizeTableToContent()
         mTableview->setColumnWidth(0, 55);  // Selection
         mTableview->setColumnWidth(1, 60);  // Name
         mTableview->setColumnWidth(2, 55);  // Type
-        mTableview->setColumnWidth(3, 300); // Path
-        mTableview->setColumnWidth(4, 20);  // Index
+        mTableview->setColumnWidth(3, 55);  // Arch
+        mTableview->setColumnWidth(4, 70); // Probability
+        mTableview->setColumnWidth(5, 300); // Path
+        mTableview->setColumnWidth(6, 20);  // Index
     } else {
         mTableview->resizeColumnsToContents();
         mTableview->resizeRowsToContents();
 
         // Set rows to sensible with; some fixed width, some based on content
         mTableview->setColumnWidth(0, 55);  // Selection
-        mTableview->setColumnWidth(1, mTableview->columnWidth(1) + 10); // Name
+        mTableview->setColumnWidth(1, mTableview->columnWidth(nsDS::TableColumnPosType::Name) + 10); // Name
         mTableview->setColumnWidth(2, 55);  // Type
-        mTableview->setColumnWidth(3, mTableview->columnWidth(3) + 10); // Path
-        mTableview->setColumnWidth(4, 20);  // Index
+        mTableview->setColumnWidth(3, 55);  // Arch
+        mTableview->setColumnWidth(4, 70); // Probability
+        mTableview->setColumnWidth(5, mTableview->columnWidth(nsDS::TableColumnPosType::Path) + 10); // Path
+        mTableview->setColumnWidth(6, 20);  // Index
     }
 }
 

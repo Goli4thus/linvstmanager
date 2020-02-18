@@ -10,26 +10,18 @@
 #include <QDebug>
 #include <QProcess>
 #include <QThread>
-#include "VstDllCheck/vstdllcheck.h"
 #include "datahasher.h"
+#include <QDataStream>
 
 
 ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
                          QString pScanFolder,
-                         QString pPathCheckTool64,
-                         bool pUseCheckTool64,
-                         QString pPathCheckTool32,
-                         bool pUseCheckTool32,
                          bool pUseCheckBasic,
                          QObject *parent)
 {
     Q_UNUSED(parent)
     mVstBuckets = pVstBuckets;
     mScanFolder = std::move(pScanFolder);
-    mPathCheckTool64 = std::move(pPathCheckTool64);
-    mUseCheckTool64 = pUseCheckTool64;
-    mPathCheckTool32 = std::move(pPathCheckTool32);
-    mUseCheckTool32 = pUseCheckTool32;
     mUseCheckBasic = pUseCheckBasic;
 
     mapVstExtension.insert(VstType::VST2, "*.dll");
@@ -38,125 +30,68 @@ ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
 
 void ScanHandler::verifyDll(bool &verified,
                             VstType &vstType,
-                            BitType &bitType,
+                            VstProbabilityType &vstProbability,
                             const QString &finding)
 {
-    verified = false;
-    vstType = VstType::VST2;
-    bitType = BitType::BitsNA;
+    /*- checks that seems to make the most sense (overall no delimiting of search pattern)
+     *    - probability: 100%
+     *        - VSTPluginMain: case insensitive
+     *        - PtsV: case sensitive
+     *    - probability: 75%
+     *        - PtsV: case insensitive
+     *        - VstP: case insensitive
+     *    - probability: NA (not available) (if no verification was applied) */
 
     if (mUseCheckBasic) {
-        if (checkDllBasic(finding)) {
-            verified = true;
+        bool C1 = checkDllBasic(finding, false, "VSTPluginMain");
+        bool C2 = checkDllBasic(finding, true,  "PtsV");
+        bool C3 = checkDllBasic(finding, false, "PtsV");
+        bool C4 = checkDllBasic(finding, false, "VstP");
+        verified = true;
+
+        if (C1 || C2) {
+            vstType = VstType::VST2;
+            vstProbability = VstProbabilityType::p100;
+            emit (signalFoundVst2());
+        } else if (C3 || C4) {
+            vstType = VstType::VST2;
+            vstProbability = VstProbabilityType::p75;
             emit (signalFoundVst2());
         } else {
             vstType = VstType::NoVST;
+            vstProbability = VstProbabilityType::pNA;
             emit (signalFoundDll());
         }
     } else {
-        if (mUseCheckTool64) {
-            if (checkDll(mPathCheckTool64, finding)) {
-                bitType = BitType::Bits64;
-            }
-            verified = true;
-        }
-
-        if ((bitType == BitType::BitsNA) && mUseCheckTool32) {
-            if (checkDll(mPathCheckTool32, finding)) {
-                bitType = BitType::Bits32;
-            }
-            verified = true;
-        }
-
-        if ( (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
-                 && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
-             ||
-             (   (!mUseCheckTool64)
-                 && (mUseCheckTool32 && (bitType == BitType::BitsNA)))
-             ||
-             (   (mUseCheckTool64 && (bitType == BitType::BitsNA))
-                 && (!mUseCheckTool32)) ) {
-            /* Neither a verified 64 bit, nor a verified 32 bit VST
-             * (despite verification being active); therefore skip. */
-            vstType = VstType::NoVST;
-            emit (signalFoundDll());
-        } else {
-            /* Found a VST. Either due to successful verification or
-             * no verification being active (indicated by 'verified'
-             * not being set). */
-            emit (signalFoundVst2());
-        }
+        // Without verification being active, blindly consider it an unverified VST2.
+        vstType = VstType::VST2;
+        vstProbability = VstProbabilityType::pNA;
+        verified = false;
+        emit (signalFoundVst2());
     }
 }
 
-bool ScanHandler::checkDll(QString &pathCheckTool, const QString &findingAbsPath)
-{
-    /*
-     * Call the external utility "vstdllcheck" and evaluate its exit code
-     * to determine if the specified dll (via absPath) is a VST or not.
-     */
-    bool retVal;
-    int exitCode;
-
-    // Enclose 'finding' path in quotes to counteract possible spaces in path
-    exitCode = QProcess::execute(pathCheckTool + " \"" + findingAbsPath + "\"");
-    switch (exitCode) {
-        case D_CHECK_PASSED:
-            qDebug() << "checkDll(): " << "D_CHECK_PASSED" << "( " << findingAbsPath << " )";
-            retVal = true;
-        break;
-        case D_CHECK_FAILED_LIBRARYLOADERROR:
-            qDebug() << "checkDll(): " << "D_CHECK_FAILED_LIBRARYLOADERROR" << "( " << findingAbsPath << " )";
-            retVal = false;
-        break;
-        case D_CHECK_FAILED_ENTRYPOINT_NOT_FOUND:
-            qDebug() << "checkDll(): " << "D_CHECK_FAILED_ENTRYPOINT_NOT_FOUND" << "( " << findingAbsPath << " )";
-            retVal = false;
-        break;
-        case D_CHECK_FAILED_AEFFECTERROR:
-            qDebug() << "checkDll(): " << "D_CHECK_FAILED_AEFFECTERROR" << "( " << findingAbsPath << " )";
-            retVal = false;
-        break;
-        case D_CHECK_FAILED_NO_KEFFECTMAGIC_NO_VST:
-            qDebug() << "checkDll(): " << "D_CHECK_FAILED_NO_KEFFECTMAGIC_NO_VST" << "( " << findingAbsPath << " )";
-            retVal = false;
-        break;
-        case D_CHECK_FAILED_NO_PROCESSREPLACING:
-            qDebug() << "checkDll(): " << "D_CHECK_FAILED_NO_PROCESSREPLACING" << "( " << findingAbsPath << " )";
-            retVal = false;
-        break;
-        case D_CHECK_FAILED_NO_EDITOR:
-            qDebug() << "checkDll(): " << "D_CHECK_FAILED_NO_EDITOR" << "( " << findingAbsPath << " )";
-            retVal = false;
-        break;
-        default:
-            qDebug() << "checkDll(): " << "default case (shouldn't happen at all";
-            retVal = false;
-        break;
-    }
-
-    return retVal;
-}
-
-bool ScanHandler::checkDllBasic(const QString &findingAbsPath)
+bool ScanHandler::checkDllBasic(const QString &findingAbsPath, bool caseSensitive, const QString &pattern)
 {
     bool retVal;
     QProcess process;
+    QString strCaseSens;
     QString pathSanitized = findingAbsPath;
 
     pathSanitized.replace(QString(" "), QString("\\ "));
 
-    QString cmd = (QStringList() << "bash -c \"strings " << pathSanitized << " | grep --no-ignore-case ^VSTPluginMain$\"").join("");
+    if (caseSensitive) {
+        strCaseSens = "--no-ignore-case";
+    } else {
+        strCaseSens = "--ignore-case";
+    }
+
+    QString cmd = (QStringList() << "bash -c \"strings " << pathSanitized << " | grep " << strCaseSens << " " << pattern << "\"").join("");
     process.start(cmd);
     process.waitForFinished();
-    QString retStr1(process.readAllStandardOutput());
+    QString retStr(process.readAllStandardOutput());
 
-    cmd = (QStringList() << "bash -c \"strings " << pathSanitized << " | grep --no-ignore-case ^VstP$\"").join("");
-    process.start(cmd);
-    process.waitForFinished();
-    QString retStr2(process.readAllStandardOutput());
-
-    if ((retStr1 == "VSTPluginMain\n") || (retStr2 == "VstP\n")) {
+    if (retStr.contains(pattern, Qt::CaseInsensitive)) {
         retVal = true;
     } else {
         retVal = false;
@@ -164,18 +99,68 @@ bool ScanHandler::checkDllBasic(const QString &findingAbsPath)
     return retVal;
 }
 
+ArchType ScanHandler::checkArch(const QString &findingAbsPath)
+{
+    // adapted from: http://stackoverflow.com/a/495305/1338797
+    ArchType result;
+    QFile file(findingAbsPath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return ArchType::ArchNA;
+    }
+    QDataStream in(&file);
+    const quint8 lengthMSDosHeader = 64;
+    const quint8 paddingMSDosHeader = 58;
+    const quint8 paddingPEHeader = 2;
+    const quint16 magicMSDoxHeader = 0x4D5A; // 'MZ'
+    const quint16 magicPEHeader = 0x5045;    // 'PE'
+    const quint16 IMAGE_FILE_MACHINE_I386 = 0x014c;
+    const quint16 IMAGE_FILE_MACHINE_AMD64 =0x8664;
+
+    /* format string (fitting for 64 input bytes):
+     * - magic:   2x char (2 byte)
+     * - padding: 58x char (58 byte)
+     * - offset:  1x int (4 byte)
+     * Read and check the MS-DOS-header */
+    quint16 magic;
+    quint32 offset;
+    in.setByteOrder(QDataStream::BigEndian);
+    in >> magic;
+    in.skipRawData(paddingMSDosHeader);
+    in.setByteOrder(QDataStream::LittleEndian);
+    in >> offset;
+
+    if (magic == magicMSDoxHeader) {
+        in.skipRawData(offset - lengthMSDosHeader);
+        /* format string (fitting for 6 input bytes):
+         * - 2s:  2x char (2 byte)
+         * - 2s:  2x char (2 byte)
+         * - H:   1x unsigned short (2 byte) */
+        quint16 machine;
+        in.setByteOrder(QDataStream::BigEndian);
+        in >> magic;
+        in.skipRawData(paddingPEHeader);
+        in.setByteOrder(QDataStream::LittleEndian);
+        in >> machine;
+
+        if (magic != magicPEHeader) {
+            result = ArchType::ArchNA;
+        } else if (machine == IMAGE_FILE_MACHINE_I386) {
+            result = ArchType::Arch32;
+        } else if (machine == IMAGE_FILE_MACHINE_AMD64) {
+            result = ArchType::Arch64;
+        } else {
+            result = ArchType::ArchNA;
+        }
+    } else {
+        result = ArchType::ArchNA;
+    }
+
+    file.close();
+    return result;
+}
+
 void ScanHandler::slotPerformScan()
 {
-    /* Basically:
-     * 1) Perform the iterative scan
-     *    X filter based on VST type (.dll or .vst3)
-     *    X calculate path hash on the fly and check via QVector::contains, if part of mVstBuckets
-     *        X if so: skip
-     *        X if not: add to mScanResults
-     *    O (later: if ".dll", consider checking if really VST (see TestVst app))
-     */
-
-
 //#define D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
 #ifndef D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
     QVector<ScanResult> scanResults;
@@ -183,10 +168,11 @@ void ScanHandler::slotPerformScan()
     QByteArray pathHash;
     QByteArray soFileHash;
     VstType vstType;
-    BitType bitType;
+    ArchType archType;
+    VstProbabilityType vstProbability;
     bool verified;
     bool scanCanceledByUser = false;
-    /* No shared instance with other object needed here,
+    /* No shared instance use by other objects is needed here,
      * because no soTmplHash updates are being done.
      */
     DataHasher pathHasher;
@@ -223,15 +209,22 @@ void ScanHandler::slotPerformScan()
             if ((fileType.suffix() == "dll")
                     || (fileType.suffix() == "Dll")
                     || (fileType.suffix() == "DLL")) {
-                verifyDll(verified, vstType, bitType, finding);
+                verifyDll(verified, vstType, vstProbability, finding);
                 if (vstType == VstType::NoVST) {
                     continue;
                 }
             } else {  // ".vst3"
                 vstType = VstType::VST3;
-                bitType = BitType::BitsNA;
+                vstProbability = VstProbabilityType::p100;
                 verified = true;
                 emit (signalFoundVst3());
+            }
+
+            archType = checkArch(finding);
+            if (archType == ArchType::ArchNA) {
+                // If we can't determine the architecture, then there's no
+                // point in being optimistic about the probability.
+                vstProbability = VstProbabilityType::pNA;
             }
 
             QString fileName = QFileInfo(finding).fileName();
@@ -240,7 +233,8 @@ void ScanHandler::slotPerformScan()
             scanResults.append(ScanResult(fileName.chopped(suffix.size() + 1),
                                           finding,
                                           vstType,
-                                          bitType,
+                                          archType,
+                                          vstProbability,
                                           verified,
                                           pathHash,
                                           soFileHash, // empty for now

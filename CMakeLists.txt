@@ -137,18 +137,3 @@ install(FILES src/resources/${TARGET_NAME}_1024.png DESTINATION share/icons/hico
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.desktop
         DESTINATION share/applications)
         
-
-
-################################################################
-###### Triggering make based build of VstDllCheck utility ######
-################################################################
-add_custom_target(TargetVstDllCheck64 ALL make -f Makefile64
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/VstDllCheck
-    COMMENT "Building VstDllCheck64.exe utility..."
-)
-
-add_custom_target(TargetVstDllCheck32 ALL make -f Makefile32
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/VstDllCheck
-    COMMENT "Building VstDllCheck32.exe utility..."
-)
-

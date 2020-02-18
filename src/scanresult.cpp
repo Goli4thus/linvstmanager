@@ -5,7 +5,8 @@
 ScanResult::ScanResult(QString pName,
                        QString pVstPath,
                        VstType pVstType,
-                       BitType pBitType,
+                       ArchType pArchType,
+                       VstProbabilityType pProbType,
                        bool pVerified,
                        QByteArray pPathHash,
                        QByteArray pSoFileHash,
@@ -14,7 +15,8 @@ ScanResult::ScanResult(QString pName,
     name = std::move(pName);
     vstPath = std::move(pVstPath);
     vstType = pVstType;
-    bitType = pBitType;
+    archType = pArchType;
+    probType = pProbType;
     verified = pVerified;
     pathHash = std::move(pPathHash);
     soFileHash = std::move(pSoFileHash);

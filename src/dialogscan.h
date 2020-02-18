@@ -36,9 +36,6 @@ private:
     const QVector<VstBucket> *mVstBuckets;
     QVBoxLayout *mLayoutVMain;
     QHBoxLayout *mLayoutHScanFolder;
-    QHBoxLayout *mLayoutHVerify;
-    QVBoxLayout *mLayoutVVerify;
-    QVBoxLayout *mLayoutVAmount;
     QHBoxLayout *mLayoutHAmount;
     QHBoxLayout *mLayoutHVerifyAndAmount;
     QHBoxLayout *mLayoutHListView;
@@ -55,8 +52,6 @@ private:
     QPushButton *mPushButtonFilter;
     QPushButton *mPushButtonCancel;
     QPushButton *mPushButtonAdd;
-    QCheckBox *mCheckBoxCheckTool64;
-    QCheckBox *mCheckBoxCheckTool32;
     QCheckBox *mCheckBoxCheckBasic;
     QTableView *mTableview;
     QWidget *mFilterBar;
@@ -76,6 +71,7 @@ private:
     QShortcut *shortcutSelect;
     QShortcut *shortcutUnselect;
     QShortcut *shortcutFilter;
+    QShortcut *shortcutResize;
     CustomProgressDialog *mProgressDialog;
     Preferences *prf;
     QLabel *mLabelSelected;
@@ -94,9 +90,6 @@ private slots:
     void slotAdd();
     void slotScanCancel();
     void slotScanCanceled();
-    void slotCheckBoxCheckCheckTool64();
-    void slotCheckBoxCheckCheckTool32();
-    void slotCheckBoxCheckBasicClicked();
 
     void slotMouseRightClickOnEntry(QPoint point);
     void slotFilterBarClose();

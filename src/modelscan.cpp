@@ -33,8 +33,8 @@ int ModelScan::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     // Columns:
-    // | Selected | Name | Type | Bits | Path | (Index) |
-    return 5;
+    // | Selected | Name | Type | Arch | Probability | Path | (Index) |
+    return 6;
 }
 
 QVariant ModelScan::data(const QModelIndex &index, int role) const
@@ -65,18 +65,35 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                             case VstType::VST3: {
                                 return QString("VST3");
                             }
+                            case VstType::NoVST: {
+                                return QString("NoVst");
+                            }
                         }
                     }
                     break;
-                    case nsDS::TableColumnPosType::BitType: {
-                        switch (mScanResults.at(index.row()).bitType) {
-                            case BitType::Bits64: {
-                                return QString("64");
+                    case nsDS::TableColumnPosType::ArchType: {
+                        switch (mScanResults.at(index.row()).archType) {
+                            case ArchType::Arch64: {
+                                return QString("64 bit");
                             }
-                            case BitType::Bits32: {
-                                return QString("32");
+                            case ArchType::Arch32: {
+                                return QString("32 bit");
                             }
-                            case BitType::BitsNA: {
+                            case ArchType::ArchNA: {
+                                return QString("NA");
+                            }
+                        }
+                    }
+                    break;
+                    case nsDS::TableColumnPosType::Probability: {
+                        switch (mScanResults.at(index.row()).probType) {
+                            case VstProbabilityType::p100: {
+                                return QString("100%");
+                            }
+                            case VstProbabilityType::p75: {
+                                return QString("75%");
+                            }
+                            case VstProbabilityType::pNA: {
                                 return QString("NA");
                             }
                         }
@@ -91,17 +108,17 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                 }
             }
             break;
-            case Qt::DecorationRole: {
-                if (index.column() == nsDS::TableColumnPosType::Status) {
-                    QColor color;
-                    if (mScanResults.at(index.row()).selected) {
-                        color = Colors::getColorYellow();
-                    } else {
-                        color = Colors::getColorLightGrey();
-                    }
-                    return color;
-                }
-            }
+//            case Qt::DecorationRole: {
+//                if (index.column() == nsDS::TableColumnPosType::Status) {
+//                    QColor color;
+//                    if (mScanResults.at(index.row()).selected) {
+//                        color = Colors::getColorYellow();
+//                    } else {
+//                        color = Colors::getColorLightGrey();
+//                    }
+//                    return color;
+//                }
+//            }
             break;
             case Qt::ToolTipRole: {
                 if (index.column() == nsDS::TableColumnPosType::Status) {
@@ -111,6 +128,53 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                     return QString("VST2 (?)\t: Unverified dll-file\n");
                 }
             }
+            break;
+            case Qt::BackgroundRole: {
+                if (index.column() == nsDS::TableColumnPosType::Status) {
+                    QColor color;
+                    if (mScanResults.at(index.row()).selected) {
+                        return Colors::getColorBlue();
+                    } else {
+                        return QVariant();
+                    }
+                    return color;
+                } else if (index.column() == nsDS::TableColumnPosType::Probability) {
+                    QColor color;
+                    switch (mScanResults.at(index.row()).probType) {
+                        case VstProbabilityType::p100:
+                            color = Colors::getColorGreen();
+                        break;
+                        case VstProbabilityType::p75:
+                            color = Colors::getColorYellow();
+                        break;
+                        case VstProbabilityType::pNA:
+                            color = Colors::getColorLightGrey();
+                        break;
+                    }
+                    return color;
+                }
+            }
+            break;
+            case Qt::ForegroundRole: {
+                if (index.column() == nsDS::TableColumnPosType::Status) {
+                    QColor color(255, 255, 255);
+                    if (mScanResults.at(index.row()).selected) {
+                        return color;
+                    } else {
+                        return QVariant();
+                    }
+                }
+            }
+            break;
+            case Qt::TextAlignmentRole: {
+                if ((index.column() == nsDS::TableColumnPosType::Status) ||
+                        (index.column() == nsDS::TableColumnPosType::Probability)) {
+                    return Qt::AlignCenter;
+                } else {
+                    return QVariant();
+                }
+            }
+            break;
         }
     }
     return QVariant();
@@ -129,8 +193,10 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
                     return QString("Name");
                 case nsDS::TableColumnPosType::VstType:
                     return QString("Type");
-                case nsDS::TableColumnPosType::BitType:
-                    return QString("Bits");
+                case nsDS::TableColumnPosType::ArchType:
+                    return QString("Arch");
+                case nsDS::TableColumnPosType::Probability:
+                    return QString("Probability");
                 case nsDS::TableColumnPosType::Path:
                     return QString("Path");
                 case nsDS::TableColumnPosType::Index:
@@ -153,6 +219,8 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
                                "---\t: Unselected\n");
             } else if (section == nsDS::TableColumnPosType::VstType) {
                 return QString("VST2 (?)\t: Unverified dll-file\n");
+            } else if (section == nsDS::TableColumnPosType::Probability) {
+                return QString("Probability of the scanned dll being a VST.");
             }
         }
         break;
@@ -161,10 +229,6 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 void ModelScan::triggerScan(const QString &scanFolder,
-                            const QString &pathCheckTool64,
-                            bool useCheckTool64,
-                            const QString &pathCheckTool32,
-                            bool useCheckTool32,
                             bool useCheckBasic)
 {
     emptyModel();
@@ -173,10 +237,6 @@ void ModelScan::triggerScan(const QString &scanFolder,
      * obvious UI lock-up during long scans. */
     mScanHandler = new ScanHandler(*mVstBuckets,
                                    scanFolder,
-                                   pathCheckTool64,
-                                   useCheckTool64,
-                                   pathCheckTool32,
-                                   useCheckTool32,
                                    useCheckBasic);
     mScanThread = new QThread(this);
     mScanHandler->moveToThread(mScanThread);

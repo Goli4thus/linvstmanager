@@ -14,7 +14,8 @@ public:
     ScanResult(QString pName,
                QString pVstPath,
                VstType pVstType,
-               BitType pBitType,
+               ArchType pArchType,
+               VstProbabilityType pProbType,
                bool pVerified,
                QByteArray pPathHash,
                QByteArray pSoFileHash,
@@ -25,7 +26,8 @@ public:
     QString name;
     QString vstPath;
     VstType vstType;
-    BitType bitType;
+    ArchType archType;
+    VstProbabilityType probType;
     bool verified;
     QByteArray pathHash;
     QByteArray soFileHash;

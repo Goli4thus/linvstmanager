@@ -34,10 +34,16 @@ enum VstType {
     NoVST
 };
 
-enum BitType {
-    Bits64,
-    Bits32,
-    BitsNA
+enum ArchType {
+    Arch64,
+    Arch32,
+    ArchNA
+};
+
+enum VstProbabilityType {
+    p100,
+    p75,
+    pNA
 };
 
 namespace nsMainWindow {
@@ -46,7 +52,7 @@ namespace nsMainWindow {
         Status = 1,
         Name = 2,
         VstType = 3,
-        BitType = 4,
+        ArchType = 4,
         Bridge = 5,
         Path = 6,
         Index = 7
@@ -59,9 +65,10 @@ namespace nsDialogScan {
         Status = 0,
         Name = 1,
         VstType = 2,
-        BitType = 3,
-        Path = 4,
-        Index = 5
+        ArchType = 3,
+        Probability = 4,
+        Path = 5,
+        Index = 6
     };
 }
 namespace nsDS = nsDialogScan;

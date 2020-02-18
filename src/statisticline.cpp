@@ -26,7 +26,7 @@ StatisticLine::StatisticLine(const VstStatus &pVstStatus,
                                               <<  QString::number(pButtonColor.blue()) << ");"
                                               << " border: none;";
     mButtonFilter->setStyleSheet(btnStyleSheet.join(""));
-    mButtonFilter->setToolTip("Click to filter.");
+    mButtonFilter->setToolTip("Click to filter.\nClick again to clear.");
     mLineEditCount->setFixedWidth(41);
     mLineEditCount->setAlignment(Qt::AlignRight);
     mLineEditCount->setFixedHeight(22);

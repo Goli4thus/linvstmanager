@@ -29,6 +29,10 @@ ModelVstBuckets::ModelVstBuckets(QObject *parent, QVector<VstBucket> &pVstBucket
 
     lh = new LinkHandler(*prf, &mVstBuckets, dataHasher);
     lh->refreshStatus(false, 0, true, true);
+    /* Strictly speaking, updating architecture here should in theory have no value, because archtecture is
+     * usually determinate during adding/scanning already. Therefore this is more about updating this information
+     * for older versions that didn't have reliable architecture information yet. */
+    lh->updateArch();
 }
 
 ModelVstBuckets::~ModelVstBuckets()
@@ -47,7 +51,7 @@ int ModelVstBuckets::columnCount(const QModelIndex &parent) const
     Q_UNUSED(parent)
 
     // Columns:
-    // | New | Status | Name | Type | BitType | Bridge | Path | Index |
+    // | New | Status | Name | Type | ArchType | Bridge | Path | Index |
     return 8;
 }
 
@@ -76,18 +80,21 @@ QVariant ModelVstBuckets::data(const QModelIndex &index, int role) const
                             case VstType::VST3: {
                                 return QString("VST3");
                             }
+                            case VstType::NoVST: {
+                                return QString("NoVST");
+                            }
                         }
                     }
                     break;
-                    case nsMW::TableColumnPosType::BitType: {
-                        switch (mVstBuckets.at(index.row()).bitType) {
-                            case BitType::Bits64: {
-                                return QString("64");
+                    case nsMW::TableColumnPosType::ArchType: {
+                        switch (mVstBuckets.at(index.row()).archType) {
+                            case ArchType::Arch64: {
+                                return QString("64 bit");
                             }
-                            case BitType::Bits32: {
-                                return QString("32");
+                            case ArchType::Arch32: {
+                                return QString("32 bit");
                             }
-                            case BitType::BitsNA: {
+                            case ArchType::ArchNA: {
                                 return QString("NA");
                             }
                         }
@@ -279,8 +286,8 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
                     return QString("Name");
                 case nsMW::TableColumnPosType::VstType:
                     return QString("Type");
-                case nsMW::TableColumnPosType::BitType:
-                    return QString("Bits");
+                case nsMW::TableColumnPosType::ArchType:
+                    return QString("Arch");
                 case nsMW::TableColumnPosType::Path:
                     return QString("Path");
                 case nsMW::TableColumnPosType::Index:
@@ -362,6 +369,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
             // Check if VST2 or VST3 file and set 'bridge' type accordingly
             VstType vstType;
             VstBridge bridgeType;
+            ArchType archType;
             QFileInfo fileType(filepath);
             if ((fileType.suffix() == "dll")
                     || (fileType.suffix() == "Dll")
@@ -382,6 +390,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
                     bridgeType = VstBridge::LinVst3;
                 }
             }
+            archType = lh->checkArch(fileName);
             /* One could invoke linkhandler here to get newly added
              * VSTs to state "Disabled" right away. But if we consider that the user might
              * want to change the bridge of a VST right after the add, getting to "Disabled"
@@ -399,7 +408,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
                                          initStatus,
                                          bridgeType,
                                          vstType,
-                                         BitType::BitsNA,
+                                         archType,
                                          true));
             endInsertRows();
         }
@@ -550,7 +559,7 @@ void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
                                      initStatus,
                                      bridgeType,
                                      i.vstType,
-                                     i.bitType,
+                                     i.archType,
                                      true));
     }
     endInsertRows();

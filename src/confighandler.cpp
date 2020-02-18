@@ -18,12 +18,20 @@
 
 ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
 {
-    mConfigVersionLatest = "1.1";
-    mConfigVersionHistory << "1.0" << "1.1";
+    mConfigVersionLatest = "1.2";
+    mConfigVersionHistory << "1.0" << "1.1" << "1.2";
 
     xmlReader = new QXmlStreamReader();
     xmlWriter = new QXmlStreamWriter();
     xmlWriter->setAutoFormatting(true);
+
+    mPrefBoolNamesOfInterest_V1_2 = {true,   // "f_enabledLinVst"
+                                     true,   // "f_enabledLinVstX"
+                                     true,   // "f_enabledLinVst3"
+                                     true,   // "f_enabledLinVst3X"
+                                     true,   // "f_bridgeDefaultVst2IsX"
+                                     true,   // "f_bridgeDefaultVst3IsX"
+                                     true};  // "f_hideBlacklisted"
 
     prefBoolNames << "f_enabledLinVst"
                   << "f_enabledLinVstX"
@@ -33,20 +41,33 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
                   << "f_bridgeDefaultVst3IsX"
                   << "f_hideBlacklisted";
 
-    prefPathNames_V1_0 << "pathSoLinVst"
-                       << "pathSoLinVstX"
-                       << "pathSoLinVst3"
-                       << "pathSoLinVst3X"
-                       << "pathLinkFolder"
-                       << "pathCheckTool";
+    // Some definitions for backwards compatibility.
+    mPrefPathNamesOfInterest_V1_0 = {true,   // "pathSoLinVst"
+                                     true,   // "pathSoLinVstX"
+                                     true,   // "pathSoLinVst3"
+                                     true,   // "pathSoLinVst3X"
+                                     true,   // "pathLinkFolder"
+                                     false}; // "pathCheckTool"
+
+    mPrefPathNamesOfInterest_V1_1 = {true,   // "pathSoLinVst"
+                                     true,   // "pathSoLinVstX"
+                                     true,   // "pathSoLinVst3"
+                                     true,   // "pathSoLinVst3X"
+                                     true,   // "pathLinkFolder"
+                                     false,  // "pathCheckTool64"
+                                     false}; // "pathCheckTool32"
+
+    mPrefPathNamesOfInterest_V1_2 = {true,   // "pathSoLinVst"
+                                     true,   // "pathSoLinVstX"
+                                     true,   // "pathSoLinVst3"
+                                     true,   // "pathSoLinVst3X"
+                                     true};  // "pathLinkFolder"
 
     prefPathNames << "pathSoLinVst"
                   << "pathSoLinVstX"
                   << "pathSoLinVst3"
                   << "pathSoLinVst3X"
-                  << "pathLinkFolder"
-                  << "pathCheckTool64"
-                  << "pathCheckTool32";
+                  << "pathLinkFolder";
 
     mapBridgeStr.insert(VstBridge::LinVst,   "LinVst");
     mapBridgeStr.insert(VstBridge::LinVstX,  "LinVstX");
@@ -66,9 +87,9 @@ ConfigHandler::ConfigHandler(QObject *parent) : QObject(parent)
     mapVstTypeStr.insert(VstType::VST2, "VST2");
     mapVstTypeStr.insert(VstType::VST3, "VST3");
 
-    mapBitTypeStr.insert(BitType::Bits64, "64");
-    mapBitTypeStr.insert(BitType::Bits32, "32");
-    mapBitTypeStr.insert(BitType::BitsNA, "NA");
+    mapArchTypeStr.insert(ArchType::Arch64, "64");
+    mapArchTypeStr.insert(ArchType::Arch32, "32");
+    mapArchTypeStr.insert(ArchType::ArchNA, "NA");
 }
 
 ConfigHandler::~ConfigHandler()
@@ -94,8 +115,6 @@ void ConfigHandler::writePreferences(const Preferences &prf)
     xmlWriter->writeTextElement(prefPathNames.at(3), prf.getPathSoTmplBridge(VstBridge::LinVst3X));
 
     xmlWriter->writeTextElement(prefPathNames.at(4), prf.getPathLinkFolder());
-    xmlWriter->writeTextElement(prefPathNames.at(5), prf.getPathCheckTool64());
-    xmlWriter->writeTextElement(prefPathNames.at(6), prf.getPathCheckTool32());
 }
 
 void ConfigHandler::writeVstBuckets(const QVector<VstBucket> &vstBuckets)
@@ -109,7 +128,7 @@ void ConfigHandler::writeVstBuckets(const QVector<VstBucket> &vstBuckets)
         xmlWriter->writeTextElement("status", mapStatusStr.value(vstBucket.status));
         xmlWriter->writeTextElement("bridge", mapBridgeStr.value(vstBucket.bridge));
         xmlWriter->writeTextElement("vstType", mapVstTypeStr.value(vstBucket.vstType));
-        xmlWriter->writeTextElement("bitType", mapBitTypeStr.value(vstBucket.bitType));
+        xmlWriter->writeTextElement("archType", mapArchTypeStr.value(vstBucket.archType));
 
         xmlWriter->writeEndElement();
     }
@@ -119,44 +138,66 @@ quint8 ConfigHandler::readPreferences(Preferences &prf, QString configVersion)
 {
     // Read 4 boolean values
     QVector<bool> boolValues;
+    QVector<bool> prefBoolNamesOfInterest;
     QString temp;
-    for (int i = 0; i < prefBoolNames.size(); i++) {
+    QString elementName;
+
+    prefBoolNamesOfInterest = mPrefBoolNamesOfInterest_V1_2;
+
+    int k = 0;
+    for (int i = 0; i < prefBoolNamesOfInterest.size(); i++) {
         xmlReader->readNextStartElement();
-        if (xmlReader->name() == prefBoolNames.at(i)) {
-            temp = xmlReader->readElementText();
-            if (temp == "true") {
-                boolValues.append(true);
-            } else if (temp == "false") {
-                boolValues.append(false);
+        if (prefBoolNamesOfInterest.at(i)) {
+            elementName = xmlReader->name().toString();
+            if (elementName == prefBoolNames.at(k++)) {
+                temp = xmlReader->readElementText();
+                if (temp == "true") {
+                    boolValues.append(true);
+                } else if (temp == "false") {
+                    boolValues.append(false);
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
         } else {
-            return false;
+            // Skip the closing element (returns false), if it wasn't yet
+            // read indirectly by means of xmlReader->readElementText().
+            xmlReader->skipCurrentElement();
         }
     }
 
     QStringList pathValues;
+    QVector<bool> prefPathNamesOfInterest;
     if (configVersion == "1.0") {
-        // Read 6 string values (version 1.0 format)
-        for (int i = 0; i < prefPathNames_V1_0.size(); i++) {
-            xmlReader->readNextStartElement();
-            if (xmlReader->name() == prefPathNames_V1_0.at(i)) {
-                pathValues.append(xmlReader->readElementText());
-            } else {
-                return false;
-            }
+        prefPathNamesOfInterest = mPrefPathNamesOfInterest_V1_0;
+    } else if (configVersion == "1.1") {
+        prefPathNamesOfInterest = mPrefPathNamesOfInterest_V1_1;
+    } else { // Latest config version
+        prefPathNamesOfInterest = mPrefPathNamesOfInterest_V1_2;
+    }
+
+    k = 0;
+    volatile bool xmlStatus;
+    for (int i = 0; i < prefPathNamesOfInterest.size(); i++) {
+        xmlStatus = xmlReader->readNextStartElement();
+        if (!xmlStatus) {
+            qDebug() << Q_FUNC_INFO << "Probably something wrong with "
+                                       "not skipping closing element.";
         }
-        pathValues.append("");
-    } else {
-        // Read 7 string values
-        for (int i = 0; i < prefPathNames.size(); i++) {
-            xmlReader->readNextStartElement();
-            if (xmlReader->name() == prefPathNames.at(i)) {
+        if (prefPathNamesOfInterest.at(i)) {
+            // The right order of config file entries is expected here.
+            elementName = xmlReader->name().toString();
+            if (elementName == prefPathNames.at(k++)) {
                 pathValues.append(xmlReader->readElementText());
             } else {
                 return false;
             }
+        } else {
+            // Skip the closing element (returns false), if it wasn't yet
+            // read indirectly by means of xmlReader->readElementText().
+            xmlReader->skipCurrentElement();
         }
     }
 
@@ -173,11 +214,10 @@ quint8 ConfigHandler::readPreferences(Preferences &prf, QString configVersion)
                           pathValues.at(2),
                           pathValues.at(3),
                           pathValues.at(4),
-                          pathValues.at(5),
-                          pathValues.at(6),
                           emptyList);
 
-    // Skip the closing element (returns false)
+
+    // Skip the closing element </Preferences> (returns false)
     xmlReader->skipCurrentElement();
 
     return true;
@@ -191,7 +231,7 @@ quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
     VstStatus status;
     VstBridge bridge;
     VstType vstType;
-    BitType bitType;
+    ArchType archType;
     QString temp;
 
     xmlReader->readNextStartElement();
@@ -234,14 +274,15 @@ quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
 
     if (mConfigVersionLoaded != "1.0") {
         xmlReader->readNextStartElement();
-        if (xmlReader->name() == "bitType") {
+        QString elementName = xmlReader->name().toString();
+        if ((elementName == "bitType") || (elementName == "archType")) {
             temp = xmlReader->readElementText();
-            bitType = mapBitTypeStr.key(temp);
+            archType = mapArchTypeStr.key(temp);
         } else {
             return false;
         }
     } else {
-        bitType = BitType::BitsNA;
+        archType = ArchType::ArchNA;
     }
 
     vstBuckets.append(VstBucket(name,
@@ -251,7 +292,7 @@ quint8 ConfigHandler::readVstBucket(QVector<VstBucket> &vstBuckets)
                                 status,
                                 bridge,
                                 vstType,
-                                bitType,
+                                archType,
                                 false));
 
     // Skip the closing element (returns false)
@@ -333,6 +374,7 @@ RvConfFile ConfigHandler::loadConfig(Preferences &prf, QVector<VstBucket> &vstBu
 
     xmlReader->setDevice(&configFile);
 
+    QString elementName;
     if (xmlReader->readNextStartElement()) {
         if (xmlReader->name() == "linvstmanagerconfig") {
             mConfigVersionLoaded = xmlReader->attributes().value("version").toString();
@@ -340,11 +382,12 @@ RvConfFile ConfigHandler::loadConfig(Preferences &prf, QVector<VstBucket> &vstBu
             // Check if config version is known
             if (mConfigVersionHistory.contains(mConfigVersionLoaded)) {
                 while (xmlReader->readNextStartElement()) {
-                    if (xmlReader->name() == "Preferences") {
+                    elementName = xmlReader->name().toString();
+                    if (elementName == "Preferences") {
                         if (!readPreferences(prf, mConfigVersionLoaded)) {
                             return RvConfFile::ParsingError;
                         }
-                    } else if (xmlReader->name() == "VstBuckets") {
+                    } else if (elementName == "VstBuckets") {
                         while (xmlReader->readNextStartElement()) {
                             if (xmlReader->name() == "VstBucketEntry") {
                                 if (!readVstBucket(vstBuckets)) {

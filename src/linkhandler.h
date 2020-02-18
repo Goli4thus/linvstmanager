@@ -26,6 +26,8 @@ public:
     RvLinkHandler changeBridge(int idx, VstBridge newBridgeType);
     QStringList checkForOrphans();
     RvLinkHandler removeOrphans(const QStringList &filePathsOrphans);
+    ArchType checkArch(const QString &findingAbsPath);
+    void updateArch();
 
 private:
     const Preferences &prf;

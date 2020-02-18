@@ -34,8 +34,6 @@ private:
     QGroupBox *mGroupBoxBridges;
     QGroupBox *mGroupBoxGeneral;
     QHBoxLayout *mLayoutHLinkFolder;
-    QHBoxLayout *mLayoutHCheckTool64;
-    QHBoxLayout *mLayoutHCheckTool32;
     LineEditBridge *mLineEditLinVst;
     LineEditBridge *mLineEditLinVstX;
     LineEditBridge *mLineEditLinVst3;
@@ -44,12 +42,6 @@ private:
     QLineEdit *mLineEditLinkFolder;
     QPushButton *mPushButtonLinkFolder;
     QLabel *labelLinkFolder;
-    QLineEdit *mLineEditCheckTool64;
-    QLineEdit *mLineEditCheckTool32;
-    QPushButton *mPushButtonCheckTool64;
-    QPushButton *mPushButtonCheckTool32;
-    QLabel *labelCheckTool64;
-    QLabel *labelCheckTool32;
     Preferences *prf;
     QRadioButton *mRadioButtonLinVst;
     QRadioButton *mRadioButtonLinVstX;
@@ -65,11 +57,8 @@ private:
     QMap<VstBridge, quint8> *mMapBridgeIdx;
     void setupUI();
     void fillPreferences();
-    QString lastDirCheckTool;
 private slots:
     void slotButtonSelectLinkFolder();
-    void slotButtonSelectCheckTool64();
-    void slotButtonSelectCheckTool32();
     void slotButtonCancel();
     void slotButtonOk();
     void slotCheckBoxLinVst(bool isChecked);
