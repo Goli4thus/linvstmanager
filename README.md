@@ -60,28 +60,19 @@ Nevertheless, here are some distributions and the needed packages:
 1. Install required packages based on your distribution:
   * **Manjaro**:
     ```
-    sudo pacman -S cmake make gcc git wine qt5-base
+    sudo pacman -S cmake make gcc git qt5-base
     ```
 
   * **Fedora 31**:
     ```
-    sudo dnf install cmake make gcc gcc-c++ git wine wine-devel wine-devel.i686 qt5-devel
+    sudo dnf install cmake make gcc gcc-c++ git qt5-devel
     ```
-    <!-- Maybe the following as well: libstdc++.i686 -->
 
   * **Ubuntu 19.10**:
     ```
-    sudo apt install cmake make gcc git libwine-development-dev qt5-default
-    
-    sudo dpkg --add-architecture i386
-    
-    sudo apt-get install libc6-dev-i386
-
-    sudo apt-get install gcc-multilib g++-multilib
-
-    sudo apt-get install libwine-development-dev:i386
+    sudo apt install cmake make gcc git qt5-default
     ```
-    <!-- Regarding the 32 things: only copy/paste from LinVst README atm. -->
+    
 2. Clone this repository
   ```
   git clone https://github.com/goli4thus/linvstmanager
@@ -118,7 +109,6 @@ Here some default values can be specified.
 
 #### General
 - _Link folder_: The folder where all softlink will be created in and therefore the only location your DAW needs to be pointed at to "scan".
-- _'VstDllCheck.exe'_: This is a small utility program which, if selected here, can be activated during _scanning_ for VSTs in order to verify encountered _*.dll_ files actually being VST2 files. After install it is located in _{repo-folder}/src/VstDllCheck/_
 
 
 After all that, take a moment and explore the menu bar. Some operations are also available via right mouse click. Furthermore every operation can be done using a keyboard shortcut as well.
@@ -143,21 +133,23 @@ Hint: Once a scan is done and the results are shown in the dialog's table, the e
 
 #### Scan verification
 Compared to simply adding VSTs via the respective menu actions, scanning can actually make use of a verification feature.
-This requires that the within _LinVstManager_ included utilities _VstDllCheck64.exe" and _VstDllCheck32.exe_ have been set up in _Preferences.
 
 In general, _*.vst3_ files are not being verified, as they are obviously VST files.
 
 Here's what will happen depending on the "verify" selections you make within the scan dialog.
 
-##### No verification method selected
-All encountered _*.dll_ files will be considered a match and be shown in the results table.
+##### Verification disabled
+All encountered _*.dll_ files will be considered a match and be shown in the results table (marked as being unverified though).
 
-##### One verification selected
-Only encountered _*.dll_ files that pass the "64 bit VST" test (or "32 bit test" depending on selection) will be shown in the results table.
-The opposite type will not be checked and therefore be ignored.
+##### Verification enabled
+Only encountered _*.dll_ files that pass the verification will be shown in the results table.
+The found VSTs will have a probability attached to them:
 
-##### Both verification methods selected
-All encountered _*.dll_ files that pass at least one of the two tests will be shown in the results table.
+| Probability | Meaning                                                               |
+| ----------- | --------------------------------------------------------------------- |
+| 100%        | Save to say it's actually a VST                                       |
+| 75%         | Most likely a VST. Usually some older VSTs can fall in this category. |
+| NA          | No verification was active during the scan.                           |
 
 
 ### Once VSTs are added,...
@@ -189,7 +181,7 @@ This can be resolved by using the _rename_ feature:
 #### Wait, are you really renaming my VST?
 Well, not exactly.
 The renaming affects the name shown within _LinVstManager_.
-Apart from within the application, this name is used as the basis for creating the softlinks inside the _link folder_.
+Apart from within the application, this name is used as the basis for creating the soft-links inside the _link folder_.
 
 For example:
 Let's say we have two VSTs by two different vendors, both named "EQ".
