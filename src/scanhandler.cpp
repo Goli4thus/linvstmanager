@@ -78,7 +78,11 @@ bool ScanHandler::checkDllBasic(const QString &findingAbsPath, bool caseSensitiv
     QString strCaseSens;
     QString pathSanitized = findingAbsPath;
 
-    pathSanitized.replace(QString(" "), QString("\\ "));
+    /* Sanitize path by putting into single quotes and escaping
+     * any single quotes already with the path */
+    pathSanitized.replace(QString("'"), QString("'\''"));
+    pathSanitized.prepend("'");
+    pathSanitized.append("'");
 
     if (caseSensitive) {
         strCaseSens = "--no-ignore-case";
@@ -105,13 +109,14 @@ ArchType ScanHandler::checkArch(const QString &findingAbsPath)
     ArchType result;
     QFile file(findingAbsPath);
     if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "checkArch(): " << "NA: file open problem (" << findingAbsPath << ")";
         return ArchType::ArchNA;
     }
     QDataStream in(&file);
     const quint8 lengthMSDosHeader = 64;
     const quint8 paddingMSDosHeader = 58;
     const quint8 paddingPEHeader = 2;
-    const quint16 magicMSDoxHeader = 0x4D5A; // 'MZ'
+    const quint16 magicMSDosHeader = 0x4D5A; // 'MZ'
     const quint16 magicPEHeader = 0x5045;    // 'PE'
     const quint16 IMAGE_FILE_MACHINE_I386 = 0x014c;
     const quint16 IMAGE_FILE_MACHINE_AMD64 =0x8664;
@@ -129,7 +134,7 @@ ArchType ScanHandler::checkArch(const QString &findingAbsPath)
     in.setByteOrder(QDataStream::LittleEndian);
     in >> offset;
 
-    if (magic == magicMSDoxHeader) {
+    if (magic == magicMSDosHeader) {
         in.skipRawData(offset - lengthMSDosHeader);
         /* format string (fitting for 6 input bytes):
          * - 2s:  2x char (2 byte)
@@ -144,15 +149,18 @@ ArchType ScanHandler::checkArch(const QString &findingAbsPath)
 
         if (magic != magicPEHeader) {
             result = ArchType::ArchNA;
+            qDebug() << "checkArch(): " << "NA: magicPEHeader not there (" << findingAbsPath << ")";
         } else if (machine == IMAGE_FILE_MACHINE_I386) {
             result = ArchType::Arch32;
         } else if (machine == IMAGE_FILE_MACHINE_AMD64) {
             result = ArchType::Arch64;
         } else {
             result = ArchType::ArchNA;
+            qDebug() << "checkArch(): " << "NA: Unknown arch: " << machine << " (" << findingAbsPath << ")";
         }
     } else {
         result = ArchType::ArchNA;
+            qDebug() << "checkArch(): " << "NA: magicMSDosHeader not there (" << findingAbsPath << ")";
     }
 
     file.close();
@@ -186,9 +194,9 @@ void ScanHandler::slotPerformScan()
                     QDir::Files,
                     QDirIterator::Subdirectories);
 
-    qDebug() << "============================================";
-    qDebug() << "========== NEW SCAN ========================";
-    qDebug() << "============================================";
+//    qDebug() << "============================================";
+//    qDebug() << "========== NEW SCAN ========================";
+//    qDebug() << "============================================";
     QString finding;
 
     while (it.hasNext()) {
@@ -203,7 +211,7 @@ void ScanHandler::slotPerformScan()
         // Skip findings that are already part of tracked VstBuckets
         pathHash = pathHasher.calcFilepathHash(finding);
         if (!existingPathHashes.contains(pathHash)) {
-            qDebug() << "New finding: " << finding;
+//            qDebug() << "New finding: " << finding;
 
             QFileInfo fileType(finding);
             if ((fileType.suffix() == "dll")
@@ -252,7 +260,7 @@ void ScanHandler::slotPerformScan()
         QThread::sleep(1);
     }
 #endif
-    qDebug() << "--------------------------------------------";
+//    qDebug() << "--------------------------------------------";
 
     if (scanCanceledByUser) {
         emit(signalScanFinished(true, scanResults));
