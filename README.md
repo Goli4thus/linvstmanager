@@ -147,7 +147,7 @@ The found VSTs will have a probability attached to them:
 
 | Probability | Meaning                                                               |
 | ----------- | --------------------------------------------------------------------- |
-| 100%        | Save to say it's actually a VST                                       |
+| 100%        | Safe to say it's actually a VST                                       |
 | 75%         | Most likely a VST. Usually some older VSTs can fall in this category. |
 | NA          | No verification was active during the scan.                           |
 
