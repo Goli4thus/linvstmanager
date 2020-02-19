@@ -390,7 +390,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
                     bridgeType = VstBridge::LinVst3;
                 }
             }
-            archType = lh->checkArch(fileName);
+            archType = lh->checkArch(filepath);
             /* One could invoke linkhandler here to get newly added
              * VSTs to state "Disabled" right away. But if we consider that the user might
              * want to change the bridge of a VST right after the add, getting to "Disabled"
