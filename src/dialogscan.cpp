@@ -481,7 +481,11 @@ void DialogScan::getScanAmount(const QString &path, int &numDll, int &numVst3)
     QProcess process;
     QString pathSanitized = path;
 
-    pathSanitized.replace(QString(" "), QString("\\ "));
+    /* Sanitize path by putting into single quotes and escaping
+     * any single quotes already with the path */
+    pathSanitized.replace(QString("\'"), QString("\'\\\'\'"));
+    pathSanitized.prepend("'");
+    pathSanitized.append("'");
 
     QString cmd = (QStringList() << "bash -c \"find " << pathSanitized << " -iname '*.dll' -type f | wc -l\"").join("");
     process.start(cmd);

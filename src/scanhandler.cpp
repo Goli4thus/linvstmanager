@@ -80,7 +80,7 @@ bool ScanHandler::checkDllBasic(const QString &findingAbsPath, bool caseSensitiv
 
     /* Sanitize path by putting into single quotes and escaping
      * any single quotes already with the path */
-    pathSanitized.replace(QString("'"), QString("'\''"));
+    pathSanitized.replace(QString("\'"), QString("\'\\\'\'"));
     pathSanitized.prepend("'");
     pathSanitized.append("'");
 
