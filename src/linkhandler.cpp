@@ -10,7 +10,7 @@
 #include <QStringList>
 #include "datahasher.h"
 #include <QElapsedTimer>
-#include "scanhandler.h"
+#include "scanworker.h"
 
 LinkHandler::LinkHandler(const Preferences &t_prf, QVector<VstBucket> *pVstBuckets, DataHasher &pDataHasher, QObject *parent)
     : QObject(parent), prf(t_prf), dataHasher(pDataHasher)
@@ -397,7 +397,7 @@ RvLinkHandler LinkHandler::removeOrphans(const QStringList &filePathsOrphans)
 
 ArchType LinkHandler::checkArch(const QString &findingAbsPath)
 {
-    return ScanHandler::checkArch(findingAbsPath);
+    return ScanWorker::checkArch(findingAbsPath);
 }
 
 void LinkHandler::updateArch()

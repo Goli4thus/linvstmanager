@@ -45,6 +45,7 @@ SOURCES += \
         runguard.cpp \
         scanhandler.cpp \
         scanresult.cpp \
+        scanworker.cpp \
         sidebar.cpp \
         statisticline.cpp \
         verticalline.cpp \
@@ -74,6 +75,7 @@ HEADERS += \
         runguard.h \
         scanhandler.h \
         scanresult.h \
+        scanworker.h \
         sidebar.h \
         statisticline.h \
         verticalline.h \

@@ -9,6 +9,7 @@
 #include <QVector>
 #include "scanresult.h"
 #include "vstbucket.h"
+#include "scanworker.h"
 
 class ScanHandler : public QObject
 {
@@ -18,15 +19,16 @@ public:
                          QString pScanFolder,
                          bool pUseCheckBasic,
                          QObject *parent = nullptr);
-    static ArchType checkArch(const QString &findingAbsPath);
+//    static ArchType checkArch(const QString &findingAbsPath);
 
 private:
     QVector<VstBucket> mVstBuckets;
     QString mScanFolder;
     bool mUseCheckBasic;
-    QMap<VstType, QString> mapVstExtension;
-    void verifyDll(bool &verified, VstType &vstType, VstProbabilityType &vstProbability, const QString &finding);
-    bool checkDllBasic(const QString &findingAbsPath, bool caseSensitive, const QString &pattern);
+    QVector<ScanWorker *> mScanWorkers;
+    QVector<QThread *> mScanWorkerThreads;
+    QVector<QVector<ScanResult>> mScanResults;
+    QVector<bool> mWorkerDone;
 
 signals:
     void signalScanFinished(bool wasCanceled, QVector<ScanResult> scanResults);
@@ -36,6 +38,8 @@ signals:
 
 public slots:
     void slotPerformScan();
+    void slotScanWorkerFinished(const quint8 pWorkerID, bool pWasCanceled,
+                                QVector<ScanResult> pScanResults);
 
 };
 
