@@ -145,7 +145,7 @@ quint8 ConfigHandler::readPreferences(Preferences &prf, QString configVersion)
     prefBoolNamesOfInterest = mPrefBoolNamesOfInterest_V1_2;
 
     int k = 0;
-    for (int i = 0; i < prefBoolNamesOfInterest.size(); i++) {
+    for (int i = 0; i < prefBoolNamesOfInterest.size(); ++i) {
         xmlReader->readNextStartElement();
         if (prefBoolNamesOfInterest.at(i)) {
             elementName = xmlReader->name().toString();
@@ -180,7 +180,7 @@ quint8 ConfigHandler::readPreferences(Preferences &prf, QString configVersion)
 
     k = 0;
     volatile bool xmlStatus;
-    for (int i = 0; i < prefPathNamesOfInterest.size(); i++) {
+    for (int i = 0; i < prefPathNamesOfInterest.size(); ++i) {
         xmlStatus = xmlReader->readNextStartElement();
         if (!xmlStatus) {
             qDebug() << Q_FUNC_INFO << "Probably something wrong with "

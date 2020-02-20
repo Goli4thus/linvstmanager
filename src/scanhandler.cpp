@@ -251,7 +251,7 @@ void ScanHandler::slotPerformScan()
     }
 #else
     // Test progressbar mechanism by simulating a long scan (fixed time using timer)
-    for (int i=0; i < 55; i++) {
+    for (int i=0; i < 55; ++i) {
         // Check if scan operation has been canceled by user
         if (QThread::currentThread()->isInterruptionRequested()) {
             scanCanceledByUser = true;

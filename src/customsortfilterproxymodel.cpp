@@ -16,7 +16,7 @@ bool CustomSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
     QString strAllColumns;
 
     // Get source model indices of all columsn of current row
-    for (int i=0; i < sourceModel()->columnCount(); i++) {
+    for (int i=0; i < sourceModel()->columnCount(); ++i) {
         modelIndices.append(sourceModel()->index(sourceRow, i, sourceParent));
     }
 
@@ -31,7 +31,7 @@ bool CustomSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
         // Apply regex accross all columns of current row
         // First step: Construct a combined string of all columns of current row (space separated).
         strAllColumns.clear();
-        for (int i=0; i < modelIndices.size(); i++) {
+        for (int i=0; i < modelIndices.size(); ++i) {
             if ((i == nsMW::TableColumnPosType::Index) && (!mShowIndexColumn)) {
                 // Skip evaluating 'index' column if it is hidden.
                 continue;

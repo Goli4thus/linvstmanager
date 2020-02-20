@@ -505,7 +505,7 @@ void MainWindow::slotOrphanDetection()
     QStringList orphansList = mModelVstBuckets->checkForOrphans();
     if (!orphansList.isEmpty()) {
         QString orphansFormatted;
-        for (int i=0; i < orphansList.size(); i++) {
+        for (int i=0; i < orphansList.size(); ++i) {
             orphansFormatted.append("  " + orphansList.at(i) + "\n");
         }
 
@@ -794,7 +794,7 @@ void MainWindow::changeBridge(VstBridge bridgeType)
                                   "the selected VST's type or is not enabled in preferences.\n"
                                   "Therefore nothing has been change for the respective VSTs.");
             QString tmpStr;
-//            for (int i=0; i < skippedIndices.size(); i++) {
+//            for (int i=0; i < skippedIndices.size(); ++i) {
             for (int skippedIndice : skippedIndices) {
                 tmpStr.append(QString::number(skippedIndice));
                 tmpStr.append(", ");

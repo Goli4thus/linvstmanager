@@ -33,7 +33,7 @@ RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bo
     if (refreshSingle) {
         indexOfVstBuckets.append(singleIndex);
     } else {
-        for (int i=0; i < mVstBuckets->size(); i++) {
+        for (int i=0; i < mVstBuckets->size(); ++i) {
             indexOfVstBuckets.append(i);
         }
     }
@@ -346,7 +346,7 @@ QStringList LinkHandler::checkForOrphans()
     }
 
     QFileInfo fileInfo;
-    for (int i=0; i < strListSoFiles.size(); i++) {
+    for (int i=0; i < strListSoFiles.size(); ++i) {
         fileInfo.setFile(linkFolder.path() + "/" + strListSoFiles.at(i));
         // Qt docs: "Note: If the file is a softlink that points to a non-existing file, false is returned."
         // -->> Exactly what we want.
@@ -365,7 +365,7 @@ QStringList LinkHandler::checkForOrphans()
              * is part of the list of internal "VST name + '.so' ending" entries. */
             isOrphan = true;
             QString softlinkName = fileInfo.fileName();
-            for (int i=0; i < trackedSoftlinkNames.size(); i++) {
+            for (int i=0; i < trackedSoftlinkNames.size(); ++i) {
                 if (trackedSoftlinkNames.at(i) == softlinkName) {
                     // Softlink actually refers to tracked VST. Therefore no orphan
                     isOrphan = false;
@@ -431,7 +431,7 @@ void LinkHandler::updateConflicts(bool refreshSingle, int singleIndex)
         }
     }
 
-    for (int i=0; i < mVstBuckets->size(); i++) {
+    for (int i=0; i < mVstBuckets->size(); ++i) {
         auto &vstBucket = (*mVstBuckets)[i];
         if (vstBucket.status != VstStatus::Blacklisted) {
             // Check if name of VST is still available.
