@@ -7,11 +7,14 @@
 #include <QDirIterator>
 #include "vstbucket.h"
 #include "scanresult.h"
+#include <QCoreApplication>
 #include <QDebug>
 #include <QProcess>
 #include <QThread>
 #include "datahasher.h"
 #include <QDataStream>
+#include <QElapsedTimer>
+#include <QDebug>
 
 
 ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
@@ -23,162 +26,21 @@ ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
     mVstBuckets = pVstBuckets;
     mScanFolder = std::move(pScanFolder);
     mUseCheckBasic = pUseCheckBasic;
-
-    mapVstExtension.insert(VstType::VST2, "*.dll");
-    mapVstExtension.insert(VstType::VST3, "*.vst3");
-}
-
-void ScanHandler::verifyDll(bool &verified,
-                            VstType &vstType,
-                            VstProbabilityType &vstProbability,
-                            const QString &finding)
-{
-    /*- checks that seems to make the most sense (overall no delimiting of search pattern)
-     *    - probability: 100%
-     *        - VSTPluginMain: case insensitive
-     *        - PtsV: case sensitive
-     *    - probability: 75%
-     *        - PtsV: case insensitive
-     *        - VstP: case insensitive
-     *    - probability: NA (not available) (if no verification was applied) */
-
-    if (mUseCheckBasic) {
-        bool C1 = checkDllBasic(finding, false, "VSTPluginMain");
-        bool C2 = checkDllBasic(finding, true,  "PtsV");
-        bool C3 = checkDllBasic(finding, false, "PtsV");
-        bool C4 = checkDllBasic(finding, false, "VstP");
-        verified = true;
-
-        if (C1 || C2) {
-            vstType = VstType::VST2;
-            vstProbability = VstProbabilityType::p100;
-            emit (signalFoundVst2());
-        } else if (C3 || C4) {
-            vstType = VstType::VST2;
-            vstProbability = VstProbabilityType::p75;
-            emit (signalFoundVst2());
-        } else {
-            vstType = VstType::NoVST;
-            vstProbability = VstProbabilityType::pNA;
-            emit (signalFoundDll());
-        }
-    } else {
-        // Without verification being active, blindly consider it an unverified VST2.
-        vstType = VstType::VST2;
-        vstProbability = VstProbabilityType::pNA;
-        verified = false;
-        emit (signalFoundVst2());
+    mIdealThreadCount = QThread::idealThreadCount();
+    mWorkerDone.resize(mIdealThreadCount);
+    for (auto &i : mWorkerDone) {
+        i = true;
     }
 }
 
-bool ScanHandler::checkDllBasic(const QString &findingAbsPath, bool caseSensitive, const QString &pattern)
-{
-    bool retVal;
-    QProcess process;
-    QString strCaseSens;
-    QString pathSanitized = findingAbsPath;
-
-    /* Sanitize path by putting into single quotes and escaping
-     * any single quotes already with the path */
-    pathSanitized.replace(QString("\'"), QString("\'\\\'\'"));
-    pathSanitized.prepend("'");
-    pathSanitized.append("'");
-
-    if (caseSensitive) {
-        strCaseSens = "--no-ignore-case";
-    } else {
-        strCaseSens = "--ignore-case";
-    }
-
-    QString cmd = (QStringList() << "bash -c \"strings " << pathSanitized << " | grep " << strCaseSens << " " << pattern << "\"").join("");
-    process.start(cmd);
-    process.waitForFinished();
-    QString retStr(process.readAllStandardOutput());
-
-    if (retStr.contains(pattern, Qt::CaseInsensitive)) {
-        retVal = true;
-    } else {
-        retVal = false;
-    }
-    return retVal;
-}
-
-ArchType ScanHandler::checkArch(const QString &findingAbsPath)
-{
-    // adapted from: http://stackoverflow.com/a/495305/1338797
-    ArchType result;
-    QFile file(findingAbsPath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "checkArch(): " << "NA: file open problem (" << findingAbsPath << ")";
-        return ArchType::ArchNA;
-    }
-    QDataStream in(&file);
-    const quint8 lengthMSDosHeader = 64;
-    const quint8 paddingMSDosHeader = 58;
-    const quint8 paddingPEHeader = 2;
-    const quint16 magicMSDosHeader = 0x4D5A; // 'MZ'
-    const quint16 magicPEHeader = 0x5045;    // 'PE'
-    const quint16 IMAGE_FILE_MACHINE_I386 = 0x014c;
-    const quint16 IMAGE_FILE_MACHINE_AMD64 =0x8664;
-
-    /* format string (fitting for 64 input bytes):
-     * - magic:   2x char (2 byte)
-     * - padding: 58x char (58 byte)
-     * - offset:  1x int (4 byte)
-     * Read and check the MS-DOS-header */
-    quint16 magic;
-    quint32 offset;
-    in.setByteOrder(QDataStream::BigEndian);
-    in >> magic;
-    in.skipRawData(paddingMSDosHeader);
-    in.setByteOrder(QDataStream::LittleEndian);
-    in >> offset;
-
-    if (magic == magicMSDosHeader) {
-        in.skipRawData(offset - lengthMSDosHeader);
-        /* format string (fitting for 6 input bytes):
-         * - 2s:  2x char (2 byte)
-         * - 2s:  2x char (2 byte)
-         * - H:   1x unsigned short (2 byte) */
-        quint16 machine;
-        in.setByteOrder(QDataStream::BigEndian);
-        in >> magic;
-        in.skipRawData(paddingPEHeader);
-        in.setByteOrder(QDataStream::LittleEndian);
-        in >> machine;
-
-        if (magic != magicPEHeader) {
-            result = ArchType::ArchNA;
-            qDebug() << "checkArch(): " << "NA: magicPEHeader not there (" << findingAbsPath << ")";
-        } else if (machine == IMAGE_FILE_MACHINE_I386) {
-            result = ArchType::Arch32;
-        } else if (machine == IMAGE_FILE_MACHINE_AMD64) {
-            result = ArchType::Arch64;
-        } else {
-            result = ArchType::ArchNA;
-            qDebug() << "checkArch(): " << "NA: Unknown arch: " << machine << " (" << findingAbsPath << ")";
-        }
-    } else {
-        result = ArchType::ArchNA;
-            qDebug() << "checkArch(): " << "NA: magicMSDosHeader not there (" << findingAbsPath << ")";
-    }
-
-    file.close();
-    return result;
-}
 
 void ScanHandler::slotPerformScan()
 {
-//#define D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
-#ifndef D_TEST_PROGRESSBAR_FIXED_SCAN_DURATION
+    QElapsedTimer eTimer;
+    eTimer.start();
+    qDebug() << "Scan start: ";
     QVector<ScanResult> scanResults;
     QByteArrayList existingPathHashes;
-    QByteArray pathHash;
-    QByteArray soFileHash;
-    VstType vstType;
-    ArchType archType;
-    VstProbabilityType vstProbability;
-    bool verified;
     bool scanCanceledByUser = false;
     /* No shared instance use by other objects is needed here,
      * because no soTmplHash updates are being done.
@@ -197,69 +59,105 @@ void ScanHandler::slotPerformScan()
 //    qDebug() << "============================================";
 //    qDebug() << "========== NEW SCAN ========================";
 //    qDebug() << "============================================";
-    QString finding;
-
+    QStringList findings;
     while (it.hasNext()) {
-        finding = it.next();
+        // Collect all filepaths first
+        findings.append(it.next());
+    }
 
-        // Check if scan operation has been canceled by user
+    // Depending on amount, split up QStringList into multiple segments (i.e. 2 or 4)
+    QVector<QStringList> findingsWorkerSublist;
+    int amount = findings.size();
+    int numberOfWorkers;
+    if (amount < 20) {
+        // Prepare for two worker threads
+        findingsWorkerSublist.resize(2);
+        findingsWorkerSublist[0].append(findings.mid(0, amount / 2));
+        findingsWorkerSublist[1].append(findings.mid(amount / 2));
+        numberOfWorkers = 2;
+    } else if (amount <= 128) {  // 128 is the max threadcount of a AMD Threadripper CPU atm.
+        // Prepare for four worker threads
+        int sub = amount / 4;
+        findingsWorkerSublist.resize(4);
+        findingsWorkerSublist[0].append(findings.mid(0, sub));
+        findingsWorkerSublist[1].append(findings.mid(sub, sub));
+        findingsWorkerSublist[2].append(findings.mid(sub * 2, sub));
+        findingsWorkerSublist[3].append(findings.mid(sub * 3));
+        numberOfWorkers = 4;
+    } else {
+        // Prepare for ideal number of worker threads
+        int sub = amount / mIdealThreadCount;
+        numberOfWorkers = mIdealThreadCount;
+        findingsWorkerSublist.resize(numberOfWorkers);
+        for (int i=0; i < (numberOfWorkers - 1); ++i) {
+            findingsWorkerSublist[i].append(findings.mid(sub * i, sub));
+        }
+        findingsWorkerSublist[numberOfWorkers-1].append(findings.mid(sub * (numberOfWorkers - 1)));
+    }
+
+    qDebug() << "Scanning with " << numberOfWorkers << "threads.";
+
+    // Create required amount of worker threads, make connections, and start them.
+    mScanWorkers.resize(numberOfWorkers);
+    mScanWorkerThreads.resize(numberOfWorkers);
+    mScanResults.resize(numberOfWorkers);
+    for (int i=0; i < numberOfWorkers; ++i) {
+        // ----------- worker --------------------------------------
+        mScanWorkers[i] = new ScanWorker(i,
+                                         findingsWorkerSublist[i],
+                                         mUseCheckBasic,
+                                         existingPathHashes);
+        mScanWorkerThreads[i] = new QThread(this);
+        mScanWorkers[i]->moveToThread(mScanWorkerThreads[i]);
+
+        // Signal chain for scan start
+        connect(mScanWorkerThreads[i], &QThread::started, mScanWorkers[i], &ScanWorker::slotPerformScan);
+
+        // Signal chain for scan finish/cancel
+        connect(mScanWorkers[i], &ScanWorker::signalScanWorkerFinished, this, &ScanHandler::slotScanWorkerFinished);
+        connect(mScanWorkers[i], &ScanWorker::signalScanWorkerFinished, mScanWorkers[i], &ScanWorker::deleteLater);
+        connect(mScanWorkerThreads[i], &QThread::finished, mScanWorkerThreads[i], &QThread::deleteLater);
+
+        // Scan progress reporting
+        connect(mScanWorkers[i], &ScanWorker::signalFoundVst2, this, &ScanHandler::signalFoundVst2);
+        connect(mScanWorkers[i], &ScanWorker::signalFoundVst3, this, &ScanHandler::signalFoundVst3);
+        connect(mScanWorkers[i], &ScanWorker::signalFoundDll, this, &ScanHandler::signalFoundDll);
+    }
+
+    // Start worker threads which will their portion of the scan
+    for (int i=0; i < numberOfWorkers; ++i) {
+        mWorkerDone[i] = false;
+        mScanWorkerThreads[i]->start();
+    }
+
+
+    forever {
+        QCoreApplication::processEvents();
+        // Wait for worker threads to finish, while:
+        //   - polling "user interruption request"
         if (QThread::currentThread()->isInterruptionRequested()) {
             scanCanceledByUser = true;
-            break;
+            for (int i=0; i < numberOfWorkers; ++i) {
+                mScanWorkerThreads[i]->requestInterruption();
+            }
         }
 
-        // Skip findings that are already part of tracked VstBuckets
-        pathHash = pathHasher.calcFilepathHash(finding);
-        if (!existingPathHashes.contains(pathHash)) {
-//            qDebug() << "New finding: " << finding;
+        // If user cancels: Trigger cancellation of worker threads, wait for them
+        // to finish and finish ScanThread itself
 
-            QFileInfo fileType(finding);
-            if ((fileType.suffix() == "dll")
-                    || (fileType.suffix() == "Dll")
-                    || (fileType.suffix() == "DLL")) {
-                verifyDll(verified, vstType, vstProbability, finding);
-                if (vstType == VstType::NoVST) {
-                    continue;
+        //   - polling worker threads to finish (poll flags that are set by slots)
+        if (!mWorkerDone.contains(false)) {
+//        if (mWorkerDone[0] && mWorkerDone[1] && mWorkerDone[2] && mWorkerDone[3]) {
+            if (!scanCanceledByUser) {
+                // If worker finish normally: Combine results and finish ScanThread
+                for (int i=0; i < numberOfWorkers; ++i) {
+                    scanResults.append(mScanResults[i]);
                 }
-            } else {  // ".vst3"
-                vstType = VstType::VST3;
-                vstProbability = VstProbabilityType::p100;
-                verified = true;
-                emit (signalFoundVst3());
             }
-
-            archType = checkArch(finding);
-            if (archType == ArchType::ArchNA) {
-                // If we can't determine the architecture, then there's no
-                // point in being optimistic about the probability.
-                vstProbability = VstProbabilityType::pNA;
-            }
-
-            QString fileName = QFileInfo(finding).fileName();
-            QString suffix = QFileInfo(finding).suffix();
-            // subtract suffix including period from filename
-            scanResults.append(ScanResult(fileName.chopped(suffix.size() + 1),
-                                          finding,
-                                          vstType,
-                                          archType,
-                                          vstProbability,
-                                          verified,
-                                          pathHash,
-                                          soFileHash, // empty for now
-                                          false));
-        }
-    }
-#else
-    // Test progressbar mechanism by simulating a long scan (fixed time using timer)
-    for (int i=0; i < 55; ++i) {
-        // Check if scan operation has been canceled by user
-        if (QThread::currentThread()->isInterruptionRequested()) {
-            scanCanceledByUser = true;
             break;
         }
-        QThread::sleep(1);
+
     }
-#endif
 //    qDebug() << "--------------------------------------------";
 
     if (scanCanceledByUser) {
@@ -267,4 +165,16 @@ void ScanHandler::slotPerformScan()
     } else {
         emit(signalScanFinished(false, scanResults));
     }
+    qDebug() << "Scan end: " << eTimer.restart() << " ms ";
+}
+
+void ScanHandler::slotScanWorkerFinished(const quint8 pWorkerID,
+                                         bool pWasCanceled,
+                                         QVector<ScanResult> pScanResults)
+{
+    mWorkerDone[pWorkerID] = true;
+    if (!pWasCanceled) {
+        mScanResults[pWorkerID] = pScanResults;
+    }
+    mScanWorkerThreads[pWorkerID]->quit();
 }
