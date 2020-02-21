@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QApplication>
+#include <QSettings>
 #include "defines.h"
 #include <QPixmap>
 #include "config.h"
@@ -164,6 +165,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSideBar->slotUpdateCounts();
 
     mLogOutput->appendLog("Setup done.");
+    readSettings();
 
     // perform UI resize within event loop started with a.exec()
     QTimer::singleShot(0, this, SLOT(slotResizeMainUi()));
@@ -833,8 +835,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     if (retVal == QMessageBox::Save) {
         slotSave();
+        writeSettings();
         QApplication::quit();
     } else if ((retVal == QMessageBox::Discard) || (retVal == QMessageBox::Yes)) {
+        writeSettings();
         QApplication::quit();
     } else if ((retVal == QMessageBox::Cancel) || (retVal == QMessageBox::No)) {
         event->ignore();
@@ -848,4 +852,22 @@ void MainWindow::updateSoTmplHashes(const QVector<VstBridge> &changedBridges)
         soTmplPath = prf->getPathSoTmplBridge(bridge);
         mDataHasher->updateHashSoTmplBridge(bridge, soTmplPath);
     }
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings("linvst/manager", "manager");
+    settings.beginGroup("MainWindow");
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
+    settings.endGroup();
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings("linvst/manager", "manager");
+    settings.beginGroup("MainWindow");
+    resize(settings.value("size", QSize(400, 400)).toSize());
+    move(settings.value("pos", QPoint(200, 200)).toPoint());
+    settings.endGroup();
 }

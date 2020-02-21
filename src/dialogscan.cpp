@@ -16,6 +16,7 @@
 #include <QMessageBox>
 #include <QTableView>
 #include <QComboBox>
+#include <QSettings>
 #include "modelscan.h"
 #include "vstbucket.h"
 #include <QHeaderView>
@@ -248,6 +249,7 @@ void DialogScan::setupUI()
     setupMouseMenu();
 
     mProgressDialog = new CustomProgressDialog();
+    readSettings();
 
     QTimer::singleShot(0, this, SLOT(slotResizeTableToContent()));
 }
@@ -409,6 +411,7 @@ void DialogScan::slotScanFinished(bool newFindings)
 
 void DialogScan::slotCancel()
 {
+    writeSettings();
     this->close();
 }
 
@@ -423,6 +426,7 @@ void DialogScan::slotAdd()
                                        "Hint: Try mouse right click menu in table.");
     } else {
         emit(signalScanSelection(scanSelection));
+        writeSettings();
         this->close();
     }
 }
@@ -473,6 +477,7 @@ void DialogScan::reject()
     // Empty the model, so it's a fresh the next time the scan dialog is opened.
     mModelScan->emptyModel();
 
+    writeSettings();
     QDialog::reject();
 }
 
@@ -498,6 +503,24 @@ void DialogScan::getScanAmount(const QString &path, int &numDll, int &numVst3)
     process.waitForFinished();
     retStr = process.readAllStandardOutput();
     numVst3 = retStr.toInt();
+}
+
+void DialogScan::writeSettings()
+{
+    QSettings settings("linvst/manager", "manager");
+    settings.beginGroup("DialogScan");
+    settings.setValue("size", size());
+    settings.setValue("pos", pos());
+    settings.endGroup();
+}
+
+void DialogScan::readSettings()
+{
+    QSettings settings("linvst/manager", "manager");
+    settings.beginGroup("DialogScan");
+    resize(settings.value("size", QSize(400, 400)).toSize());
+    move(settings.value("pos", QPoint(200, 200)).toPoint());
+    settings.endGroup();
 }
 
 void DialogScan::slotResizeTableToContent()

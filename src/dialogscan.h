@@ -82,6 +82,8 @@ private:
     void reject() override;
     void getScanAmount(const QString &path, int &numDll, int &numVst3);
     int mNumVst3, mNumDll;
+    void writeSettings();
+    void readSettings();
 private slots:
     void slotSelectScanFolder();
     void slotScan();

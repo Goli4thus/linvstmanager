@@ -75,6 +75,8 @@ private:
     DataHasher *mDataHasher;
     void updateSoTmplHashes(const QVector<VstBridge> &changedBridges);
     SideBar *mSideBar;
+    void writeSettings();
+    void readSettings();
 
 private slots:
     void slotResizeMainUi();
