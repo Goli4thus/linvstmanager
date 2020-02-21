@@ -90,15 +90,16 @@ bool ScanWorker::checkDllBasic(const QString &findingAbsPath,
         strCaseSens = "--ignore-case";
     }
 
-    QString cmd = (QStringList() << "bash -c \"strings " << pathSanitized << " | grep " << strCaseSens << " " << pattern << "\"").join("");
-    process.start(cmd);
-    process.waitForFinished();
-    QString retStr(process.readAllStandardOutput());
+    QString cmd = QString("bash -c \"grep -q %1 '%2' %3\"").arg(strCaseSens).arg(pattern).arg(pathSanitized);
+//    qDebug() << cmd;
+    int exitCode = QProcess::execute(cmd);
+//    qDebug() << "exitcode: " << exitCode;
 
-    if (retStr.contains(pattern, Qt::CaseInsensitive)) {
-        retVal = true;
-    } else {
+    if (exitCode) {
         retVal = false;
+    } else {
+        // ExitCode 0 means there was a match.
+        retVal = true;
     }
     return retVal;
 }
