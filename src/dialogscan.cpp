@@ -228,7 +228,6 @@ void DialogScan::setupUI()
 
     this->setLayout(mLayoutVMain);
     setMinimumWidth(590);
-    resize(680, 600);
 
     connect(mPushButtonSelectFolder, &QPushButton::pressed, this, &DialogScan::slotSelectScanFolder);
     connect(mPushButtonScan, &QPushButton::pressed, this, &DialogScan::slotScan);
@@ -518,7 +517,7 @@ void DialogScan::readSettings()
 {
     QSettings settings("linvst/manager", "manager");
     settings.beginGroup("DialogScan");
-    resize(settings.value("size", QSize(400, 400)).toSize());
+    resize(settings.value("size", QSize(680, 600)).toSize());
     move(settings.value("pos", QPoint(200, 200)).toPoint());
     settings.endGroup();
 }

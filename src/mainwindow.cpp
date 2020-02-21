@@ -867,7 +867,7 @@ void MainWindow::readSettings()
 {
     QSettings settings("linvst/manager", "manager");
     settings.beginGroup("MainWindow");
-    resize(settings.value("size", QSize(400, 400)).toSize());
+    resize(settings.value("size", QSize(800, 550)).toSize());
     move(settings.value("pos", QPoint(200, 200)).toPoint());
     settings.endGroup();
 }
