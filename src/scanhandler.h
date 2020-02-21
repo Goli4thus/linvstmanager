@@ -29,6 +29,7 @@ private:
     QVector<QThread *> mScanWorkerThreads;
     QVector<QVector<ScanResult>> mScanResults;
     QVector<bool> mWorkerDone;
+    int mIdealThreadCount;
 
 signals:
     void signalScanFinished(bool wasCanceled, QVector<ScanResult> scanResults);

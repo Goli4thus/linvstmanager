@@ -26,7 +26,8 @@ ScanHandler::ScanHandler(const QVector<VstBucket> &pVstBuckets,
     mVstBuckets = pVstBuckets;
     mScanFolder = std::move(pScanFolder);
     mUseCheckBasic = pUseCheckBasic;
-    mWorkerDone.resize(4);
+    mIdealThreadCount = QThread::idealThreadCount();
+    mWorkerDone.resize(mIdealThreadCount);
     for (auto &i : mWorkerDone) {
         i = true;
     }
@@ -66,24 +67,35 @@ void ScanHandler::slotPerformScan()
 
     // Depending on amount, split up QStringList into multiple segments (i.e. 2 or 4)
     QVector<QStringList> findingsWorkerSublist;
-    int size = findings.size();
+    int amount = findings.size();
     int numberOfWorkers;
-    if (size < 20) {
+    if (amount < 20) {
         // Prepare for two worker threads
         findingsWorkerSublist.resize(2);
-        findingsWorkerSublist[0].append(findings.mid(0, size / 2));
-        findingsWorkerSublist[1].append(findings.mid(size / 2));
+        findingsWorkerSublist[0].append(findings.mid(0, amount / 2));
+        findingsWorkerSublist[1].append(findings.mid(amount / 2));
         numberOfWorkers = 2;
-    } else {
+    } else if (amount <= 128) {  // 128 is the max threadcount of a AMD Threadripper CPU atm.
         // Prepare for four worker threads
-        int sub = size / 4;
+        int sub = amount / 4;
         findingsWorkerSublist.resize(4);
         findingsWorkerSublist[0].append(findings.mid(0, sub));
         findingsWorkerSublist[1].append(findings.mid(sub, sub));
         findingsWorkerSublist[2].append(findings.mid(sub * 2, sub));
         findingsWorkerSublist[3].append(findings.mid(sub * 3));
         numberOfWorkers = 4;
+    } else {
+        // Prepare for ideal number of worker threads
+        int sub = amount / mIdealThreadCount;
+        numberOfWorkers = mIdealThreadCount;
+        findingsWorkerSublist.resize(numberOfWorkers);
+        for (int i=0; i < (numberOfWorkers - 1); ++i) {
+            findingsWorkerSublist[i].append(findings.mid(sub * i, sub));
+        }
+        findingsWorkerSublist[numberOfWorkers-1].append(findings.mid(sub * (numberOfWorkers - 1)));
     }
+
+    qDebug() << "Scanning with " << numberOfWorkers << "threads.";
 
     // Create required amount of worker threads, make connections, and start them.
     mScanWorkers.resize(numberOfWorkers);
@@ -134,7 +146,8 @@ void ScanHandler::slotPerformScan()
         // to finish and finish ScanThread itself
 
         //   - polling worker threads to finish (poll flags that are set by slots)
-        if (mWorkerDone[0] && mWorkerDone[1] && mWorkerDone[2] && mWorkerDone[3]) {
+        if (!mWorkerDone.contains(false)) {
+//        if (mWorkerDone[0] && mWorkerDone[1] && mWorkerDone[2] && mWorkerDone[3]) {
             if (!scanCanceledByUser) {
                 // If worker finish normally: Combine results and finish ScanThread
                 for (int i=0; i < numberOfWorkers; ++i) {
