@@ -81,6 +81,7 @@ set(SOURCES
     src/preferences.cpp
     src/runguard.cpp
     src/scanhandler.cpp
+    src/scanworker.cpp
     src/scanresult.cpp
     src/sidebar.cpp
     src/statisticline.cpp

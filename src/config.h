@@ -13,6 +13,6 @@
 #define D_VERSION_STRING "1.0.0"
 
 // Various constants
-#define D_OUTPUT_DEBUG_MSG 1
+#define D_OUTPUT_DEBUG_MSG 0
 
 #endif // CORE_CONFIG_H
