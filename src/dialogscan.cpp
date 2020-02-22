@@ -77,9 +77,9 @@ void DialogScan::setupUI()
                             "Therefore try to make an appropriate selection.\n"
                             "(i.e. navigate into the desired wine-prefix where the VSTs are)\n"
                             "\n"
-                            "Try not to scan starting from the base of a wine prefix. There are A LOT of dll files\n"
-                            "located in a wine prefix and the scan will take a long time to complete, if it has to\n"
-                            "check every single dll file (using the \"Verify\" option below).\n"
+                            "If you decide to scan a complete wine prefix, be aware that there are a lot of dll files\n"
+                            "located in a wine prefix and the scan might take some time (depending on how powerful\n"
+                            "your CPU is), if it has to check every single dll file (using the \"Verify\" option below).\n"
                             "\n"
                             "The \"Scan folder contains:\" section will show the amount of *.dll and *.vst3 files\n"
                             "that are located within the currently selected scan folder.");
