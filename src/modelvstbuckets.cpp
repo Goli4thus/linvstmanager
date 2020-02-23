@@ -359,8 +359,10 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
                 break;
             }
 
-            // Check if name of VST already exists. Mark as "Conflict" if so.
-            if (vstBucket.name.compare(vstName) == 0) {
+            // Check if name of VST already exists (ignore 'blacklisted' though).
+            // Mark as "Conflict" if so.
+            if ((vstBucket.status != VstStatus::Blacklisted) &&
+                    (vstBucket.name.compare(vstName) == 0)) {
                 initStatus = VstStatus::Conflict;
             }
         }

@@ -34,7 +34,7 @@ private:
     bool checkSoHashMatch(const QByteArray &soFileHash, const VstBridge vstBridge);
     QVector<VstBucket>*mVstBuckets;
     DataHasher &dataHasher;
-    void updateConflicts(bool refreshSingle, int singleIndex);
+    void updateConflicts();
 
 signals:
 

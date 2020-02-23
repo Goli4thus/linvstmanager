@@ -39,7 +39,7 @@ RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bo
     }
 
     if (checkExistingForConflict) {
-        updateConflicts(refreshSingle, singleIndex);
+        updateConflicts();
     }
 
     for(const auto &index : indexOfVstBuckets) {
@@ -228,7 +228,8 @@ RvLinkHandler LinkHandler::renameVst(const int &indexOfVstBucket, const QString 
         (*mVstBuckets)[indexOfVstBucket].name = nameNew;
     }
 
-    refreshStatus(true, indexOfVstBucket, false, true);
+    // Do a full refresh including conflict reevaluation
+    refreshStatus(false, 0, false, true);
 
     return RvLinkHandler::LH_OK;
 }
@@ -271,6 +272,9 @@ RvLinkHandler LinkHandler::blacklistVst(const QVector<int> &indexOfVstBuckets)
             vstBucket.status = VstStatus::Blacklisted;
         }
     }
+
+    // Do a full refresh including conflict reevaluation
+    refreshStatus(false, 0, false, true);
 
     return retVal;
 }
@@ -416,7 +420,7 @@ bool LinkHandler::checkSoHashMatch(const QByteArray &soFileHash, const VstBridge
     return soFileHash.compare(dataHasher.getHashSoTmplBridge(vstBridge)) == 0;
 }
 
-void LinkHandler::updateConflicts(bool refreshSingle, int singleIndex)
+void LinkHandler::updateConflicts()
 {
     /* Basically:
      * 1) Make a list of all unique names.
@@ -426,7 +430,8 @@ void LinkHandler::updateConflicts(bool refreshSingle, int singleIndex)
      */
     QVector<QString> uniqueNames;
     for (const auto &vstBucketOfAll : *mVstBuckets) {
-        if (!uniqueNames.contains(vstBucketOfAll.name)) {
+        if ((vstBucketOfAll.status != VstStatus::Blacklisted) &&
+                (!uniqueNames.contains(vstBucketOfAll.name))) {
             uniqueNames.append(vstBucketOfAll.name);
         }
     }
@@ -439,8 +444,8 @@ void LinkHandler::updateConflicts(bool refreshSingle, int singleIndex)
             if (index != -1) {
                 // Still available. Claim it.
                 uniqueNames.remove(index);
-                // Reset status for later re-evaluation
-                if (refreshSingle && (i == singleIndex)) {
+                // Reset previous "Conflict" status for later re-evaluation
+                if (vstBucket.status == VstStatus::Conflict) {
                     vstBucket.status = VstStatus::NA;
                 }
             } else {

@@ -115,7 +115,7 @@ void DialogRename::slotButtonAccept()
     } else {
         emit(signalRenameAccept(mIndexNameOld, nameNew));
         QVector<VstBridge> tmp;
-        emit(signalConfigDataChanged(true, tmp));
+        emit(signalConfigDataChanged(false, tmp));
         this->close();
     }
 }
