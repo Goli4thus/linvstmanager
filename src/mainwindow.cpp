@@ -535,6 +535,7 @@ void MainWindow::slotFeedbackLogOutput(const QString &msg, bool isVerboseInfo = 
 void MainWindow::slotFeedbackUpdateDone()
 {
 //    QMessageBox::information(this, "Update done", "Update for all VSTs is done.");
+    mSideBar->slotUpdateCounts();
     mLogOutput->appendLog("Update is done.");
 }
 
