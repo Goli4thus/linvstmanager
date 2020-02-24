@@ -318,9 +318,18 @@ QVariant ModelVstBuckets::headerData(int section, Qt::Orientation orientation, i
                                "Orphan,      // The so-file seems orphaned as it doesn't refer to an existing VST-dll\n"
                                "NA,          // Initial state\n"
                                "Blacklisted  // VST is blacklisted from being handled");
+            } else if (section == nsMW::TableColumnPosType::VstType) {
+                return QString("VST2\n"
+                               "VST3");
+            } else if (section == nsMW::TableColumnPosType::ArchType) {
+                return QString("64 bit\n"
+                               "32 bit\n"
+                               "NA: No information available");
             } else if (section == nsMW::TableColumnPosType::Bridge) {
                 return QString("A bridge colored in red means\n"
-                               "the bridge is disabled in preferences");
+                               "the bridge is disabled in preferences.\n"
+                               "\nPossible bridges:\n"
+                               "LinVst, LinVst-X, LinVst3, LinVst3-X");
             }
         }
         break;

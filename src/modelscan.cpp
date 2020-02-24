@@ -124,8 +124,6 @@ QVariant ModelScan::data(const QModelIndex &index, int role) const
                 if (index.column() == nsDS::TableColumnPosType::Status) {
                     return QString("-S-\t: Selected\n"
                                    "---\t: Unselected\n");
-                } else if (index.column() == nsDS::TableColumnPosType::VstType) {
-                    return QString("VST2 (?)\t: Unverified dll-file\n");
                 }
             }
             break;
@@ -216,11 +214,20 @@ QVariant ModelScan::headerData(int section, Qt::Orientation orientation, int rol
         case Qt::ToolTipRole: {
             if (section == nsDS::TableColumnPosType::Status) {
                 return QString("-S-\t: Selected\n"
-                               "---\t: Unselected\n");
+                               "---\t: Unselected");
             } else if (section == nsDS::TableColumnPosType::VstType) {
-                return QString("VST2 (?)\t: Unverified dll-file\n");
+                return QString("VST2:\t\tVerified VST2 file\n"
+                               "VST2 (?):\tUnverified dll-file\n"
+                               "VST3:\t\tVST3 file");
+            } else if (section == nsDS::TableColumnPosType::ArchType) {
+                return QString("64 bit\n"
+                               "32 bit\n"
+                               "NA: No information available");
             } else if (section == nsDS::TableColumnPosType::Probability) {
-                return QString("Probability of the scanned dll being a VST.");
+                return QString("Probability of the scanned dll being a VST\n"
+                               "- 100%:\tDefinitely a VST\n"
+                               "- 75%:\tMost likely a VST\n"
+                               "- NA:\tNo estimation available");
             }
         }
         break;
