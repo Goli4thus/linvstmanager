@@ -73,12 +73,16 @@ Nevertheless, here are some distributions and the needed packages:
     sudo apt install cmake make gcc git qt5-default
     ```
     
-2. Clone this repository
-  ```
-  git clone https://github.com/goli4thus/linvstmanager
-  ```
+2. Two options to get the sources:
+   
+    - option a): Download a release from the [release page](https://github.com/Goli4thus/linvstmanager/releases) and unpack it.
+    
+    - option b): Clone this repository to get the latest development version:
+      ```
+      git clone https://github.com/goli4thus/linvstmanager
+      ```
 
-5. Change into the downloaded repository folder and run the following in a terminal:
+5. Change into the downloaded folder and run the following in a terminal:
   ```
   mkdir build && cd build
   cmake ..
