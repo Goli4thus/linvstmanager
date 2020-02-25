@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QVector>
 class QXmlStreamReader;
 class QXmlStreamWriter;
 
