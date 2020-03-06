@@ -273,3 +273,6 @@ During subsequent scans these dll files would be ignored due to already being "t
 In addition, _'blacklisted'_ VSTs won't interfere during other operations (i.e. enable all,...) and can optionally even be hidden via _View -> Hide blacklisted_.
 
 
+### Donations
+If you find this project valuable and want to make a donation, you can do so using the following link:
+[Donate via PayPal](paypal.me/donate2goli4thus)
