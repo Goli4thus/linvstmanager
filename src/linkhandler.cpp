@@ -252,20 +252,18 @@ RvLinkHandler LinkHandler::blacklistVst(const QVector<int> &indexOfVstBuckets)
 
             filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
 
-            if (filePathLinkDest.exists()) {
-                if (!filePathLinkDest.isSymLink()) {
-                    qDebug() << "(LH): blacklisteVst(): not a symlink";
-                } else {
-                    if (!QFile::remove(filePathLinkDest.filePath())) {
-                        qDebug() << "(LH): blacklisteVst(): link delete failed";
-                        retVal = RvLinkHandler::LH_NOT_OK;
-                    }
+            if (!filePathLinkDest.isSymLink()) {
+                qDebug() << "(LH): blacklistVst(): not a symlink";
+            } else {
+                if (!QFile::remove(filePathLinkDest.filePath())) {
+                    qDebug() << "(LH): blacklistVst(): link delete failed";
+                    retVal = RvLinkHandler::LH_NOT_OK;
                 }
             }
 
             if (filePathSoSrc.exists()) {
                 if (!QFile::remove(filePathSoSrc.filePath())) {
-                    qDebug() << "(LH): blacklisteVst(): filePathSoSrc delete failed";
+                    qDebug() << "(LH): blacklistVst(): filePathSoSrc delete failed";
                     retVal = RvLinkHandler::LH_NOT_OK;
                 }
             }
