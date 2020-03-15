@@ -49,7 +49,6 @@ That's why _LinVstManager_ was created:
 - "Blacklisting"
 - and more...
 
-
 ## Dependencies
 If you've already managed to build [LinVst](https://github.com/osxmidi/LinVst), then pretty much only:
 - Qt5 for the graphical _LinVstManager_ application
@@ -58,7 +57,11 @@ If you've already managed to build [LinVst](https://github.com/osxmidi/LinVst), 
 Nevertheless, here are some distributions and the needed packages:
 
 1. Install required packages based on your distribution:
-  * **Manjaro**:
+  * **Archlinux / Manjaro**:
+  
+    An aur package does exist: [See here](https://aur.archlinux.org/packages/linvstmanager/).
+    
+    Alternatively install the following for proceding with the manual install:
     ```
     sudo pacman -S cmake make gcc git qt5-base
     ```
