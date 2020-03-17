@@ -9,8 +9,8 @@
 // Program version
 #define D_VERSION_MAJOR 1
 #define D_VERSION_MINOR 0
-#define D_VERSION_PATCH 0
-#define D_VERSION_STRING "1.0.0"
+#define D_VERSION_PATCH 2
+#define D_VERSION_STRING "1.0.2"
 
 // Various constants
 #define D_OUTPUT_DEBUG_MSG 0

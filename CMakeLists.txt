@@ -8,7 +8,7 @@ project(${TARGET_NAME})
 # Project version
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
+set(VERSION_PATCH 2)
 
 # Debug message enabling
 # Hint: Run cmake with "cmake -DENABLE_DEBUG_MSG=1 .." to enable the following:
