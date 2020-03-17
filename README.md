@@ -76,6 +76,11 @@ Nevertheless, here are some distributions and the needed packages:
     sudo apt install cmake make gcc git qt5-default
     ```
     
+  * **Ubuntu 18.04**:
+    ```
+    sudo apt install cmake gcc g++ git qt5-default
+    ```
+    
 2. Two options to get the sources:
    
     - option a): Download a release from the [release page](https://github.com/Goli4thus/linvstmanager/releases) and unpack it.

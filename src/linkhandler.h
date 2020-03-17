@@ -35,6 +35,7 @@ private:
     QVector<VstBucket>*mVstBuckets;
     DataHasher &dataHasher;
     void updateConflicts();
+    QString getFilePathSo(QString vstPath, VstType vstType);
 
 signals:
 

@@ -355,7 +355,8 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
     for (const auto &filepath : filepaths_VstDll) {
         fileName = QFileInfo(filepath).fileName();
         suffix = QFileInfo(filepath).suffix();
-        vstName = fileName.chopped(suffix.size() + 1);
+        QString vstName = fileName;
+        vstName.chop(suffix.size() + 1);
         filepath_Hash = dataHasher.calcFilepathHash(filepath);
         soFile_Hash = dataHasher.calcFilepathHash(filepath);
         initStatus = VstStatus::NA;
@@ -363,7 +364,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
         bool newVstFound = true;
         for (const auto &vstBucket : mVstBuckets) {
             // Check if VST is already part of model. Skip if so.
-            if (vstBucket.pathHash.compare(filepath_Hash) == 0) {
+            if (qstrcmp(vstBucket.pathHash, filepath_Hash) == 0) {
                 newVstFound = false;
                 break;
             }
@@ -371,7 +372,7 @@ void ModelVstBuckets::addVstBucket(const QStringList &filepaths_VstDll)
             // Check if name of VST already exists (ignore 'blacklisted' though).
             // Mark as "Conflict" if so.
             if ((vstBucket.status != VstStatus::Blacklisted) &&
-                    (vstBucket.name.compare(vstName) == 0)) {
+                    (qstrcmp(QByteArray::fromStdString(vstBucket.name.toStdString()), QByteArray::fromStdString(vstName.toStdString())) == 0)) {
                 initStatus = VstStatus::Conflict;
             }
         }
@@ -558,7 +559,7 @@ void ModelVstBuckets::addScanSelection(QVector<ScanResult> *scanSelection)
         initStatus = VstStatus::NA;
         for (const auto &vstBucket : mVstBuckets) {
             // Check if name of VST already exists. Mark as "Conflict" if so.
-            if (vstBucket.name.compare(i.name) == 0) {
+            if (qstrcmp(QByteArray::fromStdString(vstBucket.name.toStdString()), QByteArray::fromStdString(i.name.toStdString())) == 0) {
                 initStatus = VstStatus::Conflict;
             }
         }

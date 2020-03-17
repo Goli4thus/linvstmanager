@@ -54,11 +54,7 @@ RvLinkHandler LinkHandler::refreshStatus(bool refreshSingle, int singleIndex, bo
                     continue;
                 } else {
                     QString filePathSo;
-                    if (vstBucket.vstType == VstType::VST2) {
-                        filePathSo = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
-                    } else { // VST3
-                        filePathSo = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
-                    }
+                    filePathSo = getFilePathSo(vstBucket.vstPath, vstBucket.vstType);
                     fileInfoSo.setFile(filePathSo);
 
                     if (!prf.bridgeEnabled(vstBucket.bridge)) {
@@ -112,11 +108,7 @@ RvLinkHandler LinkHandler::updateVsts()
             || (vstBucket.status == VstStatus::NoBridge)) {
             if (prf.bridgeEnabled(vstBucket.bridge)) {
                 filePathSoTmpl = prf.getPathSoTmplBridge(vstBucket.bridge);
-                if (vstBucket.vstType == VstType::VST2) {
-                    filePathSoDest = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
-                } else { // VST3
-                    filePathSoDest = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
-                }
+                filePathSoDest = getFilePathSo(vstBucket.vstPath, vstBucket.vstType);
                 if (QFile::exists(filePathSoDest)) {
                     if (!QFile::remove(filePathSoDest)) {
                         qDebug() << "(LH): updateVsts(): remove file failed";
@@ -165,12 +157,7 @@ RvLinkHandler LinkHandler::enableVst(const QVector<int> &indexOfVstBuckets)
 //        const auto &vstBucket = (*mVstBuckets).at(index);
         auto &vstBucket = (*mVstBuckets)[index];
         if (vstBucket.status == VstStatus::Disabled) {
-            if (vstBucket.vstType == VstType::VST2) {
-                filePathSoSrc = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
-            } else { // VST3
-                filePathSoSrc = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
-            }
-
+            filePathSoSrc = getFilePathSo(vstBucket.vstPath, vstBucket.vstType);
             filePathLinkDest = prf.getPathLinkFolder() + "/" + vstBucket.name + ".so";
 
             if (!QFile::link(filePathSoSrc, filePathLinkDest)) {
@@ -244,12 +231,7 @@ RvLinkHandler LinkHandler::blacklistVst(const QVector<int> &indexOfVstBuckets)
     for(const auto &index : indexOfVstBuckets) {
         auto &vstBucket = (*mVstBuckets)[index];
         if (vstBucket.status != VstStatus::Blacklisted) {
-            if (vstBucket.vstType == VstType::VST2) {
-                filePathSoSrc = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
-            } else { // VST3
-                filePathSoSrc = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
-            }
-
+            filePathSoSrc = getFilePathSo(vstBucket.vstPath, vstBucket.vstType);
             filePathLinkDest.setFile(prf.getPathLinkFolder() + "/" + vstBucket.name + ".so");
 
             if (!filePathLinkDest.isSymLink()) {
@@ -296,11 +278,7 @@ RvLinkHandler LinkHandler::changeBridge(int idx, VstBridge newBridgeType)
         || vstBucket.status == VstStatus::NoBridge
         || vstBucket.status == VstStatus::No_So) {
 
-        if (vstBucket.vstType == VstType::VST2) {
-            filePathSoDest = vstBucket.vstPath.chopped(3) + "so"; // Replace "dll"
-        } else { // VST3
-            filePathSoDest = vstBucket.vstPath.chopped(4) + "so"; // Replace "vst3"
-        }
+        filePathSoDest = getFilePathSo(vstBucket.vstPath, vstBucket.vstType);
 
         // Could be that the "old so-file" doesn't exist
         if (filePathSoDest.exists()) {
@@ -415,7 +393,7 @@ void LinkHandler::updateArch()
 bool LinkHandler::checkSoHashMatch(const QByteArray &soFileHash, const VstBridge vstBridge)
 {
     // Compare hash values of soFile and soTmplFile
-    return soFileHash.compare(dataHasher.getHashSoTmplBridge(vstBridge)) == 0;
+    return (qstrcmp(soFileHash, dataHasher.getHashSoTmplBridge(vstBridge)) == 0);
 }
 
 void LinkHandler::updateConflicts()
@@ -452,5 +430,19 @@ void LinkHandler::updateConflicts()
             }
         }
     }
+}
+
+QString LinkHandler::getFilePathSo(QString vstPath, VstType vstType)
+{
+    QString filePathSo;
+    QString tmp = vstPath;
+    if (vstType == VstType::VST2) {
+        tmp.chop(3);
+        filePathSo = tmp + "so"; // Replace "dll"
+    } else { // VST3
+        tmp.chop(4);
+        filePathSo = tmp + "so"; // Replace "vst3"
+    }
+    return filePathSo;
 }
 
