@@ -109,7 +109,7 @@ private slots:
     void slotRenameVst();
     void slotRenameAccepted(int indexNameConflict, QString nameNew);
     void slotRenameBatchVst();
-    void slotRenameBatchAccepted(int indexNameConflict, QString nameNew);
+    void slotRenameBatchAccepted(QVector<int> indices, bool modeAdd, bool atEnd, QString phrase);
     void slotDialogAbout();
     void slotDialogAboutQt();
     void slotSave();

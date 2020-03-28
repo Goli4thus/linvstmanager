@@ -25,30 +25,46 @@ DialogRenameBatch::DialogRenameBatch(const QVector<VstBucket> &pVstBuckets)
 
     mLayoutVMain = new QVBoxLayout(this);
     mLayoutHMode = new QHBoxLayout();
+    mLayoutHLocation = new QHBoxLayout();
     mLayoutHNameNew = new QHBoxLayout();
     mLayoutHBottom = new QHBoxLayout();
     mTextEdit = new QTextEdit();
-    mRBModePrepend = new QRadioButton("Prepend");
-    mRBModeAppend = new QRadioButton("Append");
+    mRBModeAdd = new QRadioButton("Add");
+    mRBModeRemove = new QRadioButton("Remove");
     mButtonGroupMode = new QButtonGroup();
+    mRBAtStart = new QRadioButton("Start");
+    mRBAtEnd = new QRadioButton("End");
+    mButtonGroupLocation = new QButtonGroup();
     mLineEditPhrase = new QLineEdit();
     auto *hLine = new HorizontalLine();
     mButtonAccept = new QPushButton("Accept");
     mButtonCancel = new QPushButton("Cancel");
     auto *mLabelMode = new QLabel("Mode: ");
+    auto *mLabelLocation = new QLabel("Location: ");
     auto *mLabelNew = new QLabel("Phrase: ");
 
     mTextEdit->setReadOnly(true);
 
     mLabelMode->setFixedWidth(45);
-    mLabelMode->setToolTip("Toggle with 'Alt-m'");
-    mButtonGroupMode->addButton(mRBModePrepend);
-    mButtonGroupMode->addButton(mRBModeAppend);
+    mLabelMode->setToolTip("'Add': Phrase will be added.\n" \
+                           "'Remove': Length of phrase will be removed.\n" \
+                           "Toggle mode with 'Alt-m'");
+    mButtonGroupMode->addButton(mRBModeRemove);
+    mButtonGroupMode->addButton(mRBModeAdd);
     mLayoutHMode->addWidget(mLabelMode);
-    mLayoutHMode->addWidget(mRBModePrepend);
-    mLayoutHMode->addWidget(mRBModeAppend);
-    mRBModeAppend->setChecked(true);
-    mModeAppend = true;
+    mLayoutHMode->addWidget(mRBModeAdd);
+    mLayoutHMode->addWidget(mRBModeRemove);
+    mLabelLocation->setFixedWidth(45);
+    mLabelLocation->setToolTip("Toggle location with 'Alt-l'");
+    mButtonGroupLocation->addButton(mRBAtStart);
+    mButtonGroupLocation->addButton(mRBAtEnd);
+    mLayoutHLocation->addWidget(mLabelLocation);
+    mLayoutHLocation->addWidget(mRBAtStart);
+    mLayoutHLocation->addWidget(mRBAtEnd);
+    mRBModeAdd->setChecked(true);
+    mRBAtEnd->setChecked(true);
+    mModeAdd = true;
+    mAtEnd = true;
 
     mLabelNew->setFixedWidth(45);
     mLineEditPhrase->setMinimumWidth(130);
@@ -61,6 +77,7 @@ DialogRenameBatch::DialogRenameBatch(const QVector<VstBucket> &pVstBuckets)
 
     mLayoutVMain->addWidget(mTextEdit);
     mLayoutVMain->addLayout(mLayoutHMode);
+    mLayoutVMain->addLayout(mLayoutHLocation);
     mLayoutVMain->addLayout(mLayoutHNameNew);
     mLayoutVMain->addWidget(hLine);
     mLayoutVMain->addLayout(mLayoutHBottom);
@@ -68,11 +85,13 @@ DialogRenameBatch::DialogRenameBatch(const QVector<VstBucket> &pVstBuckets)
     this->setLayout(mLayoutVMain);
 
     new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M), this, SLOT(slotModeToggle()));
+    new QShortcut(QKeySequence(Qt::ALT + Qt::Key_L), this, SLOT(slotLocationToggle()));
 
     connect(mButtonAccept, &QPushButton::pressed, this, &DialogRenameBatch::slotButtonAccept);
     connect(mButtonCancel, &QPushButton::pressed, this, &DialogRenameBatch::slotButtonCancel);
     connect(mLineEditPhrase, &QLineEdit::textChanged, this, &DialogRenameBatch::slotTextChanged);
     connect(mButtonGroupMode, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &DialogRenameBatch::slotModeChanged);
+    connect(mButtonGroupLocation, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &DialogRenameBatch::slotLocationChanged);
 }
 
 void DialogRenameBatch::init(QVector<int> indices)
@@ -84,6 +103,7 @@ void DialogRenameBatch::init(QVector<int> indices)
         html.append(mVstBuckets.at(i).name + "<br>");
     }
     mTextEdit->setHtml(html);
+    mLineEditPhrase->clear();
     mLineEditPhrase->setFocus();
 }
 
@@ -96,37 +116,10 @@ void DialogRenameBatch::keyPressEvent(QKeyEvent *event)
 
 void DialogRenameBatch::slotButtonAccept()
 {
-//    bool alreadyExists = false;
-//    QString nameConflict;
-//    QString pathConflict;
-//    QString nameNew = mLineEditPhrase->text();
-//    for (const auto &vstBucket : mVstBuckets) {
-//        if (vstBucket.name == nameNew) {
-//            alreadyExists = true;
-//            nameConflict = vstBucket.name;
-//            pathConflict = vstBucket.vstPath;
-//        }
-//    }
-
-//    if (alreadyExists) {
-//        QMessageBox msgBox(this);
-//        msgBox.setIcon(QMessageBox::Information);
-//        msgBox.setWindowTitle("Name already taken");
-//        msgBox.setText("The newly entered name is already taken.");
-
-//        QStringList details = QStringList() << "Conflicting VST:\n"
-//                                            << "Name: \"" << nameConflict << "\"\n"
-//                                            << "Path: \"" << pathConflict << "\"\n";
-
-//        msgBox.setDetailedText(details.join(""));
-//        msgBox.setStandardButtons(QMessageBox::Ok);
-//        msgBox.exec();
-//    } else {
-//        emit(signalRenameAccept(mIndexNameOld, nameNew));
-//        QVector<VstBridge> tmp;
-//        emit(signalConfigDataChanged(false, tmp));
-//        this->close();
-//    }
+    emit(signalRenameBatchAccept(mIndices, mModeAdd, mAtEnd, mLineEditPhrase->text()));
+    QVector<VstBridge> tmp;
+    emit(signalConfigDataChanged(false, tmp));
+    this->close();
 }
 
 void DialogRenameBatch::slotButtonCancel()
@@ -137,23 +130,42 @@ void DialogRenameBatch::slotButtonCancel()
 void DialogRenameBatch::slotTextChanged()
 {
     QString html;
-    QString fontRedStart = "<font color=\"Red\">";
-    QString fontRedEnd = "</font>";
+    QString fontHlAddStart = "<font color=\"Cyan\">";
+    QString fontHlAddEnd = "</font>";
+    QString fontHlRmStart = "<font color=\"Red\">";
+    QString fontHlRmEnd = "</font>";
 
     html.append("<p>");
     for (const auto i : mIndices) {
-        if (mModeAppend) {
-            html.append(mVstBuckets.at(i).name +
-                        fontRedStart +
-                        mLineEditPhrase->text() +
-                        fontRedEnd +
-                        "<br>");
-        } else {
-            html.append(fontRedStart +
-                        mLineEditPhrase->text() +
-                        fontRedEnd +
-                        mVstBuckets.at(i).name +
-                        "<br>");
+        if (mModeAdd) {
+            if (mAtEnd) {
+                html.append(mVstBuckets.at(i).name +
+                            fontHlAddStart +
+                            mLineEditPhrase->text() +
+                            fontHlAddEnd +
+                            "<br>");
+            } else {
+                html.append(fontHlAddStart +
+                            mLineEditPhrase->text() +
+                            fontHlAddEnd +
+                            mVstBuckets.at(i).name +
+                            "<br>");
+            }
+        } else { // Remove
+            int len = mLineEditPhrase->text().length();
+            QString name = mVstBuckets.at(i).name;
+            if (len > name.length()) {
+                len = name.length();
+            }
+            if (mAtEnd) {
+                name.insert(name.length() - len, fontHlRmStart);
+                name.append(fontHlRmEnd);
+                html.append(name + "<br>");
+            } else {
+                name.insert(len, fontHlRmEnd);
+                name.prepend(fontHlRmStart);
+                html.append(name + "<br>");
+            }
         }
     }
     html.append("</p>");
@@ -164,16 +176,33 @@ void DialogRenameBatch::slotTextChanged()
 void DialogRenameBatch::slotModeChanged(int id)
 {
     Q_UNUSED(id)
-    mModeAppend = mRBModeAppend->isChecked();
+    mModeAdd = mRBModeAdd->isChecked();
+    slotTextChanged();
+}
+
+void DialogRenameBatch::slotLocationChanged(int id)
+{
+    Q_UNUSED(id)
+    mAtEnd = mRBAtEnd->isChecked();
     slotTextChanged();
 }
 
 void DialogRenameBatch::slotModeToggle()
 {
-    if (mRBModeAppend->isChecked()) {
-        mRBModePrepend->setChecked(true);
+    if (mRBModeAdd->isChecked()) {
+        mRBModeRemove->setChecked(true);
     } else {
-        mRBModeAppend->setChecked(true);
+        mRBModeAdd->setChecked(true);
     }
     slotModeChanged(0);
+}
+
+void DialogRenameBatch::slotLocationToggle()
+{
+    if (mRBAtEnd->isChecked()) {
+        mRBAtStart->setChecked(true);
+    } else {
+        mRBAtEnd->setChecked(true);
+    }
+    slotLocationChanged(0);
 }

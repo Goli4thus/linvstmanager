@@ -466,6 +466,32 @@ void ModelVstBuckets::renameVstBucket(const int &indexOfVstBucket, const QString
     lh->renameVst(indexOfVstBucket, nameNew);
 }
 
+void ModelVstBuckets::renameVstBucket(const QVector<int> &indices, const bool modeAdd, const bool atEnd, const QString &phrase)
+{
+    QString nameNew;
+    for (const auto &i : indices) {
+        if (modeAdd) {
+            if (atEnd) {
+                nameNew = mVstBuckets.at(i).name + phrase;
+            } else {
+                nameNew = phrase + mVstBuckets.at(i).name;
+            }
+        } else {
+            nameNew = mVstBuckets[i].name;
+            int len = phrase.length();
+            if (len > nameNew.length()) {
+                len = nameNew.length();
+            }
+            if (atEnd) {
+                nameNew.chop(len);
+            } else {
+                nameNew.remove(0, len);
+            }
+        }
+        lh->renameVst(i, nameNew);
+    }
+}
+
 void ModelVstBuckets::enableVstBucket(const QVector<int> &indexOfVstBuckets)
 {
     if (lh->enableVst(indexOfVstBuckets) == RvLinkHandler::LH_OK) {

@@ -29,28 +29,35 @@ public:
 private:
     QVBoxLayout *mLayoutVMain;
     QHBoxLayout *mLayoutHMode;
+    QHBoxLayout *mLayoutHLocation;
     QHBoxLayout *mLayoutHNameNew;
     QHBoxLayout *mLayoutHBottom;
     QTextEdit *mTextEdit;
     QLineEdit *mLineEditPhrase;
-    QRadioButton *mRBModePrepend;
-    QRadioButton *mRBModeAppend;
+    QRadioButton *mRBModeRemove;
+    QRadioButton *mRBModeAdd;
     QButtonGroup *mButtonGroupMode;
+    QRadioButton *mRBAtStart;
+    QRadioButton *mRBAtEnd;
+    QButtonGroup *mButtonGroupLocation;
     QPushButton *mButtonAccept;
     QPushButton *mButtonCancel;
     const QVector<VstBucket> &mVstBuckets;
     QVector<int> mIndices;
-    bool mModeAppend;
+    bool mModeAdd;
+    bool mAtEnd;
 
 private slots:
     void slotButtonAccept();
     void slotButtonCancel();
     void slotTextChanged();
     void slotModeChanged(int id);
+    void slotLocationChanged(int id);
     void slotModeToggle();
+    void slotLocationToggle();
 
 signals:
-    void signalRenameAccept(int index, QString nameNew);
+    void signalRenameBatchAccept(QVector<int> indices, bool modeAdd, bool atEnd, QString phrase);
     void signalConfigDataChanged(bool needsRefresh, QVector<VstBridge> changedBridges);
 };
 

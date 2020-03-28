@@ -158,7 +158,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
     connect(mDialogRename, &DialogRename::signalRenameAccept, this, &MainWindow::slotRenameAccepted);
     connect(mDialogRename, &DialogRename::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
-    connect(mDialogRenameBatch, &DialogRenameBatch::signalRenameAccept, this, &MainWindow::slotRenameBatchAccepted);
+    connect(mDialogRenameBatch, &DialogRenameBatch::signalRenameBatchAccept, this, &MainWindow::slotRenameBatchAccepted);
     connect(mDialogRenameBatch, &DialogRenameBatch::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
 
     connect(mSideBar, &SideBar::signalFilerRequest, this, &MainWindow::slotFilterBarApplyFilter);
@@ -447,11 +447,10 @@ void MainWindow::slotRenameBatchVst()
     }
 }
 
-void MainWindow::slotRenameBatchAccepted(int indexNameConflict, QString nameNew)
+void MainWindow::slotRenameBatchAccepted(QVector<int> indices, bool modeAdd, bool atEnd, QString phrase)
 {
     enableViewUpdate(false);
-    // TODO: Rename all VSTs accordingly
-//    mModelVstBuckets->renameVstBucket(indexNameConflict, nameNew);
+    mModelVstBuckets->renameVstBucket(indices, modeAdd, atEnd, phrase);
     enableViewUpdate(true);
     slotResizeTableToContent();
 }
