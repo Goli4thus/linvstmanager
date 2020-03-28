@@ -209,9 +209,18 @@ If you are pointing your DAW to scan the _link folder_, both VSTs will be picked
 But depending on your DAW, the result will be different.
 Some DAWs (i.e. Reaper) don't care what the filename of a VST is. The name (and vendor) shown in the FX browser are actually derived from what is set _within_ the VST itself.
 
-Other DAWs in contrast do actually care about the filename and will display "EQ" and "EQ_VendorX" in their FX browser.
+Other DAWs (i.e. Renoise, Bitwig) in contrast do actually care about the filename and will display "EQ" and "EQ_VendorX" in their FX browser.
 
 Overall this won't affect functionality of a VST, but might actually allow you to elegantly resolve naming conflicts without having to alter the naming of _*.dll_ or _*.vst3_ files.
+
+#### Batch renaming
+If you ever feel the need to batch rename multiple VSTs, there is another dialog available:
+
+![BatchRename](https://github.com/Goli4thus/images/blob/master/images_linvstmanager/BatchRename.png)
+
+Here you can either add a phrase at the start or end of the selected VST's names or remove a desired amount of characters from them.
+Hint: Examine the tooltips of labels _'Mode'_ and _'Location'_ for more information.
+
 
 ## Further notes
 ### VST states
