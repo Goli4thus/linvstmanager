@@ -29,6 +29,7 @@
 #include "datahasher.h"
 #include "enums.h"
 #include "dialogrename.h"
+#include "dialogrenamebatch.h"
 #include "sidebar.h"
 
 
@@ -64,6 +65,7 @@ private:
     DialogPreferences *mDialogPreferences;
     DialogScan *mDialogScan;
     DialogRename *mDialogRename;
+    DialogRenameBatch *mDialogRenameBatch;
     Preferences *prf;
     ConfigHandler *cfg;
     LegacyConfigParser *legacyConfigParser;
@@ -106,6 +108,8 @@ private slots:
     void slotDialogScan();
     void slotRenameVst();
     void slotRenameAccepted(int indexNameConflict, QString nameNew);
+    void slotRenameBatchVst();
+    void slotRenameBatchAccepted(QVector<int> indices, bool modeAdd, bool atEnd, QString phrase);
     void slotDialogAbout();
     void slotDialogAboutQt();
     void slotSave();

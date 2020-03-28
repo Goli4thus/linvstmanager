@@ -25,6 +25,7 @@ public:
     void addVstBucket(const QStringList &filepaths_VstDll);
     void removeVstBucket(QVector<int>indexOfVstBuckets);
     void renameVstBucket(const int &indexOfVstBucket, const QString &nameNew);
+    void renameVstBucket(const QVector<int> &indices, const bool modeAdd, const bool atEnd, const QString &phrase);
     void enableVstBucket(const QVector<int> &indexOfVstBuckets);
     void disableVstBucket(const QVector<int> &indexOfVstBuckets);
     void blacklistVstBucket(const QVector<int> &indexOfVstBuckets);

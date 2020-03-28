@@ -149,6 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupMenuBar();
     mDialogScan = new DialogScan(prf, mModelVstBuckets->getBufferVstBuckets());
     mDialogRename = new DialogRename(*mModelVstBuckets->getBufferVstBuckets());
+    mDialogRenameBatch = new DialogRenameBatch(*mModelVstBuckets->getBufferVstBuckets());
 
     connect(mModelVstBuckets, &ModelVstBuckets::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
     connect(mModelVstBuckets, &ModelVstBuckets::signalFeedbackLogOutput, this, &MainWindow::slotFeedbackLogOutput);
@@ -157,6 +158,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mDialogScan, &DialogScan::signalScanSelection, this, &MainWindow::slotAddScannedVst);
     connect(mDialogRename, &DialogRename::signalRenameAccept, this, &MainWindow::slotRenameAccepted);
     connect(mDialogRename, &DialogRename::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
+    connect(mDialogRenameBatch, &DialogRenameBatch::signalRenameBatchAccept, this, &MainWindow::slotRenameBatchAccepted);
+    connect(mDialogRenameBatch, &DialogRenameBatch::signalConfigDataChanged, this, &MainWindow::slotConfigDataChanged);
 
     connect(mSideBar, &SideBar::signalFilerRequest, this, &MainWindow::slotFilterBarApplyFilter);
     connect(mTableview->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::slotTableSelectionChanged);
@@ -208,6 +211,7 @@ void MainWindow::setupMenuBar()
     auto *actionAddVst = new QAction(tr("&Add VST"), this);
     auto *actionRemoveVst = new QAction(tr("&Remove VST"), this);
     auto *actionRenameVst = new QAction(tr("Re&name VST"), this);
+    auto *actionRenameBatchVst = new QAction(tr("Batch rena&me VST"), this);
     auto *actionScan = new QAction(tr("&Scan"), this);
 
     // subMenu: Change bridge
@@ -252,6 +256,7 @@ void MainWindow::setupMenuBar()
     actionAddVst->setShortcut(QKeySequence("A"));
     actionRemoveVst->setShortcut(QKeySequence("Shift+R"));
     actionRenameVst->setShortcut(QKeySequence("Alt+Shift+R"));
+    actionRenameBatchVst->setShortcut(QKeySequence("Alt+Shift+B"));
     actionResizeTableToContent->setShortcut(QKeySequence("Alt+R"));
     actionFilter->setShortcut(QKeySequence("Ctrl+F"));
     actionScan->setShortcut(QKeySequence("Alt+S"));
@@ -285,6 +290,7 @@ void MainWindow::setupMenuBar()
     menuEdit->addAction(actionRemoveVst);
     menuEdit->addSeparator();
     menuEdit->addAction(actionRenameVst);
+    menuEdit->addAction(actionRenameBatchVst);
     menuEdit->addSeparator();
     menuEdit->addAction(actionScan);
 
@@ -307,6 +313,7 @@ void MainWindow::setupMenuBar()
     connect(actionAddVst, &QAction::triggered, this, &MainWindow::slotAddVst);
     connect(actionRemoveVst, &QAction::triggered, this, &MainWindow::slotRemoveVst);
     connect(actionRenameVst, &QAction::triggered, this, &MainWindow::slotRenameVst);
+    connect(actionRenameBatchVst, &QAction::triggered, this, &MainWindow::slotRenameBatchVst);
 
     connect(actionEnable, &QAction::triggered, this, &MainWindow::slotEnableVst);
     connect(actionDisable, &QAction::triggered, this, &MainWindow::slotDisableVst);
@@ -421,6 +428,29 @@ void MainWindow::slotRenameAccepted(int indexNameConflict, QString nameNew)
 {
     enableViewUpdate(false);
     mModelVstBuckets->renameVstBucket(indexNameConflict, nameNew);
+    enableViewUpdate(true);
+    slotResizeTableToContent();
+}
+
+void MainWindow::slotRenameBatchVst()
+{
+    if (mTableview->selectionModel()->selectedRows().isEmpty()) {
+        // No selection has been made. Therefore ignore it.
+        return;
+    } else {
+        QModelIndexList indexList = mTableview->selectionModel()->selectedRows();
+        QVector<int> indexOfVstBuckets = getSelectionOrigIdx(indexList);
+
+        // Take the first entry and ignore the rest (rename is done one at a time)
+        mDialogRenameBatch->init(indexOfVstBuckets);
+        mDialogRenameBatch->exec();
+    }
+}
+
+void MainWindow::slotRenameBatchAccepted(QVector<int> indices, bool modeAdd, bool atEnd, QString phrase)
+{
+    enableViewUpdate(false);
+    mModelVstBuckets->renameVstBucket(indices, modeAdd, atEnd, phrase);
     enableViewUpdate(true);
     slotResizeTableToContent();
 }

@@ -31,6 +31,7 @@ SOURCES += \
         datahasher.cpp \
         dialogpreferences.cpp \
         dialogrename.cpp \
+        dialogrenamebatch.cpp \
         dialogscan.cpp \
         horizontalline.cpp \
         legacyconfigparser.cpp \
@@ -61,6 +62,7 @@ HEADERS += \
         defines.h \
         dialogpreferences.h \
         dialogrename.h \
+        dialogrenamebatch.h \
         dialogscan.h \
         enums.h \
         horizontalline.h \
