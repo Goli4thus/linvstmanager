@@ -292,4 +292,4 @@ In addition, _'blacklisted'_ VSTs won't interfere during other operations (i.e. 
 
 ### Donations
 If you find this project valuable and want to make a donation, you can do so using the following link:
-[Donate via PayPal](paypal.me/donate2goli4thus)
+[Donate via PayPal](https://paypal.me/donate2goli4thus)
