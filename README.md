@@ -59,7 +59,7 @@ Nevertheless, here are some distributions and the needed packages:
 1. Install required packages based on your distribution:
   * **Archlinux / Manjaro**:
   
-    An aur package does exist: [See here](https://aur.archlinux.org/packages/linvstmanager/).
+    A PKGBUILD does exist: [See here](https://github.com/usrmusicman/PKGBUILDS/tree/master/linvstmanager).
     
     Alternatively install the following for proceding with the manual install:
     ```
