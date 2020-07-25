@@ -491,14 +491,12 @@ void DialogScan::getScanAmount(const QString &path, int &numDll, int &numVst3)
     pathSanitized.prepend("'");
     pathSanitized.append("'");
 
-    QString cmd = QString("bash -c \"find %1 -iname '*.dll' -type f | wc -l\"").arg(pathSanitized);
-    process.start(cmd);
+    process.start("bash", QStringList() << "-c" << QString("find %1 -iname '*.dll' -type f | wc -l").arg(pathSanitized));
     process.waitForFinished();
     QString retStr(process.readAllStandardOutput());
     numDll = retStr.toInt();
 
-    cmd = QString("bash -c \"find %1 -iname '*.vst3' -type f | wc -l\"").arg(pathSanitized);
-    process.start(cmd);
+    process.start("bash", QStringList() << "-c" << QString("find %1 -iname '*.vst3' -type f | wc -l").arg(pathSanitized));
     process.waitForFinished();
     retStr = process.readAllStandardOutput();
     numVst3 = retStr.toInt();

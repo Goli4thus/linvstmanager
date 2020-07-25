@@ -90,9 +90,8 @@ bool ScanWorker::checkDllBasic(const QString &findingAbsPath,
         strCaseSens = "--ignore-case";
     }
 
-    QString cmd = QString("bash -c \"grep -q %1 '%2' %3\"").arg(strCaseSens).arg(pattern).arg(pathSanitized);
 //    qDebug() << cmd;
-    int exitCode = QProcess::execute(cmd);
+    int exitCode = QProcess::execute("bash", QStringList() << "-c" << QString("grep -q %1 '%2' %3").arg(strCaseSens).arg(pattern).arg(pathSanitized));
 //    qDebug() << "exitcode: " << exitCode;
 
     if (exitCode) {
