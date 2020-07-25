@@ -598,15 +598,11 @@ void MainWindow::slotResizeTableToContent()
     mTableview->resizeColumnsToContents();
     mTableview->resizeRowsToContents();
 
-    // Set rows to sensible with; some fixed width, some based on content
+    // Manual resizing of specific rows; some fixed width, some based on content
     mTableview->setColumnWidth(nsMW::TableColumnPosType::NewlyAdded, 30);
-    mTableview->setColumnWidth(nsMW::TableColumnPosType::Status, 91);
+    mTableview->setColumnWidth(nsMW::TableColumnPosType::Status, mTableview->columnWidth(nsMW::TableColumnPosType::Status) + 10);
     mTableview->setColumnWidth(nsMW::TableColumnPosType::Name, mTableview->columnWidth(nsMW::TableColumnPosType::Name) + 10);
-    mTableview->setColumnWidth(nsMW::TableColumnPosType::VstType, 45);
-    mTableview->setColumnWidth(nsMW::TableColumnPosType::ArchType, 45);
-    mTableview->setColumnWidth(nsMW::TableColumnPosType::Bridge, 65);
     mTableview->setColumnWidth(nsMW::TableColumnPosType::Path, mTableview->columnWidth(nsMW::TableColumnPosType::Path) + 10);
-    mTableview->setColumnWidth(nsMW::TableColumnPosType::Index, 20);
 }
 
 void MainWindow::slotAddVst()
