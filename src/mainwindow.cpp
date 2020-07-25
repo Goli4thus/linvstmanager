@@ -529,7 +529,18 @@ void MainWindow::slotPostSetupInfo()
                              QMessageBox::Ok);
 
 //    QTimer::singleShot(100, this, &MainWindow::slotOrphanDetection);
-    slotOrphanDetection();
+    /* Sanity check: Before attempting orphan detection, ensure that the link folder actually exists.
+     * Could be the case if:
+     *   - the folder got deleted after it was selected in preferences dialog
+     *   - the folder never existed in the first place (i.e. config transfer to new system) */
+    QString pathLinkfolder = prf->getPathLinkFolder();
+    QDir linkFolder(pathLinkfolder);
+    if ((pathLinkfolder != "") && (!linkFolder.exists())) {
+        // Create empty link folder instead for further operation
+        QDir().mkdir(pathLinkfolder);
+    } else {
+        slotOrphanDetection();
+    }
 }
 
 void MainWindow::slotOrphanDetection()
