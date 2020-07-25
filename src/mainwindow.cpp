@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     mSideBar = new SideBar(*(mModelVstBuckets->getBufferVstBuckets()), this);
-    mSideBar->setFixedWidth(160);
+    mSideBar->setFixedWidth(165);
     mSplitterHori->setHandleWidth(1);
     mSplitterHori->addWidget(mWidgetTop);
     mSplitterHori->addWidget(mSideBar);
