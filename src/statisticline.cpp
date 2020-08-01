@@ -31,12 +31,11 @@ StatisticLine::StatisticLine(const VstStatus &pVstStatus,
     mLineEditCount->setAlignment(Qt::AlignRight);
     mLineEditCount->setFixedHeight(22);
     mLineEditCount->setReadOnly(true);
-    mLabel->setFixedWidth(70);
 
     mLayoutH->addWidget(mButtonFilter);
     mLayoutH->addWidget(mLabel);
-    mLayoutH->addWidget(mLineEditCount);
     mLayoutH->addStretch();
+    mLayoutH->addWidget(mLineEditCount);
     mLayoutH->setSpacing(5);
     mLayoutH->setMargin(0);
     mLayoutH->setAlignment(Qt::AlignVCenter);

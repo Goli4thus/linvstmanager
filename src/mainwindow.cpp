@@ -137,10 +137,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     mSideBar = new SideBar(*(mModelVstBuckets->getBufferVstBuckets()), this);
-    mSideBar->setFixedWidth(165);
     mSplitterHori->setHandleWidth(1);
     mSplitterHori->addWidget(mWidgetTop);
     mSplitterHori->addWidget(mSideBar);
+    mSplitterHori->setChildrenCollapsible(false);
+    mSplitterHori->setStretchFactor(0, 1);
+    mSplitterHori->setStretchFactor(1, 0);
     mSplitterVert->addWidget(mSplitterHori);
     mSplitterVert->addWidget(mLogOutput);
     this->setCentralWidget(mSplitterVert);
@@ -898,6 +900,7 @@ void MainWindow::writeSettings()
     settings.beginGroup("MainWindow");
     settings.setValue("size", size());
     settings.setValue("pos", pos());
+    settings.setValue("splitterHoriSizes", mSplitterHori->saveState());
     settings.endGroup();
 }
 
@@ -907,5 +910,6 @@ void MainWindow::readSettings()
     settings.beginGroup("MainWindow");
     resize(settings.value("size", QSize(800, 550)).toSize());
     move(settings.value("pos", QPoint(200, 200)).toPoint());
+    mSplitterHori->restoreState(settings.value("splitterHoriSizes").toByteArray());
     settings.endGroup();
 }
