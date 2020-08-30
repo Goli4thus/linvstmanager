@@ -90,8 +90,8 @@ DialogRenameBatch::DialogRenameBatch(const QVector<VstBucket> &pVstBuckets)
     connect(mButtonAccept, &QPushButton::pressed, this, &DialogRenameBatch::slotButtonAccept);
     connect(mButtonCancel, &QPushButton::pressed, this, &DialogRenameBatch::slotButtonCancel);
     connect(mLineEditPhrase, &QLineEdit::textChanged, this, &DialogRenameBatch::slotTextChanged);
-    connect(mButtonGroupMode, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::idClicked), this, &DialogRenameBatch::slotModeChanged);
-    connect(mButtonGroupLocation, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::idClicked), this, &DialogRenameBatch::slotLocationChanged);
+    connect(mButtonGroupMode, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &DialogRenameBatch::slotModeChanged);
+    connect(mButtonGroupLocation, static_cast<void(QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked), this, &DialogRenameBatch::slotLocationChanged);
 }
 
 void DialogRenameBatch::init(QVector<int> indices)
