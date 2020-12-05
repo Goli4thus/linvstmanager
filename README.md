@@ -125,7 +125,7 @@ When it comes to adding VSTs, choices got to be made which bridge should be used
 Here some default values can be specified.
 
 #### General
-- _Link folder_: The folder where all softlink will be created in and therefore the only location your DAW needs to be pointed at to "scan".
+- _Link folder_: The folder where all softlink will be created in and therefore the only location your DAW needs to be pointed at to "scan". It's assumed that the specified folder is a dedicated folder which is only being used by _LinVstManager_ (otherwise the feature _orphan detection_ will remove the VSTs not managed by _LinVstManager_ if being told during startup to clean up orphans).
 
 
 After all that, take a moment and explore the menu bar. Some operations are also available via right mouse click. Furthermore every operation can be done using a keyboard shortcut as well.
