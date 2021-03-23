@@ -1,0 +1,19 @@
+ version: "3.7"
+
+ services:
+   app:
+     image: deploy_ubuntu_2004
+     tty: true
+     #command: sh -c "yarn install && yarn run dev"
+     #command: cmake ../LinVstManager && make -j4
+     command: bash
+     container_name: con_ubuntu_2004
+     hostname: host_ubuntu_2004
+     #working_dir: /app
+     volumes:
+         - ../../../LinVstManager:/home/LinVstManager
+     #environment:
+       #MYSQL_HOST: mysql
+       #MYSQL_USER: root
+       #MYSQL_PASSWORD: secret
+       #MYSQL_DB: todos
