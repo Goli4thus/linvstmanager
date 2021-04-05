@@ -6,7 +6,7 @@
      tty: true
      #command: sh -c "yarn install && yarn run dev"
      #command: cmake ../LinVstManager && make -j4
-     command: bash
+     command: ../LinVstManager/test_deploy/build_inside_docker.sh
      container_name: con_ubuntu_1804
      hostname: host_ubuntu_1804
      #working_dir: /app

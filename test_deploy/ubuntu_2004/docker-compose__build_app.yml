@@ -2,16 +2,16 @@
 
  services:
    app:
-     image: deploy_ubuntu_1804
+     image: deploy_ubuntu_2004
      tty: true
      #command: sh -c "yarn install && yarn run dev"
      #command: cmake ../LinVstManager && make -j4
-     command: bash
-     container_name: con_ubuntu_1804
-     hostname: host_ubuntu_1804
+     command: ../LinVstManager/test_deploy/build_inside_docker.sh
+     container_name: con_ubuntu_2004
+     hostname: host_ubuntu_2004
      #working_dir: /app
      volumes:
-         - ../../../LinVstManager:/home/developer/LinVstManager
+         - ../../../LinVstManager:/home/LinVstManager
      #environment:
        #MYSQL_HOST: mysql
        #MYSQL_USER: root
