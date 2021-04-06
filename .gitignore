@@ -8,7 +8,10 @@ Makefile
 dialog.ui
 tags
 *.autosave
-build*
+#build*
+build
+#!test_deploy/build_output
+test_deploy/build_output
 *.exe
 *.exe.so
 *.wine.o
